@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Valentina Furniture — design system */
+    /* Scene: Tel Aviv showroom, Saturday morning, Mediterranean light, terracotta fabric samples */
+    /* Strategy: Committed — terracotta primary carries ALL brand warmth; bg is pure white */
+
+    --bg: oklch(1.000 0.000 0);
+    --surface: oklch(0.974 0.000 0);
+    --surface-elevated: oklch(0.960 0.004 32);
+
+    --primary: oklch(0.52 0.14 32);        /* terracotta clay */
+    --primary-hover: oklch(0.46 0.13 32);
+    --primary-fg: oklch(0.98 0.000 0);
+
+    --accent: oklch(0.42 0.08 85);         /* warm olive — wood tones */
+    --accent-fg: oklch(0.98 0.000 0);
+
+    --ink: oklch(0.18 0.012 32);
+    --muted: oklch(0.50 0.006 32);
+    --border: oklch(0.88 0.006 32);
+    --border-strong: oklch(0.75 0.01 32);
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal-backdrop: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    direction: rtl;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: "Heebo", system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Playfair Display", Georgia, serif;
+    line-height: 1.2;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  p { text-wrap: pretty; }
+
+  img { display: block; max-width: 100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--delay, 0ms);
 }
