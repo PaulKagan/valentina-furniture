@@ -1,3 +1,14 @@
+/**
+ * Database schema — all three tables for the furniture store.
+ *
+ * categories  — product groupings (ספות, שולחנות, etc.) managed in admin
+ * products    — the store inventory; imagePublicId is kept so we can delete
+ *               from Cloudinary if a product is removed
+ * orders      — customer orders from checkout; no payment data stored here,
+ *               the store calls the customer to confirm and arrange payment
+ *
+ * Run `npm run db:push` after changing this file to apply to the DB.
+ */
 import { pgTable, serial, text, integer, decimal, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
 
 export const orderStatusEnum = pgEnum("order_status", ["pending", "confirmed", "cancelled", "delivered"]);

@@ -1,3 +1,16 @@
+/**
+ * Auth configuration — NextAuth with a single admin account.
+ *
+ * Why no user table: this is a one-person admin panel. A full user/role
+ * system would be over-engineering. Credentials live in env vars.
+ *
+ * Password storage: ADMIN_PASSWORD can be either:
+ *   - A plain string (fine for local dev, not production)
+ *   - A bcrypt hash starting with "$2" (set with: node -e "console.log(require('bcryptjs').hashSync('yourpass',12))")
+ * The authorize() function detects which format is in use.
+ *
+ * Sessions are JWT — no session table needed, stateless.
+ */
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";

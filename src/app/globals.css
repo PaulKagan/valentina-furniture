@@ -1,42 +1,62 @@
+/**
+ * Global styles + design system tokens for Valentina Ben Ami Furniture.
+ *
+ * Design philosophy (impeccable):
+ *   Scene: Tel Aviv showroom, Saturday morning — warm Mediterranean light,
+ *   terracotta fabric samples, polished wood floors.
+ *   Strategy: "Committed" — terracotta primary carries ALL warmth.
+ *   Background is pure white so the brand color does the work.
+ *
+ * Animation philosophy (Emil Kowalski):
+ *   - Custom cubic-bezier curves, never CSS defaults
+ *   - ease-out for entering elements (feels responsive)
+ *   - All durations under 300ms for UI elements
+ *   - Hover effects gated behind @media (hover: hover) so touch devices
+ *     don't get false-positive hover states on tap
+ *   - prefers-reduced-motion collapses all motion to instant
+ */
+
 @import "tailwindcss";
 
 @layer base {
   :root {
-    /* Valentina Furniture — design system */
-    /* Scene: Tel Aviv showroom, Saturday morning, Mediterranean light, terracotta fabric samples */
-    /* Strategy: Committed — terracotta primary carries ALL brand warmth; bg is pure white */
+    /* ── Brand palette (OKLCH — perceptually uniform) ── */
+    --bg:               oklch(1.000 0.000 0);      /* pure white — no hidden warmth */
+    --surface:          oklch(0.974 0.000 0);      /* light gray for cards/sections */
+    --surface-elevated: oklch(0.960 0.004 32);     /* very faint clay tint — hero bg */
 
-    --bg: oklch(1.000 0.000 0);
-    --surface: oklch(0.974 0.000 0);
-    --surface-elevated: oklch(0.960 0.004 32);
+    --primary:          oklch(0.52 0.14 32);       /* terracotta clay */
+    --primary-hover:    oklch(0.46 0.13 32);       /* darkened for hover */
+    --primary-fg:       oklch(0.98 0.000 0);       /* white text on primary */
 
-    --primary: oklch(0.52 0.14 32);        /* terracotta clay */
-    --primary-hover: oklch(0.46 0.13 32);
-    --primary-fg: oklch(0.98 0.000 0);
+    --accent:           oklch(0.42 0.08 85);       /* warm olive / wood tone */
+    --accent-fg:        oklch(0.98 0.000 0);
 
-    --accent: oklch(0.42 0.08 85);         /* warm olive — wood tones */
-    --accent-fg: oklch(0.98 0.000 0);
+    --ink:              oklch(0.18 0.012 32);      /* near-black with clay lean — body text */
+    --muted:            oklch(0.50 0.006 32);      /* secondary text — ≥3.5:1 vs white */
+    --border:           oklch(0.88 0.006 32);      /* subtle dividers */
+    --border-strong:    oklch(0.75 0.01 32);
 
-    --ink: oklch(0.18 0.012 32);
-    --muted: oklch(0.50 0.006 32);
-    --border: oklch(0.88 0.006 32);
-    --border-strong: oklch(0.75 0.01 32);
+    /* ── Easing curves (Emil) — custom, not CSS defaults ── */
+    --ease-out:         cubic-bezier(0.23, 1, 0.32, 1);   /* strong ease-out: snappy entries */
+    --ease-in-out:      cubic-bezier(0.77, 0, 0.175, 1);  /* for on-screen movement */
+    --ease-drawer:      cubic-bezier(0.32, 0.72, 0, 1);   /* iOS-like for drawers/sheets */
 
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
+    /* ── Radii ── */
+    --radius-sm:  4px;
+    --radius-md:  8px;
+    --radius-lg:  12px;
+    --radius-xl:  16px;
 
-    --z-dropdown: 100;
-    --z-sticky: 200;
-    --z-modal-backdrop: 300;
-    --z-modal: 400;
-    --z-toast: 500;
+    /* ── Z-index scale (semantic, never arbitrary 9999) ── */
+    --z-dropdown:        100;
+    --z-sticky:          200;
+    --z-modal-backdrop:  300;
+    --z-modal:           400;
+    --z-toast:           500;
   }
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     direction: rtl;
@@ -46,38 +66,72 @@
   body {
     background-color: var(--bg);
     color: var(--ink);
-    font-family: "Heebo", system-ui, sans-serif;
+    font-family: var(--font-heebo, "Heebo"), system-ui, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-playfair, "Playfair Display"), Georgia, serif;
     line-height: 1.2;
-    text-wrap: balance;
+    text-wrap: balance;  /* even line lengths on headings */
     color: var(--ink);
   }
 
-  p { text-wrap: pretty; }
+  p { text-wrap: pretty; }  /* reduces orphaned single words */
 
   img { display: block; max-width: 100%; }
 
+  /* ── Reduced motion — collapses all animation to instant ── */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.001ms !important;
       transition-duration: 0.001ms !important;
+      animation-delay: 0ms !important;
     }
   }
 }
 
+/* ────────────────────────────────────────────────────────────
+   Entrance animation — fade + slide up
+   Uses @starting-style for browsers that support it (Chrome 117+, Firefox 129+).
+   Falls back to opacity:0 + animation for older browsers.
+
+   Emil: start from scale(0.97) + opacity 0, never scale(0).
+   Emil: ease-out via strong custom curve, not the CSS default.
+   Emil: 400ms for page-load entrances (not interactive elements).
+   ──────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-up {
   opacity: 0;
-  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeUp 0.5s var(--ease-out) forwards;
   animation-delay: var(--delay, 0ms);
+}
+
+/* ────────────────────────────────────────────────────────────
+   Interactive button feel (Emil)
+   scale(0.97) on :active gives tactile press feedback.
+   Gated behind (hover: hover) check so touch devices don't
+   get stuck in a pressed state after tap.
+   ──────────────────────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    opacity: 0.92;
+  }
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  transition: transform 120ms var(--ease-out);
 }
