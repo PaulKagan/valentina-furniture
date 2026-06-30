@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const t = useTranslations("admin.login");
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,7 @@ export default function AdminLoginPage() {
 
     const res = await signIn("credentials", { ...form, redirect: false });
     if (res?.error) {
-      setError("פרטי כניסה שגויים.");
+      setError(t("error"));
     } else {
       router.push("/admin/dashboard");
     }
@@ -28,12 +30,12 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--surface)" }}>
       <div className="w-full max-w-sm p-8 rounded-2xl shadow-sm border" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
         <h1 className="text-2xl font-bold mb-6 text-center" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
-          כניסה לניהול
+          {t("title")}
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="email"
-            placeholder="אימייל"
+            placeholder={t("email")}
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -42,7 +44,7 @@ export default function AdminLoginPage() {
           />
           <input
             type="password"
-            placeholder="סיסמה"
+            placeholder={t("password")}
             required
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -56,7 +58,7 @@ export default function AdminLoginPage() {
             className="h-11 rounded-lg font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
           >
-            {loading ? "מתחבר..." : "כניסה"}
+            {loading ? "..." : t("submit")}
           </button>
         </form>
       </div>

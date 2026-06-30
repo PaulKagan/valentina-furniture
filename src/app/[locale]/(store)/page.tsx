@@ -1,32 +1,32 @@
 /**
  * Homepage — the storefront's entry point.
  *
- * Sections (in order):
- *   1. Hero — brand statement + primary CTAs
- *   2. Categories — quick-jump to product sections
- *   3. Featured products — curated products marked `featured=true` in admin
- *   4. Trust strip — social proof numbers
- *
- * SEO: LocalBusiness JSON-LD embedded here so Google associates
- * the site with a physical furniture store in Tel Aviv.
+ * Sections: Hero → Categories → Featured products → Trust strip.
+ * Strings come from next-intl so this page renders in Hebrew, English, or Russian.
+ * SEO: LocalBusiness JSON-LD embedded for Google rich results.
  */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import { localBusinessJsonLd } from "@/lib/jsonld";
 
-export const metadata: Metadata = {
-  title: "ולנטינה בן עמי | חנות ריהוט בתל אביב",
-  description:
-    "ריהוט איכותי לבית — ספות, שולחנות, ארוניות ועוד. חנות ריהוט ולנטינה בן עמי בתל אביב. ייעוץ אישי, אחריות על כל המוצרים.",
-  openGraph: {
-    title: "ולנטינה בן עמי | חנות ריהוט",
-    description: "ריהוט איכותי לבית עם ליווי אישי מהבחירה ועד הרכבה.",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return {
+    title: t("homeTitle"),
+    description: t("homeDescription"),
+    openGraph: { locale },
+  };
+}
 
 async function getFeaturedProducts() {
   try {
@@ -57,7 +57,14 @@ const CATEGORY_ICONS: Record<string, string> = {
   storage: "🗄️",
 };
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home" });
+
   const [featuredProducts, allCategories] = await Promise.all([
     getFeaturedProducts(),
     getCategories(),
@@ -65,7 +72,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Structured data for Google — LocalBusiness rich result */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
@@ -82,37 +88,36 @@ export default async function HomePage() {
             style={{ "--delay": "0ms" } as React.CSSProperties}
           >
             <p className="text-sm font-semibold mb-3" style={{ color: "var(--primary)" }}>
-              ריהוט לבית הישראלי
+              {t("heroTag")}
             </p>
             <h1
               className="text-4xl md:text-[clamp(2.5rem,6vw,4.5rem)] font-bold mb-6"
               style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
             >
-              כשהבית מרגיש
+              {t("heroTitle")}
               <br />
-              <em style={{ color: "var(--primary)", fontStyle: "italic" }}>כמו בית</em>
+              <em style={{ color: "var(--primary)", fontStyle: "italic" }}>{t("heroTitleEm")}</em>
             </h1>
             <p
               className="text-lg mb-8 leading-relaxed"
               style={{ color: "var(--muted)", maxWidth: "52ch" }}
             >
-              ריהוט איכותי שנבחר בקפידה — לכל חדר, לכל סגנון.
-              מספות מרווחות ועד ארוניות מעוצבות.
+              {t("heroDesc")}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/products"
-                className="btn-primary inline-flex items-center px-6 py-3 rounded-lg font-semibold text-sm transition-opacity"
+                className="inline-flex items-center px-6 py-3 rounded-lg font-semibold text-sm transition-opacity hover:opacity-90 active:scale-[0.97]"
                 style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
               >
-                לקטלוג המוצרים
+                {t("heroCta")}
               </Link>
               <a
                 href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP ?? "972501234567"}`}
-                className="inline-flex items-center px-6 py-3 rounded-lg font-semibold text-sm border-2 transition-colors"
+                className="inline-flex items-center px-6 py-3 rounded-lg font-semibold text-sm border-2 transition-colors hover:opacity-90"
                 style={{ borderColor: "var(--primary)", color: "var(--primary)" }}
               >
-                ייעוץ חינם בוואטסאפ
+                {t("heroWhatsapp")}
               </a>
             </div>
           </div>
@@ -130,14 +135,14 @@ export default async function HomePage() {
             className="text-2xl font-bold mb-8"
             style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
           >
-            קטגוריות
+            {t("categoriesTitle")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {allCategories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 transition-colors"
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 transition-colors hover:border-[oklch(0.52_0.14_32)]"
                 style={{ borderColor: "var(--border)" }}
               >
                 <span className="text-3xl">{CATEGORY_ICONS[cat.slug] ?? "🪵"}</span>
@@ -157,17 +162,17 @@ export default async function HomePage() {
             className="text-2xl font-bold"
             style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
           >
-            מוצרים נבחרים
+            {t("featuredTitle")}
           </h2>
           <Link href="/products" className="text-sm font-medium" style={{ color: "var(--primary)" }}>
-            לכל המוצרים ←
+            {t("featuredAll")}
           </Link>
         </div>
 
         {featuredProducts.length === 0 ? (
           <div className="text-center py-20" style={{ color: "var(--muted)" }}>
-            <p className="text-lg">בקרוב יתווספו מוצרים לחנות.</p>
-            <p className="text-sm mt-2">צרו קשר ונשמח לעזור בבחירה.</p>
+            <p className="text-lg">{t("noProducts")}</p>
+            <p className="text-sm mt-2">{t("noProductsContact")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -178,15 +183,15 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* ── Trust strip — social proof ── */}
+      {/* ── Trust strip ── */}
       <section className="py-12" style={{ backgroundColor: "var(--surface)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "15+", label: "שנות ניסיון" },
-              { value: "2,000+", label: "לקוחות מרוצים" },
-              { value: "ליווי אישי", label: "מהבחירה ועד הרכבה" },
-              { value: "אחריות", label: "על כל המוצרים" },
+              { value: t("trust.yearsValue"), label: t("trust.years") },
+              { value: t("trust.customersValue"), label: t("trust.customers") },
+              { value: t("trust.serviceValue"), label: t("trust.service") },
+              { value: t("trust.warrantyValue"), label: t("trust.warranty") },
             ].map((item) => (
               <div key={item.label}>
                 <dt

@@ -2,12 +2,14 @@
 
 import { ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type Props = { product: { id: number; name: string; price: number; imageUrl: string | null } };
 
 export default function AddToCartButton({ product }: Props) {
   const { add } = useCart();
+  const t = useTranslations("productDetail");
   const [added, setAdded] = useState(false);
 
   function handleAdd() {
@@ -23,7 +25,7 @@ export default function AddToCartButton({ product }: Props) {
       style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
     >
       {added ? <Check size={18} /> : <ShoppingCart size={18} />}
-      {added ? "נוסף לעגלה!" : "הוסף לעגלה"}
+      {added ? t("added") : t("addToCart")}
     </button>
   );
 }

@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "siteTitle": "Valentina Ben Ami | Furniture Store",
+    "siteTitleTemplate": "%s | Valentina Ben Ami Furniture",
+    "siteDescription": "Quality home furniture — sofas, tables, storage and more. Valentina Ben Ami furniture store in Tel Aviv.",
+    "homeTitle": "Valentina Ben Ami | Furniture Store Tel Aviv",
+    "homeDescription": "Quality home furniture — sofas, tables, storage and more. Personal guidance, warranty on all products."
+  },
+  "header": {
+    "whatsappCta": "Free consultation — message us on WhatsApp",
+    "logoSub": "Ben Ami Furniture",
+    "cartLabel": "Shopping cart — {count} items",
+    "menuLabel": "Menu",
+    "nav": {
+      "allProducts": "All Products",
+      "sofas": "Sofas",
+      "tables": "Tables",
+      "bedroom": "Bedroom",
+      "storage": "Storage"
+    }
+  },
+  "footer": {
+    "hours": "Opening Hours",
+    "hoursValue": "Sun–Thu 10:00–19:00, Fri 10:00–14:00",
+    "address": "Address",
+    "phone": "Phone",
+    "copyright": "© {year} Valentina Ben Ami Furniture. All rights reserved.",
+    "nav": {
+      "products": "Products",
+      "cart": "Cart",
+      "contact": "Contact"
+    }
+  },
+  "home": {
+    "heroTag": "Furniture for the Israeli home",
+    "heroTitle": "When home feels",
+    "heroTitleEm": "like home",
+    "heroDesc": "Quality furniture carefully chosen — for every room, every style. From spacious sofas to designer storage.",
+    "heroCta": "Browse Products",
+    "heroWhatsapp": "Free WhatsApp consultation",
+    "categoriesTitle": "Categories",
+    "featuredTitle": "Featured Products",
+    "featuredAll": "All products →",
+    "noProducts": "Products coming soon.",
+    "noProductsContact": "Contact us and we'll help you choose.",
+    "trust": {
+      "years": "Years of experience",
+      "yearsValue": "15+",
+      "customers": "Happy customers",
+      "customersValue": "2,000+",
+      "service": "Personal guidance",
+      "serviceValue": "From selection to assembly",
+      "warranty": "Warranty",
+      "warrantyValue": "On all products"
+    }
+  },
+  "products": {
+    "title": "All Products",
+    "filterAll": "All",
+    "noProducts": "No products found in this category.",
+    "outOfStock": "Out of stock",
+    "addToCart": "Add",
+    "added": "Added ✓",
+    "addAriaLabel": "Add {name} to cart"
+  },
+  "productDetail": {
+    "outOfStock": "Out of stock",
+    "addToCart": "Add to cart",
+    "added": "Added to cart ✓",
+    "backToProducts": "← Back to products",
+    "notFound": "Product not found",
+    "notFoundBack": "Back to catalog"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "You haven't added any items yet.",
+    "browseProducts": "Browse Products",
+    "summary": "Order Summary",
+    "itemsCount": "Total items",
+    "total": "Total to pay",
+    "checkout": "Checkout",
+    "continueShopping": "Continue shopping",
+    "perUnit": "per unit",
+    "decreaseQty": "Decrease quantity",
+    "increaseQty": "Increase quantity",
+    "removeItem": "Remove item"
+  },
+  "checkout": {
+    "title": "Order Details",
+    "orderSummary": "Order Summary",
+    "totalLabel": "Total",
+    "namePlaceholder": "John Smith",
+    "nameLabel": "Full name",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "050-0000000",
+    "addressLabel": "Delivery address",
+    "addressPlaceholder": "Street, city",
+    "notesLabel": "Notes (optional)",
+    "notesPlaceholder": "Floor, entrance, preferred hours...",
+    "submit": "Place order",
+    "submitting": "Sending order...",
+    "disclaimer": "No charge now. A store representative will contact you to confirm details.",
+    "error": "An error occurred. Please try again or contact us directly.",
+    "sendError": "Error sending order"
+  },
+  "orderConfirmed": {
+    "title": "Order received!",
+    "thanks": "Thank you for your order.",
+    "pending": "Your order is not yet confirmed — a store representative will contact you shortly to confirm details and arrange delivery.",
+    "backHome": "Back to homepage",
+    "whatsapp": "Questions? WhatsApp us"
+  },
+  "admin": {
+    "login": {
+      "title": "Admin Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "error": "Invalid credentials"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "orders": "Orders",
+      "signOut": "Sign out"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "totalRevenue": "Total Revenue",
+      "totalOrders": "Total Orders",
+      "totalProducts": "Total Products",
+      "pendingOrders": "Pending Orders"
+    },
+    "products": {
+      "title": "Products",
+      "new": "New product",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this product?",
+      "name": "Name",
+      "price": "Price",
+      "category": "Category",
+      "inStock": "In stock",
+      "featured": "Featured",
+      "noProducts": "No products yet"
+    },
+    "orders": {
+      "title": "Orders",
+      "customer": "Customer",
+      "phone": "Phone",
+      "address": "Address",
+      "total": "Total",
+      "status": "Status",
+      "date": "Date",
+      "notes": "Notes",
+      "statusValues": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "delivered": "Delivered"
+      }
+    },
+    "productForm": {
+      "nameLabel": "Product name",
+      "descLabel": "Description",
+      "priceLabel": "Price (₪)",
+      "categoryLabel": "Category",
+      "noCategoryOption": "No category",
+      "inStockLabel": "In stock",
+      "featuredLabel": "Featured product (shown on homepage)",
+      "imageLabel": "Image",
+      "uploadImage": "Upload image",
+      "saving": "Saving...",
+      "save": "Save product"
+    }
+  }
+}

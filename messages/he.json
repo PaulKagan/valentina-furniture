@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "siteTitle": "ולנטינה בן עמי | חנות ריהוט",
+    "siteTitleTemplate": "%s | ולנטינה בן עמי ריהוט",
+    "siteDescription": "ריהוט איכותי לבית — ספות, שולחנות, ארוניות ועוד. חנות ריהוט ולנטינה בן עמי בתל אביב.",
+    "homeTitle": "ולנטינה בן עמי | חנות ריהוט בתל אביב",
+    "homeDescription": "ריהוט איכותי לבית — ספות, שולחנות, ארוניות ועוד. ייעוץ אישי, אחריות על כל המוצרים."
+  },
+  "header": {
+    "whatsappCta": "לייעוץ חינם — שלחו הודעה בוואטסאפ",
+    "logoSub": "בן עמי ריהוט",
+    "cartLabel": "עגלת קניות — {count} פריטים",
+    "menuLabel": "תפריט",
+    "nav": {
+      "allProducts": "כל המוצרים",
+      "sofas": "ספות",
+      "tables": "שולחנות",
+      "bedroom": "חדר שינה",
+      "storage": "אחסון"
+    }
+  },
+  "footer": {
+    "hours": "שעות פעילות",
+    "hoursValue": "א׳–ה׳ 10:00–19:00, ו׳ 10:00–14:00",
+    "address": "כתובת",
+    "phone": "טלפון",
+    "copyright": "© {year} ולנטינה בן עמי ריהוט. כל הזכויות שמורות.",
+    "nav": {
+      "products": "מוצרים",
+      "cart": "עגלה",
+      "contact": "יצירת קשר"
+    }
+  },
+  "home": {
+    "heroTag": "ריהוט לבית הישראלי",
+    "heroTitle": "כשהבית מרגיש",
+    "heroTitleEm": "כמו בית",
+    "heroDesc": "ריהוט איכותי שנבחר בקפידה — לכל חדר, לכל סגנון. מספות מרווחות ועד ארוניות מעוצבות.",
+    "heroCta": "לקטלוג המוצרים",
+    "heroWhatsapp": "ייעוץ חינם בוואטסאפ",
+    "categoriesTitle": "קטגוריות",
+    "featuredTitle": "מוצרים נבחרים",
+    "featuredAll": "לכל המוצרים ←",
+    "noProducts": "בקרוב יתווספו מוצרים לחנות.",
+    "noProductsContact": "צרו קשר ונשמח לעזור בבחירה.",
+    "trust": {
+      "years": "שנות ניסיון",
+      "yearsValue": "15+",
+      "customers": "לקוחות מרוצים",
+      "customersValue": "2,000+",
+      "service": "ליווי אישי",
+      "serviceValue": "מהבחירה ועד הרכבה",
+      "warranty": "אחריות",
+      "warrantyValue": "על כל המוצרים"
+    }
+  },
+  "products": {
+    "title": "כל המוצרים",
+    "filterAll": "הכל",
+    "noProducts": "לא נמצאו מוצרים בקטגוריה זו.",
+    "outOfStock": "אזל מהמלאי",
+    "addToCart": "הוסף",
+    "added": "נוסף ✓",
+    "addAriaLabel": "הוסף {name} לעגלה"
+  },
+  "productDetail": {
+    "outOfStock": "אזל מהמלאי",
+    "addToCart": "הוסף לעגלה",
+    "added": "נוסף לעגלה ✓",
+    "backToProducts": "← חזרה למוצרים",
+    "notFound": "המוצר לא נמצא",
+    "notFoundBack": "חזרה לקטלוג"
+  },
+  "cart": {
+    "title": "עגלת הקניות",
+    "empty": "העגלה ריקה",
+    "emptyDesc": "עדיין לא הוספתם פריטים.",
+    "browseProducts": "לקטלוג המוצרים",
+    "summary": "סיכום הזמנה",
+    "itemsCount": "סה\"כ פריטים",
+    "total": "סה\"כ לתשלום",
+    "checkout": "לתשלום",
+    "continueShopping": "המשך קנייה",
+    "perUnit": "ליחידה",
+    "decreaseQty": "הפחת כמות",
+    "increaseQty": "הגדל כמות",
+    "removeItem": "הסר פריט"
+  },
+  "checkout": {
+    "title": "פרטי הזמנה",
+    "orderSummary": "סיכום הזמנה",
+    "totalLabel": "סה\"כ",
+    "namePlaceholder": "ישראל ישראלי",
+    "nameLabel": "שם מלא",
+    "phoneLabel": "טלפון",
+    "phonePlaceholder": "050-0000000",
+    "addressLabel": "כתובת למשלוח",
+    "addressPlaceholder": "רחוב, עיר",
+    "notesLabel": "הערות (אופציונלי)",
+    "notesPlaceholder": "קומה, כניסה, שעות מועדפות...",
+    "submit": "שלח הזמנה",
+    "submitting": "שולח הזמנה...",
+    "disclaimer": "אין חיוב כרגע. נציג מהחנות יחזור אליכם לאישור פרטים.",
+    "error": "אירעה שגיאה. נסו שוב או פנו אלינו ישירות.",
+    "sendError": "שגיאה בשליחת ההזמנה"
+  },
+  "orderConfirmed": {
+    "title": "ההזמנה התקבלה!",
+    "thanks": "תודה רבה על הזמנתכם.",
+    "pending": "ההזמנה עדיין לא מאושרת סופית — נציג מהחנות יחזור אליכם בהקדם לאישור הפרטים ותיאום משלוח.",
+    "backHome": "חזרה לדף הבית",
+    "whatsapp": "שאלות? בוואטסאפ"
+  },
+  "admin": {
+    "login": {
+      "title": "כניסה לניהול",
+      "email": "אימייל",
+      "password": "סיסמה",
+      "submit": "כניסה",
+      "error": "פרטי כניסה שגויים"
+    },
+    "nav": {
+      "dashboard": "לוח בקרה",
+      "products": "מוצרים",
+      "orders": "הזמנות",
+      "signOut": "יציאה"
+    },
+    "dashboard": {
+      "title": "לוח בקרה",
+      "totalRevenue": "סה\"כ הכנסות",
+      "totalOrders": "סה\"כ הזמנות",
+      "totalProducts": "סה\"כ מוצרים",
+      "pendingOrders": "הזמנות ממתינות"
+    },
+    "products": {
+      "title": "מוצרים",
+      "new": "מוצר חדש",
+      "edit": "עריכה",
+      "delete": "מחק",
+      "deleteConfirm": "האם למחוק את המוצר?",
+      "name": "שם",
+      "price": "מחיר",
+      "category": "קטגוריה",
+      "inStock": "במלאי",
+      "featured": "מומלץ",
+      "noProducts": "אין מוצרים עדיין"
+    },
+    "orders": {
+      "title": "הזמנות",
+      "customer": "לקוח",
+      "phone": "טלפון",
+      "address": "כתובת",
+      "total": "סה\"כ",
+      "status": "סטטוס",
+      "date": "תאריך",
+      "notes": "הערות",
+      "statusValues": {
+        "pending": "ממתינה",
+        "confirmed": "מאושרת",
+        "cancelled": "בוטלה",
+        "delivered": "נמסרה"
+      }
+    },
+    "productForm": {
+      "nameLabel": "שם המוצר",
+      "descLabel": "תיאור",
+      "priceLabel": "מחיר (₪)",
+      "categoryLabel": "קטגוריה",
+      "noCategoryOption": "ללא קטגוריה",
+      "inStockLabel": "במלאי",
+      "featuredLabel": "מוצר מומלץ (מוצג בדף הבית)",
+      "imageLabel": "תמונה",
+      "uploadImage": "העלה תמונה",
+      "saving": "שומר...",
+      "save": "שמור מוצר"
+    }
+  }
+}

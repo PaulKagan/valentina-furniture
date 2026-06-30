@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartContext";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function CheckoutPage() {
   const { items, total, count, clear } = useCart();
   const router = useRouter();
+  const t = useTranslations("checkout");
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,51 +34,51 @@ export default function CheckoutPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("שגיאה בשליחת ההזמנה");
+      if (!res.ok) throw new Error(t("sendError"));
 
       const { id } = await res.json();
       clear();
       router.push(`/order-confirmed?id=${id}`);
     } catch {
-      setError("אירעה שגיאה. נסו שוב או פנו אלינו ישירות.");
+      setError(t("error"));
     } finally {
       setLoading(false);
     }
   }
 
+  const fields = [
+    { name: "name", label: t("nameLabel"), type: "text", placeholder: t("namePlaceholder"), required: true },
+    { name: "phone", label: t("phoneLabel"), type: "tel", placeholder: t("phonePlaceholder"), required: true },
+    { name: "address", label: t("addressLabel"), type: "text", placeholder: t("addressPlaceholder"), required: true },
+  ] as const;
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
-        פרטי הזמנה
+        {t("title")}
       </h1>
 
       {/* Order summary */}
       <div className="mb-8 p-4 rounded-xl border" style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}>
         <p className="text-sm font-semibold mb-3" style={{ color: "var(--ink)" }}>
-          סיכום הזמנה
+          {t("orderSummary")}
         </p>
         <ul className="flex flex-col gap-1 mb-3">
           {items.map((i) => (
             <li key={i.id} className="flex justify-between text-sm" style={{ color: "var(--muted)" }}>
-              <span>
-                {i.name} × {i.quantity}
-              </span>
-              <span>₪{(i.price * i.quantity).toLocaleString("he-IL")}</span>
+              <span>{i.name} × {i.quantity}</span>
+              <span>₪{(i.price * i.quantity).toLocaleString()}</span>
             </li>
           ))}
         </ul>
         <div className="flex justify-between font-bold border-t pt-3" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
-          <span>סה"כ</span>
-          <span>₪{total.toLocaleString("he-IL")}</span>
+          <span>{t("totalLabel")}</span>
+          <span>₪{total.toLocaleString()}</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {[
-          { name: "name", label: "שם מלא", type: "text", placeholder: "ישראל ישראלי", required: true },
-          { name: "phone", label: "טלפון", type: "tel", placeholder: "050-0000000", required: true },
-          { name: "address", label: "כתובת למשלוח", type: "text", placeholder: "רחוב, עיר", required: true },
-        ].map((field) => (
+        {fields.map((field) => (
           <div key={field.name} className="flex flex-col gap-1.5">
             <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
               {field.label}
@@ -85,7 +87,7 @@ export default function CheckoutPage() {
               type={field.type}
               placeholder={field.placeholder}
               required={field.required}
-              value={form[field.name as keyof typeof form]}
+              value={form[field.name]}
               onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
               className="h-11 px-4 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm"
               style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
@@ -95,11 +97,11 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
-            הערות (אופציונלי)
+            {t("notesLabel")}
           </label>
           <textarea
             rows={3}
-            placeholder="קומה, כניסה, שעות מועדפות..."
+            placeholder={t("notesPlaceholder")}
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             className="px-4 py-3 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm resize-none"
@@ -119,11 +121,11 @@ export default function CheckoutPage() {
           className="mt-2 py-4 rounded-xl font-bold text-base transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
         >
-          {loading ? "שולח הזמנה..." : "שלח הזמנה"}
+          {loading ? t("submitting") : t("submit")}
         </button>
 
         <p className="text-xs text-center" style={{ color: "var(--muted)" }}>
-          אין חיוב כרגע. נציג מהחנות יחזור אליכם לאישור פרטים.
+          {t("disclaimer")}
         </p>
       </form>
     </div>

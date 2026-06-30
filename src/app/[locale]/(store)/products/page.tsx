@@ -3,18 +3,21 @@ import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export default async function ProductsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ category?: string }>;
 }) {
+  const { locale } = await params;
   const { category } = await searchParams;
+  const t = await getTranslations({ locale, namespace: "products" });
 
   const allCategories = await db.select().from(categories);
-
   const activeCategory = allCategories.find((c) => c.slug === category);
-
   const productList = await db
     .select()
     .from(products)
@@ -23,7 +26,7 @@ export default async function ProductsPage({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
-        {activeCategory ? activeCategory.name : "כל המוצרים"}
+        {activeCategory ? activeCategory.name : t("title")}
       </h1>
 
       {/* Category filter */}
@@ -37,7 +40,7 @@ export default async function ProductsPage({
             backgroundColor: !category ? "oklch(0.974 0 0)" : "transparent",
           }}
         >
-          הכל
+          {t("filterAll")}
         </Link>
         {allCategories.map((cat) => (
           <Link
@@ -57,7 +60,7 @@ export default async function ProductsPage({
 
       {productList.length === 0 ? (
         <div className="text-center py-20" style={{ color: "var(--muted)" }}>
-          <p className="text-lg">לא נמצאו מוצרים בקטגוריה זו.</p>
+          <p className="text-lg">{t("noProducts")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

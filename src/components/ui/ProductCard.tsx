@@ -16,6 +16,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
+import { useTranslations } from "next-intl";
 import type { InferSelectModel } from "drizzle-orm";
 import type { products } from "@/db/schema";
 
@@ -29,6 +30,7 @@ export default function ProductCard({
   index?: number;
 }) {
   const { add } = useCart();
+  const t = useTranslations("products");
   const price = parseFloat(product.price);
 
   return (
@@ -79,7 +81,7 @@ export default function ProductCard({
               className="text-sm font-semibold px-3 py-1 rounded-full"
               style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}
             >
-              אזל מהמלאי
+              {t("outOfStock")}
             </span>
           </div>
         )}
@@ -115,10 +117,10 @@ export default function ProductCard({
               color: "var(--primary-fg)",
               transition: "opacity 150ms, transform 120ms cubic-bezier(0.23,1,0.32,1)",
             }}
-            aria-label={`הוסף ${product.name} לעגלה`}
+            aria-label={t("addAriaLabel", { name: product.name })}
           >
             <ShoppingCart size={14} aria-hidden="true" />
-            הוסף
+            {t("addToCart")}
           </button>
         </div>
       </div>

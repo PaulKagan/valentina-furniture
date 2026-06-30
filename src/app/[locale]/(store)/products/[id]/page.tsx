@@ -12,21 +12,25 @@ import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { productJsonLd } from "@/lib/jsonld";
+import { getTranslations } from "next-intl/server";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string; locale: string }> };
 
-// Generate per-product <title> and OG tags at request time
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
   const product = await db
     .select()
     .from(products)
     .where(eq(products.id, parseInt(id)))
     .then((r) => r[0]);
 
-  if (!product) return { title: "מוצר לא נמצא" };
+  if (!product) {
+    const t = await getTranslations({ locale, namespace: "productDetail" });
+    return { title: t("notFound") };
+  }
 
   return {
     title: product.name,
@@ -40,7 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "productDetail" });
+
   const product = await db
     .select()
     .from(products)
@@ -53,6 +59,14 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <Link
+        href="/products"
+        className="inline-block text-sm mb-8 hover:opacity-70 transition-opacity"
+        style={{ color: "var(--muted)" }}
+      >
+        {t("backToProducts")}
+      </Link>
+
       {/* Product structured data — Google shows price in search results */}
       <script
         type="application/ld+json"
@@ -70,7 +84,7 @@ export default async function ProductPage({ params }: Props) {
               src={product.imageUrl}
               alt={product.name}
               fill
-              priority // LCP image — load immediately
+              priority
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
@@ -89,7 +103,7 @@ export default async function ProductPage({ params }: Props) {
               {product.name}
             </h1>
             <p className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
-              ₪{price.toLocaleString("he-IL")}
+              ₪{price.toLocaleString()}
             </p>
           </div>
 
@@ -108,21 +122,9 @@ export default async function ProductPage({ params }: Props) {
               className="px-6 py-3 rounded-lg text-center font-semibold"
               style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}
             >
-              אזל מהמלאי — צרו קשר לבדיקת זמינות
+              {t("outOfStock")}
             </div>
           )}
-
-          {/* Reassurance points */}
-          <div
-            className="text-sm p-4 rounded-lg leading-7"
-            style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}
-          >
-            ✅ משלוח והרכבה עד הבית
-            <br />
-            ✅ אחריות יצרן
-            <br />
-            ✅ אפשרות להחזרה תוך 14 יום
-          </div>
         </div>
       </div>
     </div>

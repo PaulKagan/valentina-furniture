@@ -3,20 +3,20 @@
 import Link from "next/link";
 import { ShoppingCart, Phone, Menu, X } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
-
-const WHATSAPP = "972501234567"; // ponytail: replace with real number via env or CMS later
 
 export default function Header() {
   const { count } = useCart();
+  const t = useTranslations("header");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "/products", label: "כל המוצרים" },
-    { href: "/products?category=sofas", label: "ספות" },
-    { href: "/products?category=tables", label: "שולחנות" },
-    { href: "/products?category=bedroom", label: "חדר שינה" },
-    { href: "/products?category=storage", label: "אחסון" },
+    { href: "/products", label: t("nav.allProducts") },
+    { href: "/products?category=sofas", label: t("nav.sofas") },
+    { href: "/products?category=tables", label: t("nav.tables") },
+    { href: "/products?category=bedroom", label: t("nav.bedroom") },
+    { href: "/products?category=storage", label: t("nav.storage") },
   ];
 
   return (
@@ -30,11 +30,11 @@ export default function Header() {
         style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
       >
         <a
-          href={`https://wa.me/${WHATSAPP}`}
+          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP ?? "972501234567"}`}
           className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
         >
           <Phone size={14} />
-          <span>לייעוץ חינם — שלחו הודעה בוואטסאפ</span>
+          <span>{t("whatsappCta")}</span>
         </a>
       </div>
 
@@ -48,7 +48,7 @@ export default function Header() {
             ולנטינה
           </span>
           <span className="block text-xs" style={{ color: "var(--muted)" }}>
-            בן עמי ריהוט
+            {t("logoSub")}
           </span>
         </Link>
 
@@ -71,7 +71,7 @@ export default function Header() {
           <Link
             href="/cart"
             className="relative p-2 rounded-lg transition-colors hover:bg-[oklch(0.974_0_0)]"
-            aria-label={`עגלת קניות — ${count} פריטים`}
+            aria-label={t("cartLabel", { count })}
           >
             <ShoppingCart size={22} style={{ color: "var(--ink)" }} />
             {count > 0 && (
@@ -88,7 +88,7 @@ export default function Header() {
           <button
             className="md:hidden p-2 rounded-lg"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="תפריט"
+            aria-label={t("menuLabel")}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
