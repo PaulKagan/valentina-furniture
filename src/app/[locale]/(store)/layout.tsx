@@ -6,6 +6,7 @@
  */
 import Header, { type NavCategory } from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AccessibilityWidget from "@/components/layout/AccessibilityWidget";
 import { getActiveCategories, buildTree, localizedName } from "@/lib/catalog";
 
 // Nav depends on live category data (visibility windows) — never prerender stale
@@ -34,6 +35,7 @@ export default async function StoreLayout({
       <Header navCategories={navCategories} />
       <main className="flex-1">{children}</main>
       <Footer />
+      <AccessibilityWidget />
     </>
   );
 }

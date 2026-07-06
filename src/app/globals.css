@@ -135,3 +135,46 @@
   transform: scale(0.97);
   transition: transform 120ms var(--ease-out);
 }
+
+/* ────────────────────────────────────────────────────────────
+   Accessibility widget modes (IS 5568 / WCAG 2.0 AA)
+   Classes are toggled on <html> by AccessibilityWidget.tsx.
+   ──────────────────────────────────────────────────────────── */
+/* Filters go on body's children, NOT body itself — a filter on body
+   turns it into the containing block for position:fixed, which would
+   scroll the widget button (and any fixed UI) off screen. */
+.a11y-contrast body > *:not([data-a11y-widget]) {
+  filter: contrast(1.25);
+}
+
+.a11y-grayscale body > *:not([data-a11y-widget]) {
+  filter: grayscale(1);
+}
+
+.a11y-contrast.a11y-grayscale body > *:not([data-a11y-widget]) {
+  filter: contrast(1.25) grayscale(1);
+}
+
+.a11y-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+.a11y-readable body,
+.a11y-readable * {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.a11y-no-motion *,
+.a11y-no-motion *::before,
+.a11y-no-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Visible focus ring everywhere — keyboard users must see where they are */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

@@ -63,6 +63,7 @@ export default async function Footer() {
             {[
               { href: "/products", label: t("nav.products") },
               { href: "/cart", label: t("nav.cart") },
+              { href: "/accessibility", label: t("nav.accessibility") },
             ].map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="hover:text-[oklch(0.52_0.14_32)] transition-colors">

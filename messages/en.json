@@ -24,7 +24,8 @@
     "nav": {
       "products": "Products",
       "cart": "Cart",
-      "contact": "Contact"
+      "contact": "Contact",
+      "accessibility": "Accessibility statement"
     }
   },
   "home": {
@@ -234,6 +235,36 @@
       "cancel": "Cancel",
       "langFallbackHint": "Optional — if empty, the Hebrew text is shown.",
       "uploading": "Uploading image..."
+    }
+  },
+  "a11y": {
+    "openLabel": "Open accessibility menu",
+    "title": "Accessibility",
+    "close": "Close",
+    "fontSize": "Text size",
+    "fontSmaller": "Decrease text",
+    "fontBigger": "Increase text",
+    "contrast": "High contrast",
+    "grayscale": "Grayscale",
+    "links": "Highlight links",
+    "readableFont": "Readable font",
+    "noMotion": "Stop animations",
+    "reset": "Reset settings",
+    "statementLink": "Accessibility statement",
+    "statement": {
+      "title": "Accessibility Statement",
+      "intro": "The Valentina Ben Ami Furniture website is committed to providing equal, accessible service to all customers, in accordance with the Israeli Equal Rights for Persons with Disabilities regulations (2013) and Israeli Standard 5568 at level AA.",
+      "featuresTitle": "Accessibility features on this site",
+      "features": {
+        "f1": "Floating accessibility menu: text enlargement, high contrast, grayscale, link highlighting, readable font and stopping animations",
+        "f2": "Full keyboard navigation with a clear focus indicator",
+        "f3": "Image descriptions (alt) and ARIA labels on interactive elements",
+        "f4": "Proper heading structure and standard-compliant color contrast",
+        "f5": "Respects the user's reduced-motion preference (prefers-reduced-motion)"
+      },
+      "contactTitle": "Accessibility inquiries",
+      "contactText": "Found an accessibility issue? We'd love to fix it. Contact our accessibility coordinator by phone:",
+      "updated": "Statement last updated: July 2026"
     }
   }
 }
