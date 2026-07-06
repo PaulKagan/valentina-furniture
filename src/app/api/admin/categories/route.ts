@@ -1,0 +1,162 @@
+/**
+ * /api/admin/categories — CRUD for the category tree.
+ *
+ * All verbs check the session first (security-review: auth before any DB op).
+ * Input is validated field-by-field — the client is the admin UI, but we
+ * never trust the payload shape (security-review: server-side validation).
+ *
+ * Guards beyond plain CRUD:
+ *   - slug: normalized, unique (409 on conflict)
+ *   - parentId: must exist, and must not create a cycle (400)
+ *   - DELETE: children get re-parented to the deleted node's parent, and
+ *     products in the category are set to "no category" — nothing orphans.
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { categories, products } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { wouldCreateCycle } from "@/lib/catalog";
+import { deleteImage } from "@/lib/cloudinary";
+
+async function requireAdmin() {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return null;
+}
+
+/** Normalize a slug: lowercase, spaces→dashes, strip anything not url-safe. */
+function normalizeSlug(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9֐-׿Ѐ-ӿ-]/g, "") // allow hebrew/cyrillic slugs
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Validate + coerce a category payload. Returns {data} or {error}. */
+function parseCategoryBody(body: Record<string, unknown>) {
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  if (!name) return { error: "Name is required" };
+
+  const slug = normalizeSlug(typeof body.slug === "string" && body.slug ? body.slug : name);
+  if (!slug) return { error: "Slug is required" };
+
+  const toDate = (v: unknown): Date | null => {
+    if (!v || typeof v !== "string") return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const startsAt = toDate(body.startsAt);
+  const endsAt = toDate(body.endsAt);
+  if (startsAt && endsAt && endsAt < startsAt) return { error: "End date is before start date" };
+
+  return {
+    data: {
+      name,
+      nameEn: typeof body.nameEn === "string" && body.nameEn.trim() ? body.nameEn.trim() : null,
+      nameRu: typeof body.nameRu === "string" && body.nameRu.trim() ? body.nameRu.trim() : null,
+      slug,
+      parentId: typeof body.parentId === "number" ? body.parentId : null,
+      visible: body.visible !== false,
+      startsAt,
+      endsAt,
+      promoted: body.promoted === true,
+      sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
+      imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
+      imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
+    },
+  };
+}
+
+export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  try {
+    const all = await db.select().from(categories);
+    return NextResponse.json(all);
+  } catch (err) {
+    console.error("[admin/categories GET]", err);
+    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  try {
+    const parsed = parseCategoryBody(await req.json());
+    if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+    const all = await db.select().from(categories);
+    if (all.some((c) => c.slug === parsed.data.slug))
+      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+    if (parsed.data.parentId != null && !all.some((c) => c.id === parsed.data.parentId))
+      return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+
+    const [created] = await db.insert(categories).values(parsed.data).returning();
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    console.error("[admin/categories POST]", err);
+    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  try {
+    const body = await req.json();
+    const id = typeof body.id === "number" ? body.id : null;
+    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+    const parsed = parseCategoryBody(body);
+    if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+    const all = await db.select().from(categories);
+    if (!all.some((c) => c.id === id))
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    if (all.some((c) => c.slug === parsed.data.slug && c.id !== id))
+      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+    if (parsed.data.parentId != null && !all.some((c) => c.id === parsed.data.parentId))
+      return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+    if (wouldCreateCycle(id, parsed.data.parentId, all))
+      return NextResponse.json({ error: "Invalid parent — would create a cycle" }, { status: 400 });
+
+    const [updated] = await db.update(categories).set(parsed.data).where(eq(categories.id, id)).returning();
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("[admin/categories PUT]", err);
+    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  try {
+    const { id } = await req.json();
+    if (typeof id !== "number") return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+    const [target] = await db.select().from(categories).where(eq(categories.id, id));
+    if (!target) return NextResponse.json({ error: "Category not found" }, { status: 404 });
+
+    // Re-parent children to the deleted node's parent, detach products
+    await db.update(categories).set({ parentId: target.parentId }).where(eq(categories.parentId, id));
+    await db.update(products).set({ categoryId: null }).where(eq(products.categoryId, id));
+    await db.delete(categories).where(eq(categories.id, id));
+
+    // Clean up the tile image on Cloudinary (best-effort)
+    if (target.imagePublicId) {
+      deleteImage(target.imagePublicId).catch(() => {});
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/categories DELETE]", err);
+    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+  }
+}

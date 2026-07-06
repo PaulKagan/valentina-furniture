@@ -1,35 +1,57 @@
 /**
  * Auto-generated sitemap — submitted to Google via robots.txt.
- * Includes all public pages + every product page.
- * Product pages are the highest priority: Google needs to index them
- * so customers can find specific products via search.
+ * Every public page in all three languages (he at root, /en, /ru),
+ * including active category listings and every product page.
+ * Each entry carries hreflang alternates so Google serves the right
+ * language to the right searcher.
  */
 import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { products } from "@/db/schema";
+import { getActiveCategories } from "@/lib/catalog";
+
+const LOCALE_PREFIX: Record<string, string> = { he: "", en: "/en", ru: "/ru" };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-  // Static store pages
-  const staticRoutes: MetadataRoute.Sitemap = [
-    { url: base, priority: 1.0, changeFrequency: "weekly" },
-    { url: `${base}/products`, priority: 0.9, changeFrequency: "daily" },
+  /** One sitemap entry per locale for a path, with hreflang alternates. */
+  const localized = (
+    path: string,
+    opts: { priority: number; changeFrequency: "daily" | "weekly"; lastModified?: Date }
+  ): MetadataRoute.Sitemap => {
+    const languages = Object.fromEntries(
+      Object.entries(LOCALE_PREFIX).map(([loc, prefix]) => [loc, `${base}${prefix}${path}`])
+    );
+    return Object.values(LOCALE_PREFIX).map((prefix) => ({
+      url: `${base}${prefix}${path}`,
+      alternates: { languages },
+      ...opts,
+    }));
+  };
+
+  const routes: MetadataRoute.Sitemap = [
+    ...localized("", { priority: 1.0, changeFrequency: "weekly" }),
+    ...localized("/products", { priority: 0.9, changeFrequency: "daily" }),
   ];
 
-  // One entry per product so Google can deep-link to individual items
-  let productRoutes: MetadataRoute.Sitemap = [];
   try {
+    // Active category listings — hidden/expired categories stay out of the index
+    const cats = await getActiveCategories();
+    for (const c of cats) {
+      routes.push(...localized(`/products?category=${c.slug}`, { priority: 0.7, changeFrequency: "daily" }));
+    }
+
+    // One entry per product so Google can deep-link to individual items
     const allProducts = await db.select({ id: products.id, updatedAt: products.createdAt }).from(products);
-    productRoutes = allProducts.map((p) => ({
-      url: `${base}/products/${p.id}`,
-      lastModified: p.updatedAt,
-      priority: 0.8,
-      changeFrequency: "weekly" as const,
-    }));
+    for (const p of allProducts) {
+      routes.push(
+        ...localized(`/products/${p.id}`, { priority: 0.8, changeFrequency: "weekly", lastModified: p.updatedAt })
+      );
+    }
   } catch {
-    // DB unavailable during build — skip product routes, static routes still ship
+    // DB unavailable during build — static routes still ship
   }
 
-  return [...staticRoutes, ...productRoutes];
+  return routes;
 }

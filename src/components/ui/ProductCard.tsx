@@ -2,7 +2,9 @@
  * ProductCard — reusable grid tile for a single product.
  *
  * Used on the homepage (featured grid) and the product listing page.
- * Handles: image, name, price, add-to-cart, out-of-stock overlay.
+ * Handles: image (uniform 4:3 Cloudinary crop), localized name, price,
+ * add-to-cart, out-of-stock overlay, and a sale badge when the product's
+ * category branch is promoted.
  *
  * Animation (Emil Kowalski):
  *   - fade-up entrance with staggered delay via CSS custom property --delay
@@ -13,10 +15,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localizedName } from "@/lib/i18n-fields";
+import { imageUrl } from "@/lib/images";
 import type { InferSelectModel } from "drizzle-orm";
 import type { products } from "@/db/schema";
 
@@ -25,13 +29,19 @@ type Product = InferSelectModel<typeof products>;
 export default function ProductCard({
   product,
   index = 0,
+  onSale = false,
 }: {
   product: Product;
   index?: number;
+  /** true when the product belongs to a promoted category branch */
+  onSale?: boolean;
 }) {
   const { add } = useCart();
   const t = useTranslations("products");
+  const locale = useLocale();
   const price = parseFloat(product.price);
+  const name = localizedName(product, locale);
+  const img = imageUrl(product.imageUrl, "card");
 
   return (
     <article
@@ -55,16 +65,16 @@ export default function ProductCard({
         (e.currentTarget as HTMLElement).style.boxShadow = "";
       }}
     >
-      {/* Product image — 4:3 ratio keeps the grid uniform regardless of photo dimensions */}
+      {/* Product image — c_fill,ar_4:3 Cloudinary crop keeps every card identical */}
       <Link
         href={`/products/${product.id}`}
         className="block aspect-[4/3] relative overflow-hidden"
         style={{ backgroundColor: "var(--surface)" }}
       >
-        {product.imageUrl ? (
+        {img ? (
           <Image
-            src={product.imageUrl}
-            alt={product.name}
+            src={img}
+            alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover transition-transform duration-300"
@@ -72,6 +82,16 @@ export default function ProductCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">🪑</div>
+        )}
+
+        {/* Sale badge — the product's category branch is promoted */}
+        {onSale && product.inStock && (
+          <span
+            className="absolute top-2 start-2 text-xs font-bold px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+          >
+            {t("saleBadge")}
+          </span>
         )}
 
         {/* Out-of-stock overlay — shown on top of the image */}
@@ -93,7 +113,7 @@ export default function ProductCard({
             className="font-semibold leading-snug"
             style={{ color: "var(--ink)" }}
           >
-            {product.name}
+            {name}
           </h3>
         </Link>
 
@@ -108,7 +128,7 @@ export default function ProductCard({
           {/* Add to cart — scale(0.97) on active gives tactile press feedback (Emil) */}
           <button
             onClick={() =>
-              add({ id: product.id, name: product.name, price, imageUrl: product.imageUrl })
+              add({ id: product.id, name, price, imageUrl: product.imageUrl })
             }
             disabled={!product.inStock}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97]"
@@ -117,7 +137,7 @@ export default function ProductCard({
               color: "var(--primary-fg)",
               transition: "opacity 150ms, transform 120ms cubic-bezier(0.23,1,0.32,1)",
             }}
-            aria-label={t("addAriaLabel", { name: product.name })}
+            aria-label={t("addAriaLabel", { name })}
           >
             <ShoppingCart size={14} aria-hidden="true" />
             {t("addToCart")}

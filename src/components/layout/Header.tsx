@@ -1,22 +1,28 @@
 "use client";
 
-import Link from "next/link";
+/**
+ * Header — sticky top navigation.
+ * Nav links come from the DB (active categories, promoted pinned first),
+ * computed server-side in the store layout and passed in as props.
+ * Includes the cart button, mobile menu, and language switcher.
+ */
+import { Link } from "@/i18n/navigation";
 import { ShoppingCart, Phone, Menu, X } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
 
-export default function Header() {
+export type NavCategory = { href: string; label: string; promoted: boolean };
+
+export default function Header({ navCategories }: { navCategories: NavCategory[] }) {
   const { count } = useCart();
   const t = useTranslations("header");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "/products", label: t("nav.allProducts") },
-    { href: "/products?category=sofas", label: t("nav.sofas") },
-    { href: "/products?category=tables", label: t("nav.tables") },
-    { href: "/products?category=bedroom", label: t("nav.bedroom") },
-    { href: "/products?category=storage", label: t("nav.storage") },
+    { href: "/products", label: t("nav.allProducts"), promoted: false },
+    ...navCategories,
   ];
 
   return (
@@ -59,8 +65,9 @@ export default function Header() {
               key={l.href}
               href={l.href}
               className="text-sm font-medium transition-colors hover:text-[oklch(0.52_0.14_32)]"
-              style={{ color: "var(--ink)" }}
+              style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
             >
+              {l.promoted && <span aria-hidden="true">🔥 </span>}
               {l.label}
             </Link>
           ))}
@@ -68,6 +75,11 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          {/* useSearchParams inside the switcher needs a Suspense boundary */}
+          <Suspense fallback={null}>
+            <LocaleSwitcher />
+          </Suspense>
+
           <Link
             href="/cart"
             className="relative p-2 rounded-lg transition-colors hover:bg-[oklch(0.974_0_0)]"
@@ -89,6 +101,7 @@ export default function Header() {
             className="md:hidden p-2 rounded-lg"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={t("menuLabel")}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -106,9 +119,10 @@ export default function Header() {
               key={l.href}
               href={l.href}
               className="text-base font-medium py-2"
-              style={{ color: "var(--ink)" }}
+              style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
               onClick={() => setMenuOpen(false)}
             >
+              {l.promoted && <span aria-hidden="true">🔥 </span>}
               {l.label}
             </Link>
           ))}

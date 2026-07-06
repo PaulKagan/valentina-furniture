@@ -12,18 +12,14 @@
     "cartLabel": "Shopping cart — {count} items",
     "menuLabel": "Menu",
     "nav": {
-      "allProducts": "All Products",
-      "sofas": "Sofas",
-      "tables": "Tables",
-      "bedroom": "Bedroom",
-      "storage": "Storage"
+      "allProducts": "All Products"
     }
   },
   "footer": {
-    "hours": "Opening Hours",
+    "tagline": "Quality home furniture — we sell not just furniture, but the feeling of home.",
+    "contactTitle": "Contact us",
+    "navTitle": "Navigation",
     "hoursValue": "Sun–Thu 10:00–19:00, Fri 10:00–14:00",
-    "address": "Address",
-    "phone": "Phone",
     "copyright": "© {year} Valentina Ben Ami Furniture. All rights reserved.",
     "nav": {
       "products": "Products",
@@ -52,11 +48,15 @@
       "serviceValue": "From selection to assembly",
       "warranty": "Warranty",
       "warrantyValue": "On all products"
-    }
+    },
+    "promotedBadge": "Hot deal"
   },
   "products": {
     "title": "All Products",
     "filterAll": "All",
+    "saleBadge": "🔥 Sale",
+    "subcategoriesLabel": "Subcategories",
+    "breadcrumbHome": "Home",
     "noProducts": "No products found in this category.",
     "outOfStock": "Out of stock",
     "addToCart": "Add",
@@ -121,16 +121,67 @@
     },
     "nav": {
       "dashboard": "Dashboard",
+      "categories": "Categories",
       "products": "Products",
       "orders": "Orders",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "backToStore": "To store"
+    },
+    "categories": {
+      "title": "Categories",
+      "subtitle": "Manage the category tree — order, subcategories, temporary categories, and promotion.",
+      "new": "New category",
+      "newTitle": "New category",
+      "editTitle": "Edit category",
+      "empty": "No categories yet. Create the first one!",
+      "nameHe": "Name in Hebrew",
+      "nameEn": "Name in English",
+      "nameRu": "Name in Russian",
+      "slug": "URL (slug)",
+      "slugHint": "Generated from the name automatically",
+      "parent": "Parent category",
+      "noParent": "— Top-level category —",
+      "visibleLabel": "Visible in store",
+      "promotedLabel": "Promoted category",
+      "promotedHint": "Shown on the homepage, first in the menu, with a sale badge on its products.",
+      "scheduleLegend": "Temporary category",
+      "scheduleHint": "Optional — the category only appears between these dates (e.g. a holiday sale).",
+      "startsAt": "From",
+      "endsAt": "Until",
+      "tileImage": "Category image",
+      "uploading": "Uploading image...",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete \"{name}\"? Subcategories move up a level and products stay without a category.",
+      "addChild": "Add subcategory",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "badgePromoted": "Promoted",
+      "badgeHidden": "Hidden",
+      "badgeScheduled": "Scheduled",
+      "badgeExpired": "Expired",
+      "badgeTemporary": "Temporary",
+      "errorSave": "Error saving.",
+      "errorSlug": "This slug already exists."
     },
     "dashboard": {
-      "title": "Dashboard",
+      "title": "Overview",
       "totalRevenue": "Total Revenue",
       "totalOrders": "Total Orders",
       "totalProducts": "Total Products",
-      "pendingOrders": "Pending Orders"
+      "pendingOrders": "Pending Orders",
+      "recentOrders": "Recent orders",
+      "customer": "Customer",
+      "phone": "Phone",
+      "total": "Total",
+      "status": "Status",
+      "date": "Date",
+      "noOrders": "No orders yet"
     },
     "products": {
       "title": "Products",
@@ -143,7 +194,10 @@
       "category": "Category",
       "inStock": "In stock",
       "featured": "Featured",
-      "noProducts": "No products yet"
+      "noProducts": "No products yet",
+      "image": "Image",
+      "actions": "Actions",
+      "editTitle": "Edit product"
     },
     "orders": {
       "title": "Orders",
@@ -159,7 +213,9 @@
         "confirmed": "Confirmed",
         "cancelled": "Cancelled",
         "delivered": "Delivered"
-      }
+      },
+      "items": "Items",
+      "noOrders": "No orders yet"
     },
     "productForm": {
       "nameLabel": "Product name",
@@ -172,7 +228,12 @@
       "imageLabel": "Image",
       "uploadImage": "Upload image",
       "saving": "Saving...",
-      "save": "Save product"
+      "save": "Save product",
+      "uploadError": "Image upload failed",
+      "saveError": "Error saving.",
+      "cancel": "Cancel",
+      "langFallbackHint": "Optional — if empty, the Hebrew text is shown.",
+      "uploading": "Uploading image..."
     }
   }
 }

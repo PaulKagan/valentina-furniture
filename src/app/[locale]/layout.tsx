@@ -9,6 +9,7 @@
  *
  * All store and admin routes nest under this layout.
  */
+import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -32,6 +33,11 @@ const playfair = Playfair_Display({
 
 // Only Hebrew is RTL; English and Russian are LTR
 const RTL_LOCALES: Locale[] = ["he"];
+
+// metadataBase makes relative OG image / canonical URLs resolve to the real domain
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

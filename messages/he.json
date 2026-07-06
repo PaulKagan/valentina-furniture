@@ -12,18 +12,14 @@
     "cartLabel": "עגלת קניות — {count} פריטים",
     "menuLabel": "תפריט",
     "nav": {
-      "allProducts": "כל המוצרים",
-      "sofas": "ספות",
-      "tables": "שולחנות",
-      "bedroom": "חדר שינה",
-      "storage": "אחסון"
+      "allProducts": "כל המוצרים"
     }
   },
   "footer": {
-    "hours": "שעות פעילות",
+    "tagline": "ריהוט איכותי לבית — נמכור לכם לא רק רהיטים, אלא תחושת בית.",
+    "contactTitle": "צרו קשר",
+    "navTitle": "ניווט",
     "hoursValue": "א׳–ה׳ 10:00–19:00, ו׳ 10:00–14:00",
-    "address": "כתובת",
-    "phone": "טלפון",
     "copyright": "© {year} ולנטינה בן עמי ריהוט. כל הזכויות שמורות.",
     "nav": {
       "products": "מוצרים",
@@ -52,11 +48,15 @@
       "serviceValue": "מהבחירה ועד הרכבה",
       "warranty": "אחריות",
       "warrantyValue": "על כל המוצרים"
-    }
+    },
+    "promotedBadge": "מבצע חם"
   },
   "products": {
     "title": "כל המוצרים",
     "filterAll": "הכל",
+    "saleBadge": "🔥 מבצע",
+    "subcategoriesLabel": "תת-קטגוריות",
+    "breadcrumbHome": "ראשי",
     "noProducts": "לא נמצאו מוצרים בקטגוריה זו.",
     "outOfStock": "אזל מהמלאי",
     "addToCart": "הוסף",
@@ -121,16 +121,67 @@
     },
     "nav": {
       "dashboard": "לוח בקרה",
+      "categories": "קטגוריות",
       "products": "מוצרים",
       "orders": "הזמנות",
-      "signOut": "יציאה"
+      "signOut": "יציאה",
+      "backToStore": "לחנות"
+    },
+    "categories": {
+      "title": "קטגוריות",
+      "subtitle": "ניהול עץ הקטגוריות — סדר, תת-קטגוריות, קטגוריות זמניות וקידום.",
+      "new": "קטגוריה חדשה",
+      "newTitle": "קטגוריה חדשה",
+      "editTitle": "עריכת קטגוריה",
+      "empty": "אין קטגוריות עדיין. צרו את הראשונה!",
+      "nameHe": "שם בעברית",
+      "nameEn": "שם באנגלית",
+      "nameRu": "שם ברוסית",
+      "slug": "כתובת (slug)",
+      "slugHint": "יווצר אוטומטית מהשם",
+      "parent": "קטגוריית אב",
+      "noParent": "— קטגוריה ראשית —",
+      "visibleLabel": "מוצגת בחנות",
+      "promotedLabel": "קטגוריה מקודמת",
+      "promotedHint": "מוצגת בדף הבית, ראשונה בתפריט, ועם תג מבצע על המוצרים.",
+      "scheduleLegend": "קטגוריה זמנית",
+      "scheduleHint": "אופציונלי — הקטגוריה תופיע רק בין התאריכים (למשל מבצע חג).",
+      "startsAt": "מתאריך",
+      "endsAt": "עד תאריך",
+      "tileImage": "תמונת קטגוריה",
+      "uploading": "מעלה תמונה...",
+      "save": "שמור",
+      "saving": "שומר...",
+      "cancel": "ביטול",
+      "edit": "עריכה",
+      "delete": "מחיקה",
+      "deleteConfirm": "למחוק את \"{name}\"? תת-קטגוריות יעלו רמה ומוצרים יישארו ללא קטגוריה.",
+      "addChild": "הוסף תת-קטגוריה",
+      "moveUp": "העבר למעלה",
+      "moveDown": "העבר למטה",
+      "expand": "הרחב",
+      "collapse": "כווץ",
+      "badgePromoted": "מקודמת",
+      "badgeHidden": "מוסתרת",
+      "badgeScheduled": "מתוזמנת",
+      "badgeExpired": "פגה",
+      "badgeTemporary": "זמנית",
+      "errorSave": "שגיאה בשמירה.",
+      "errorSlug": "הכתובת (slug) כבר קיימת."
     },
     "dashboard": {
-      "title": "לוח בקרה",
+      "title": "סקירה כללית",
       "totalRevenue": "סה\"כ הכנסות",
       "totalOrders": "סה\"כ הזמנות",
       "totalProducts": "סה\"כ מוצרים",
-      "pendingOrders": "הזמנות ממתינות"
+      "pendingOrders": "הזמנות ממתינות",
+      "recentOrders": "הזמנות אחרונות",
+      "customer": "לקוח",
+      "phone": "טלפון",
+      "total": "סה\"כ",
+      "status": "סטטוס",
+      "date": "תאריך",
+      "noOrders": "אין הזמנות עדיין"
     },
     "products": {
       "title": "מוצרים",
@@ -143,7 +194,10 @@
       "category": "קטגוריה",
       "inStock": "במלאי",
       "featured": "מומלץ",
-      "noProducts": "אין מוצרים עדיין"
+      "noProducts": "אין מוצרים עדיין",
+      "image": "תמונה",
+      "actions": "פעולות",
+      "editTitle": "עריכת מוצר"
     },
     "orders": {
       "title": "הזמנות",
@@ -159,7 +213,9 @@
         "confirmed": "מאושרת",
         "cancelled": "בוטלה",
         "delivered": "נמסרה"
-      }
+      },
+      "items": "פריטים",
+      "noOrders": "אין הזמנות עדיין"
     },
     "productForm": {
       "nameLabel": "שם המוצר",
@@ -172,7 +228,12 @@
       "imageLabel": "תמונה",
       "uploadImage": "העלה תמונה",
       "saving": "שומר...",
-      "save": "שמור מוצר"
+      "save": "שמור מוצר",
+      "uploadError": "שגיאה בהעלאת התמונה",
+      "saveError": "שגיאה בשמירה.",
+      "cancel": "ביטול",
+      "langFallbackHint": "אופציונלי — אם ריק, יוצג הטקסט בעברית.",
+      "uploading": "מעלה תמונה..."
     }
   }
 }

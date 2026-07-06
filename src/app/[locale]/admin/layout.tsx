@@ -4,7 +4,7 @@
  * passes through without the sidebar — avoids redundant auth checks).
  * Translations come from next-intl server side (getTranslations).
  */
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import AdminSignOut from "@/components/admin/AdminSignOut";
@@ -35,6 +35,7 @@ export default async function AdminLayout({
         </p>
         {[
           { href: "/admin/dashboard", label: t("dashboard") },
+          { href: "/admin/categories", label: t("categories") },
           { href: "/admin/products", label: t("products") },
           { href: "/admin/orders", label: t("orders") },
         ].map((l) => (
@@ -49,7 +50,7 @@ export default async function AdminLayout({
         ))}
         <div className="mt-auto pt-4 border-t" style={{ borderColor: "var(--border)" }}>
           <Link href="/" className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }}>
-            ← לחנות
+            ← {t("backToStore")}
           </Link>
           <AdminSignOut />
         </div>

@@ -1,7 +1,17 @@
-import Link from "next/link";
+/**
+ * Footer — brand blurb, contact details, quick links.
+ * Contact info comes from env (NEXT_PUBLIC_PHONE / NEXT_PUBLIC_ADDRESS)
+ * so Valentina's real details are set at deploy time, not hardcoded.
+ */
+import { Link } from "@/i18n/navigation";
 import { Phone, MapPin, Clock } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export default function Footer() {
+export default async function Footer() {
+  const t = await getTranslations("footer");
+  const phone = process.env.NEXT_PUBLIC_PHONE ?? "050-123-4567";
+  const address = process.env.NEXT_PUBLIC_ADDRESS ?? "רחוב הרצל 1, תל אביב";
+
   return (
     <footer
       className="mt-16 border-t pt-12 pb-8"
@@ -17,29 +27,29 @@ export default function Footer() {
             ולנטינה בן עמי
           </p>
           <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            ריהוט איכותי לבית — נמכור לכם לא רק רהיטים, אלא תחושת בית.
+            {t("tagline")}
           </p>
         </div>
 
         {/* Contact */}
         <div>
           <p className="font-semibold mb-4" style={{ color: "var(--ink)" }}>
-            צרו קשר
+            {t("contactTitle")}
           </p>
           <ul className="space-y-2 text-sm" style={{ color: "var(--muted)" }}>
             <li className="flex items-center gap-2">
               <Phone size={15} style={{ color: "var(--primary)" }} />
-              <a href="tel:+972501234567" className="hover:text-[oklch(0.52_0.14_32)]">
-                050-123-4567
+              <a href={`tel:${phone.replace(/[^+\d]/g, "")}`} className="hover:text-[oklch(0.52_0.14_32)]" dir="ltr">
+                {phone}
               </a>
             </li>
             <li className="flex items-start gap-2">
               <MapPin size={15} className="mt-0.5 flex-shrink-0" style={{ color: "var(--primary)" }} />
-              <span>רחוב הרצל 1, תל אביב</span>
+              <span>{address}</span>
             </li>
             <li className="flex items-start gap-2">
               <Clock size={15} className="mt-0.5 flex-shrink-0" style={{ color: "var(--primary)" }} />
-              <span>ראשון–חמישי 09:00–19:00 | שישי 09:00–14:00</span>
+              <span>{t("hoursValue")}</span>
             </li>
           </ul>
         </div>
@@ -47,12 +57,12 @@ export default function Footer() {
         {/* Links */}
         <div>
           <p className="font-semibold mb-4" style={{ color: "var(--ink)" }}>
-            ניווט
+            {t("navTitle")}
           </p>
           <ul className="space-y-2 text-sm" style={{ color: "var(--muted)" }}>
             {[
-              { href: "/products", label: "כל המוצרים" },
-              { href: "/cart", label: "עגלת קניות" },
+              { href: "/products", label: t("nav.products") },
+              { href: "/cart", label: t("nav.cart") },
             ].map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="hover:text-[oklch(0.52_0.14_32)] transition-colors">
@@ -68,7 +78,7 @@ export default function Footer() {
         className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 border-t text-center text-xs"
         style={{ borderColor: "var(--border)", color: "var(--muted)" }}
       >
-        © {new Date().getFullYear()} ולנטינה בן עמי ריהוט. כל הזכויות שמורות.
+        {t("copyright", { year: new Date().getFullYear() })}
       </div>
     </footer>
   );

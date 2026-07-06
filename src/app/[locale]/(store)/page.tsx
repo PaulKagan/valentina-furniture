@@ -1,18 +1,24 @@
 /**
  * Homepage — the storefront's entry point.
  *
- * Sections: Hero → Categories → Featured products → Trust strip.
- * Strings come from next-intl so this page renders in Hebrew, English, or Russian.
+ * Sections: Hero → Promoted category banners → Categories → Featured → Trust strip.
+ * Promoted categories get large image tiles right under the hero; the rest
+ * show in the compact category grid. Strings come from next-intl.
  * SEO: LocalBusiness JSON-LD embedded for Google rich results.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { db } from "@/db";
-import { products, categories } from "@/db/schema";
+import { products } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import { localBusinessJsonLd } from "@/lib/jsonld";
+import { getActiveCategories, buildTree, localizedName, descendantIds } from "@/lib/catalog";
+import { imageUrl } from "@/lib/images";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -21,10 +27,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
+  const prefix: Record<string, string> = { he: "", en: "/en", ru: "/ru" };
   return {
     title: t("homeTitle"),
     description: t("homeDescription"),
     openGraph: { locale },
+    // hreflang alternates — Google serves the right language per searcher
+    alternates: {
+      canonical: prefix[locale] || "/",
+      languages: { he: "/", en: "/en", ru: "/ru", "x-default": "/" },
+    },
   };
 }
 
@@ -41,22 +53,6 @@ async function getFeaturedProducts() {
   }
 }
 
-async function getCategories() {
-  try {
-    return await db.select().from(categories);
-  } catch {
-    return [];
-  }
-}
-
-// Emoji stand-ins until the store has real category images
-const CATEGORY_ICONS: Record<string, string> = {
-  sofas: "🛋️",
-  tables: "🪑",
-  bedroom: "🛏️",
-  storage: "🗄️",
-};
-
 export default async function HomePage({
   params,
 }: {
@@ -65,10 +61,26 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "home" });
 
-  const [featuredProducts, allCategories] = await Promise.all([
+  const [allFeatured, activeCategories] = await Promise.all([
     getFeaturedProducts(),
-    getCategories(),
+    getActiveCategories(),
   ]);
+
+  // Hide featured products whose category is hidden/expired
+  const activeIds = new Set(activeCategories.map((c) => c.id));
+  const featuredProducts = allFeatured.filter(
+    (p) => p.categoryId == null || activeIds.has(p.categoryId)
+  );
+
+  const roots = buildTree(activeCategories);
+  const promoted = roots.filter((c) => c.promoted);
+  const regular = roots.filter((c) => !c.promoted);
+
+  // Sale badge on featured cards when their category branch is promoted
+  const promotedBranchIds = new Set<number>();
+  for (const c of activeCategories) {
+    if (c.promoted) for (const id of descendantIds(c.id, activeCategories)) promotedBranchIds.add(id);
+  }
 
   return (
     <>
@@ -128,8 +140,63 @@ export default async function HomePage({
         />
       </section>
 
+      {/* ── Promoted categories — large image banners ── */}
+      {promoted.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16">
+          <div className={`grid gap-4 ${promoted.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
+            {promoted.map((cat) => {
+              const img = imageUrl(cat.imageUrl, "tile");
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.slug}`}
+                  className="group relative rounded-2xl overflow-hidden aspect-[16/7] flex items-end"
+                  style={{ backgroundColor: "var(--surface-elevated)" }}
+                >
+                  {img && (
+                    <Image
+                      src={img}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      style={{ transitionTimingFunction: "var(--ease-out)" }}
+                    />
+                  )}
+                  {/* Legibility scrim — only over an actual photo */}
+                  {img && (
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: "linear-gradient(to top, oklch(0.18 0.012 32 / 0.65), transparent 55%)" }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div className="relative p-5 sm:p-6 flex items-center gap-3">
+                    <span
+                      className="text-xs font-bold px-2.5 py-1 rounded-full"
+                      style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+                    >
+                      {t("promotedBadge")}
+                    </span>
+                    <span
+                      className="text-xl sm:text-2xl font-bold"
+                      style={{
+                        fontFamily: "var(--font-playfair)",
+                        color: img ? "oklch(0.98 0 0)" : "var(--ink)",
+                      }}
+                    >
+                      {localizedName(cat, locale)}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* ── Categories ── */}
-      {allCategories.length > 0 && (
+      {regular.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
           <h2
             className="text-2xl font-bold mb-8"
@@ -138,19 +205,43 @@ export default async function HomePage({
             {t("categoriesTitle")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {allCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 transition-colors hover:border-[oklch(0.52_0.14_32)]"
-                style={{ borderColor: "var(--border)" }}
-              >
-                <span className="text-3xl">{CATEGORY_ICONS[cat.slug] ?? "🪵"}</span>
-                <span className="font-semibold text-sm" style={{ color: "var(--ink)" }}>
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
+            {regular.map((cat) => {
+              const img = imageUrl(cat.imageUrl, "card");
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.slug}`}
+                  className="group flex flex-col rounded-xl border-2 overflow-hidden transition-colors hover:border-[oklch(0.52_0.14_32)]"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <span className="block aspect-[4/3] relative" style={{ backgroundColor: "var(--surface)" }}>
+                    {img ? (
+                      <Image
+                        src={img}
+                        alt=""
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        style={{ transitionTimingFunction: "var(--ease-out)" }}
+                      />
+                    ) : (
+                      <span className="w-full h-full flex items-center justify-center text-4xl">🪵</span>
+                    )}
+                  </span>
+                  <span className="p-4 font-semibold text-sm" style={{ color: "var(--ink)" }}>
+                    {localizedName(cat, locale)}
+                    {cat.children.length > 0 && (
+                      <span className="block text-xs font-normal mt-0.5" style={{ color: "var(--muted)" }}>
+                        {cat.children
+                          .slice(0, 3)
+                          .map((ch) => localizedName(ch, locale))
+                          .join(" · ")}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
@@ -177,7 +268,12 @@ export default async function HomePage({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                index={i}
+                onSale={p.categoryId != null && promotedBranchIds.has(p.categoryId)}
+              />
             ))}
           </div>
         )}
