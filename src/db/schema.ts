@@ -68,6 +68,8 @@ export const products = pgTable("products", {
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
   categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+  // Palette keys from lib/colors.ts (e.g. ["gray","beige"]) — drives the store color filter
+  colors: text("colors").array().default([]).notNull(),
   inStock: boolean("in_stock").default(true).notNull(),
   featured: boolean("featured").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

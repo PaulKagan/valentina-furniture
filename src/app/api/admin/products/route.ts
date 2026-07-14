@@ -17,6 +17,7 @@ import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { deleteImage } from "@/lib/cloudinary";
+import { colorByKey } from "@/lib/colors";
 
 /** Auth guard — call at the top of every handler */
 async function requireAdmin() {
@@ -48,6 +49,10 @@ function parseProductBody(body: Record<string, unknown>) {
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
       categoryId: typeof body.categoryId === "number" ? body.categoryId : null,
+      // Only palette keys survive — unknown colors are dropped, not stored
+      colors: Array.isArray(body.colors)
+        ? body.colors.filter((c): c is string => typeof c === "string" && !!colorByKey(c))
+        : [],
       inStock: body.inStock !== false,
       featured: body.featured === true,
     },

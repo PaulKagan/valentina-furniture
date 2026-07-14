@@ -25,13 +25,30 @@ export default async function AdminProductsPage({
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
           {t("title")}
         </h1>
-        <Link
-          href="/admin/products/new"
-          className="px-4 py-2 rounded-lg text-sm font-semibold"
-          style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
-        >
-          + {t("new")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/products/export"
+            download
+            className="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:bg-[oklch(0.974_0_0)]"
+            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+          >
+            {t("export")}
+          </a>
+          <Link
+            href="/admin/products/import"
+            className="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:bg-[oklch(0.974_0_0)]"
+            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+          >
+            {t("import")}
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="px-4 py-2 rounded-lg text-sm font-semibold"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+          >
+            + {t("new")}
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-xl border overflow-x-auto" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
@@ -77,6 +94,13 @@ export default async function AdminProductsPage({
                       style={{ borderColor: "var(--border)", color: "var(--ink)" }}
                     >
                       {t("edit")}
+                    </Link>
+                    <Link
+                      href={`/admin/products/new?from=${p.id}`}
+                      className="px-3 py-1 rounded text-xs font-medium border transition-colors hover:bg-[oklch(0.974_0_0)]"
+                      style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+                    >
+                      {t("duplicate")}
                     </Link>
                     <DeleteProductButton productId={p.id} />
                   </div>

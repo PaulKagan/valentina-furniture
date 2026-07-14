@@ -70,7 +70,8 @@
     "added": "נוסף לעגלה ✓",
     "backToProducts": "← חזרה למוצרים",
     "notFound": "המוצר לא נמצא",
-    "notFoundBack": "חזרה לקטלוג"
+    "notFoundBack": "חזרה לקטלוג",
+    "colorsLabel": "צבעים זמינים"
   },
   "cart": {
     "title": "עגלת הקניות",
@@ -198,7 +199,11 @@
       "noProducts": "אין מוצרים עדיין",
       "image": "תמונה",
       "actions": "פעולות",
-      "editTitle": "עריכת מוצר"
+      "editTitle": "עריכת מוצר",
+      "export": "ייצוא לאקסל",
+      "import": "ייבוא מאקסל",
+      "duplicate": "שכפל",
+      "duplicateTitle": "שכפול מוצר"
     },
     "orders": {
       "title": "הזמנות",
@@ -234,7 +239,40 @@
       "saveError": "שגיאה בשמירה.",
       "cancel": "ביטול",
       "langFallbackHint": "אופציונלי — אם ריק, יוצג הטקסט בעברית.",
-      "uploading": "מעלה תמונה..."
+      "uploading": "מעלה תמונה...",
+      "colorsLabel": "צבעים"
+    },
+    "import": {
+      "title": "ייבוא מוצרים מאקסל",
+      "subtitle": "מלאו את התבנית, בחרו את קובץ האקסל ואת תמונות המוצרים — ותקבלו תצוגה מקדימה לפני הייבוא.",
+      "downloadTemplate": "הורדת תבנית אקסל",
+      "chooseExcel": "בחירת קובץ אקסל",
+      "chooseImages": "בחירת תמונות",
+      "imagesChosen": "{count} תמונות נבחרו",
+      "check": "בדיקה ותצוגה מקדימה",
+      "checking": "בודק...",
+      "previewSummary": "{total} שורות: {valid} תקינות, {invalid} עם שגיאות, {updates} יעדכנו מוצר קיים.",
+      "confirmImport": "ייבוא {count} מוצרים",
+      "importing": "מייבא...",
+      "resultSummary": "הייבוא הסתיים: {created} נוצרו, {updated} עודכנו, {failed} נכשלו, {skipped} דולגו.",
+      "colRow": "שורה",
+      "colName": "שם",
+      "colCategory": "קטגוריה",
+      "colPrice": "מחיר",
+      "colImage": "תמונה",
+      "colStatus": "סטטוס",
+      "errorEmpty": "הקובץ ריק או שאין בו שורות מוצרים.",
+      "errorGeneric": "שגיאה בייבוא. נסו שוב.",
+      "reasons": {
+        "ok": "תקין",
+        "missingName": "חסר שם בעברית",
+        "badPrice": "מחיר לא תקין",
+        "duplicateInFile": "שם כפול בקובץ",
+        "willUpdate": "יעדכן מוצר קיים",
+        "unknownColor": "צבע לא מוכר: {detail}",
+        "imageNotProvided": "תמונה לא צורפה: {detail}",
+        "rowFailed": "שגיאה בשורה"
+      }
     }
   },
   "a11y": {
@@ -266,5 +304,21 @@
       "contactText": "נתקלתם בבעיית נגישות? נשמח לתקן. ניתן לפנות לרכזת הנגישות בטלפון:",
       "updated": "ההצהרה עודכנה לאחרונה: יולי 2026"
     }
+  },
+  "filters": {
+    "color": "צבע",
+    "price": "מחיר",
+    "min": "ממחיר",
+    "max": "עד מחיר",
+    "minPrice": "מחיר מינימלי",
+    "maxPrice": "מחיר מקסימלי",
+    "inStockOnly": "במלאי בלבד",
+    "sortBy": "מיון",
+    "sortNewest": "החדשים ביותר",
+    "sortPriceAsc": "מחיר: מהנמוך לגבוה",
+    "sortPriceDesc": "מחיר: מהגבוה לנמוך",
+    "sortName": "לפי שם",
+    "resultCount": "{count} מוצרים",
+    "clear": "נקה סינון"
   }
 }

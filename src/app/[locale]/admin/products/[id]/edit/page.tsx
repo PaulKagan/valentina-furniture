@@ -37,6 +37,7 @@ export default async function EditProductPage({
           descriptionRu: product.descriptionRu ?? "",
           price: product.price,
           categoryId: product.categoryId,
+          colors: product.colors,
           inStock: product.inStock,
           featured: product.featured,
           imageUrl: product.imageUrl,

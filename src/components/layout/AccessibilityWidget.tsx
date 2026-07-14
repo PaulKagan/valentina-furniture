@@ -48,21 +48,22 @@ function apply(s: A11ySettings) {
 export default function AccessibilityWidget() {
   const t = useTranslations("a11y");
   const [open, setOpen] = useState(false);
-  const [settings, setSettings] = useState<A11ySettings>(DEFAULTS);
+  // Lazy init: read persisted settings on the client (SSR renders defaults;
+  // safe — the panel isn't in the DOM until the user opens it)
+  const [settings, setSettings] = useState<A11ySettings>(() => {
+    if (typeof window === "undefined") return DEFAULTS;
+    try {
+      return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") };
+    } catch {
+      return DEFAULTS; // corrupted storage — stay on defaults
+    }
+  });
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Load persisted settings once on mount
+  // Apply persisted settings to <html> once after mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const s = { ...DEFAULTS, ...JSON.parse(saved) };
-        setSettings(s);
-        apply(s);
-      }
-    } catch {
-      /* corrupted storage — stay on defaults */
-    }
+    apply(settings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, []);
 
   function update(patch: Partial<A11ySettings>) {

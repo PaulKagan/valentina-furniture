@@ -13,6 +13,8 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { inArray } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
+import FilterBar from "@/components/ui/FilterBar";
+import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import {
@@ -28,7 +30,14 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    colors?: string;
+    min?: string;
+    max?: string;
+    stock?: string;
+    sort?: string;
+  }>;
 };
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
@@ -63,7 +72,7 @@ function Chip({ href, label, active }: { href: string; label: string; active: bo
 
 export default async function ProductsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { category } = await searchParams;
+  const { category, colors, min, max, stock, sort } = await searchParams;
   const t = await getTranslations({ locale, namespace: "products" });
 
   const active = await getActiveCategories();
@@ -79,6 +88,35 @@ export default async function ProductsPage({ params, searchParams }: Props) {
     const activeIds = new Set(active.map((c) => c.id));
     const all = await db.select().from(products);
     productList = all.filter((p) => p.categoryId == null || activeIds.has(p.categoryId));
+  }
+
+  // ── Filters (URL-driven, applied in memory — catalog is a few hundred rows) ──
+  const wantedColors = (colors ?? "").split(",").filter(Boolean);
+  const minPrice = min ? parseFloat(min) : null;
+  const maxPrice = max ? parseFloat(max) : null;
+
+  productList = productList.filter((p) => {
+    const price = parseFloat(p.price);
+    if (wantedColors.length > 0 && !wantedColors.some((c) => p.colors.includes(c))) return false;
+    if (minPrice != null && !isNaN(minPrice) && price < minPrice) return false;
+    if (maxPrice != null && !isNaN(maxPrice) && price > maxPrice) return false;
+    if (stock === "1" && !p.inStock) return false;
+    return true;
+  });
+
+  // ── Sort ──
+  switch (sort) {
+    case "price-asc":
+      productList.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      break;
+    case "price-desc":
+      productList.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      break;
+    case "name":
+      productList.sort((a, b) => localizedName(a, locale).localeCompare(localizedName(b, locale), locale));
+      break;
+    default: // newest
+      productList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   // Sale badge: product's category sits in a promoted branch
@@ -160,6 +198,11 @@ export default async function ProductsPage({ params, searchParams }: Props) {
           ))}
         </div>
       )}
+
+      {/* Filter + sort bar (client, URL-driven; useSearchParams needs Suspense) */}
+      <Suspense fallback={null}>
+        <FilterBar resultCount={productList.length} />
+      </Suspense>
 
       {productList.length === 0 ? (
         <div className="text-center py-20" style={{ color: "var(--muted)" }}>

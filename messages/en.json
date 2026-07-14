@@ -70,7 +70,8 @@
     "added": "Added to cart ✓",
     "backToProducts": "← Back to products",
     "notFound": "Product not found",
-    "notFoundBack": "Back to catalog"
+    "notFoundBack": "Back to catalog",
+    "colorsLabel": "Available colors"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -198,7 +199,11 @@
       "noProducts": "No products yet",
       "image": "Image",
       "actions": "Actions",
-      "editTitle": "Edit product"
+      "editTitle": "Edit product",
+      "export": "Export to Excel",
+      "import": "Import from Excel",
+      "duplicate": "Duplicate",
+      "duplicateTitle": "Duplicate product"
     },
     "orders": {
       "title": "Orders",
@@ -234,7 +239,40 @@
       "saveError": "Error saving.",
       "cancel": "Cancel",
       "langFallbackHint": "Optional — if empty, the Hebrew text is shown.",
-      "uploading": "Uploading image..."
+      "uploading": "Uploading image...",
+      "colorsLabel": "Colors"
+    },
+    "import": {
+      "title": "Import products from Excel",
+      "subtitle": "Fill the template, choose the Excel file and the product photos — you'll get a preview before anything is imported.",
+      "downloadTemplate": "Download Excel template",
+      "chooseExcel": "Choose Excel file",
+      "chooseImages": "Choose photos",
+      "imagesChosen": "{count} photos selected",
+      "check": "Check & preview",
+      "checking": "Checking...",
+      "previewSummary": "{total} rows: {valid} valid, {invalid} with errors, {updates} will update existing products.",
+      "confirmImport": "Import {count} products",
+      "importing": "Importing...",
+      "resultSummary": "Import finished: {created} created, {updated} updated, {failed} failed, {skipped} skipped.",
+      "colRow": "Row",
+      "colName": "Name",
+      "colCategory": "Category",
+      "colPrice": "Price",
+      "colImage": "Image",
+      "colStatus": "Status",
+      "errorEmpty": "The file is empty or has no product rows.",
+      "errorGeneric": "Import error. Please try again.",
+      "reasons": {
+        "ok": "Valid",
+        "missingName": "Missing Hebrew name",
+        "badPrice": "Invalid price",
+        "duplicateInFile": "Duplicate name in file",
+        "willUpdate": "Will update existing product",
+        "unknownColor": "Unknown color: {detail}",
+        "imageNotProvided": "Photo not attached: {detail}",
+        "rowFailed": "Row failed"
+      }
     }
   },
   "a11y": {
@@ -266,5 +304,21 @@
       "contactText": "Found an accessibility issue? We'd love to fix it. Contact our accessibility coordinator by phone:",
       "updated": "Statement last updated: July 2026"
     }
+  },
+  "filters": {
+    "color": "Color",
+    "price": "Price",
+    "min": "From",
+    "max": "To",
+    "minPrice": "Minimum price",
+    "maxPrice": "Maximum price",
+    "inStockOnly": "In stock only",
+    "sortBy": "Sort",
+    "sortNewest": "Newest",
+    "sortPriceAsc": "Price: low to high",
+    "sortPriceDesc": "Price: high to low",
+    "sortName": "By name",
+    "resultCount": "{count} products",
+    "clear": "Clear filters"
   }
 }

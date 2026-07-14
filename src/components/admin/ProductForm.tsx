@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { imageUrl } from "@/lib/images";
+import { COLORS } from "@/lib/colors";
 
 type Category = { id: number; name: string; slug: string; parentId: number | null };
 type Lang = "he" | "en" | "ru";
@@ -25,6 +26,7 @@ type ProductData = {
   descriptionRu: string;
   price: string;
   categoryId: number | null;
+  colors: string[];
   inStock: boolean;
   featured: boolean;
   imageUrl: string | null;
@@ -51,6 +53,7 @@ export default function ProductForm({
     descriptionRu: "",
     price: "",
     categoryId: null,
+    colors: [],
     inStock: true,
     featured: false,
     imageUrl: null,
@@ -211,6 +214,46 @@ export default function ProductForm({
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
+      </div>
+
+      {/* Colors — fixed palette, multi-select swatch chips */}
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("colorsLabel")}</span>
+        <div className="flex flex-wrap gap-2">
+          {COLORS.map((c) => {
+            const selected = form.colors.includes(c.key);
+            return (
+              <label
+                key={c.key}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border-2 text-xs font-medium cursor-pointer transition-colors"
+                style={{
+                  borderColor: selected ? "var(--primary)" : "var(--border)",
+                  color: selected ? "var(--primary)" : "var(--muted)",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={selected}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      colors: e.target.checked
+                        ? [...form.colors, c.key]
+                        : form.colors.filter((k) => k !== c.key),
+                    })
+                  }
+                />
+                <span
+                  className="w-3.5 h-3.5 rounded-full border inline-block"
+                  style={{ backgroundColor: c.swatch, borderColor: "var(--border)" }}
+                  aria-hidden="true"
+                />
+                {c.he}
+              </label>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex gap-6">

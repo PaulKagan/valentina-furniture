@@ -21,6 +21,7 @@ import { productJsonLd } from "@/lib/jsonld";
 import { getTranslations } from "next-intl/server";
 import { localizedName, localizedDescription } from "@/lib/catalog";
 import { imageUrl } from "@/lib/images";
+import { colorByKey, colorLabel } from "@/lib/colors";
 
 type Props = { params: Promise<{ id: string; locale: string }> };
 
@@ -122,6 +123,35 @@ export default async function ProductPage({ params }: Props) {
             <p className="leading-relaxed" style={{ color: "var(--muted)" }}>
               {description}
             </p>
+          )}
+
+          {/* Available colors — swatch chips from the fixed palette */}
+          {product.colors.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                {t("colorsLabel")}
+              </span>
+              <ul className="flex flex-wrap gap-2">
+                {product.colors.map((key) => {
+                  const c = colorByKey(key);
+                  if (!c) return null;
+                  return (
+                    <li
+                      key={key}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm"
+                      style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+                    >
+                      <span
+                        className="w-4 h-4 rounded-full border inline-block"
+                        style={{ backgroundColor: c.swatch, borderColor: "var(--border)" }}
+                        aria-hidden="true"
+                      />
+                      {colorLabel(key, locale)}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           )}
 
           {product.inStock ? (

@@ -70,7 +70,8 @@
     "added": "Добавлено в корзину ✓",
     "backToProducts": "← Назад к товарам",
     "notFound": "Товар не найден",
-    "notFoundBack": "Вернуться в каталог"
+    "notFoundBack": "Вернуться в каталог",
+    "colorsLabel": "Доступные цвета"
   },
   "cart": {
     "title": "Корзина",
@@ -198,7 +199,11 @@
       "noProducts": "Товаров пока нет",
       "image": "Фото",
       "actions": "Действия",
-      "editTitle": "Редактировать товар"
+      "editTitle": "Редактировать товар",
+      "export": "Экспорт в Excel",
+      "import": "Импорт из Excel",
+      "duplicate": "Дублировать",
+      "duplicateTitle": "Дублирование товара"
     },
     "orders": {
       "title": "Заказы",
@@ -234,7 +239,40 @@
       "saveError": "Ошибка сохранения.",
       "cancel": "Отмена",
       "langFallbackHint": "Необязательно — если пусто, показывается текст на иврите.",
-      "uploading": "Загрузка изображения..."
+      "uploading": "Загрузка изображения...",
+      "colorsLabel": "Цвета"
+    },
+    "import": {
+      "title": "Импорт товаров из Excel",
+      "subtitle": "Заполните шаблон, выберите файл Excel и фотографии товаров — перед импортом вы увидите предпросмотр.",
+      "downloadTemplate": "Скачать шаблон Excel",
+      "chooseExcel": "Выбрать файл Excel",
+      "chooseImages": "Выбрать фотографии",
+      "imagesChosen": "Выбрано фотографий: {count}",
+      "check": "Проверка и предпросмотр",
+      "checking": "Проверка...",
+      "previewSummary": "{total} строк: {valid} корректных, {invalid} с ошибками, {updates} обновят существующие товары.",
+      "confirmImport": "Импортировать {count} товаров",
+      "importing": "Импорт...",
+      "resultSummary": "Импорт завершён: создано {created}, обновлено {updated}, ошибок {failed}, пропущено {skipped}.",
+      "colRow": "Строка",
+      "colName": "Название",
+      "colCategory": "Категория",
+      "colPrice": "Цена",
+      "colImage": "Фото",
+      "colStatus": "Статус",
+      "errorEmpty": "Файл пуст или не содержит строк с товарами.",
+      "errorGeneric": "Ошибка импорта. Попробуйте ещё раз.",
+      "reasons": {
+        "ok": "Корректно",
+        "missingName": "Нет названия на иврите",
+        "badPrice": "Неверная цена",
+        "duplicateInFile": "Дублирующееся название в файле",
+        "willUpdate": "Обновит существующий товар",
+        "unknownColor": "Неизвестный цвет: {detail}",
+        "imageNotProvided": "Фото не приложено: {detail}",
+        "rowFailed": "Ошибка в строке"
+      }
     }
   },
   "a11y": {
@@ -266,5 +304,21 @@
       "contactText": "Столкнулись с проблемой доступности? Мы будем рады её исправить. Свяжитесь с координатором по доступности по телефону:",
       "updated": "Заявление обновлено: июль 2026"
     }
+  },
+  "filters": {
+    "color": "Цвет",
+    "price": "Цена",
+    "min": "От",
+    "max": "До",
+    "minPrice": "Минимальная цена",
+    "maxPrice": "Максимальная цена",
+    "inStockOnly": "Только в наличии",
+    "sortBy": "Сортировка",
+    "sortNewest": "Сначала новые",
+    "sortPriceAsc": "Цена: по возрастанию",
+    "sortPriceDesc": "Цена: по убыванию",
+    "sortName": "По названию",
+    "resultCount": "{count} товаров",
+    "clear": "Сбросить фильтры"
   }
 }
