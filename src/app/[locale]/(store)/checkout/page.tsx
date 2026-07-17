@@ -29,8 +29,8 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          items: items.map((i) => ({ productId: i.id, name: i.name, price: i.price, quantity: i.quantity })),
-          total,
+          // Only ids + quantities — the server looks up real prices itself
+          items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
         }),
       });
 

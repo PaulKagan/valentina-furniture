@@ -24,7 +24,6 @@
     "nav": {
       "products": "Товары",
       "cart": "Корзина",
-      "contact": "Контакты",
       "accessibility": "Заявление о доступности"
     }
   },
@@ -56,8 +55,6 @@
     "title": "Все товары",
     "filterAll": "Все",
     "saleBadge": "🔥 Акция",
-    "subcategoriesLabel": "Подкатегории",
-    "breadcrumbHome": "Главная",
     "noProducts": "Товары в этой категории не найдены.",
     "outOfStock": "Нет в наличии",
     "addToCart": "Добавить",
@@ -70,7 +67,6 @@
     "added": "Добавлено в корзину ✓",
     "backToProducts": "← Назад к товарам",
     "notFound": "Товар не найден",
-    "notFoundBack": "Вернуться в каталог",
     "colorsLabel": "Доступные цвета"
   },
   "cart": {
@@ -232,7 +228,6 @@
       "inStockLabel": "В наличии",
       "featuredLabel": "Рекомендованный товар (показывается на главной)",
       "imageLabel": "Изображение",
-      "uploadImage": "Загрузить изображение",
       "saving": "Сохранение...",
       "save": "Сохранить товар",
       "uploadError": "Ошибка загрузки изображения",

@@ -40,16 +40,32 @@ type Props = {
   }>;
 };
 
+const LOCALE_PREFIX: Record<string, string> = { he: "", en: "/en", ru: "/ru" };
+
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
   const { category } = await searchParams;
   const t = await getTranslations({ locale, namespace: "products" });
+
+  // Canonical keeps only the category — filter/sort variants (?colors=…&sort=…)
+  // all point at the same page so they don't bloat Google's crawl
+  const path = category ? `/products?category=${category}` : "/products";
+  const alternates: Metadata["alternates"] = {
+    canonical: `${LOCALE_PREFIX[locale] ?? ""}${path}`,
+    languages: {
+      he: path,
+      en: `/en${path}`,
+      ru: `/ru${path}`,
+      "x-default": path,
+    },
+  };
+
   if (category) {
     const active = await getActiveCategories();
     const cat = active.find((c) => c.slug === category);
-    if (cat) return { title: localizedName(cat, locale) };
+    if (cat) return { title: localizedName(cat, locale), alternates };
   }
-  return { title: t("title") };
+  return { title: t("title"), alternates };
 }
 
 /** Chip link — active state uses the primary color, matching the design tokens. */

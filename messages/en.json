@@ -24,7 +24,6 @@
     "nav": {
       "products": "Products",
       "cart": "Cart",
-      "contact": "Contact",
       "accessibility": "Accessibility statement"
     }
   },
@@ -56,8 +55,6 @@
     "title": "All Products",
     "filterAll": "All",
     "saleBadge": "🔥 Sale",
-    "subcategoriesLabel": "Subcategories",
-    "breadcrumbHome": "Home",
     "noProducts": "No products found in this category.",
     "outOfStock": "Out of stock",
     "addToCart": "Add",
@@ -70,7 +67,6 @@
     "added": "Added to cart ✓",
     "backToProducts": "← Back to products",
     "notFound": "Product not found",
-    "notFoundBack": "Back to catalog",
     "colorsLabel": "Available colors"
   },
   "cart": {
@@ -232,7 +228,6 @@
       "inStockLabel": "In stock",
       "featuredLabel": "Featured product (shown on homepage)",
       "imageLabel": "Image",
-      "uploadImage": "Upload image",
       "saving": "Saving...",
       "save": "Save product",
       "uploadError": "Image upload failed",

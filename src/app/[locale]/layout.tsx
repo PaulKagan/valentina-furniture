@@ -11,7 +11,7 @@
  */
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Heebo, Playfair_Display } from "next/font/google";
 import { routing } from "@/i18n/routing";
@@ -34,10 +34,22 @@ const playfair = Playfair_Display({
 // Only Hebrew is RTL; English and Russian are LTR
 const RTL_LOCALES: Locale[] = ["he"];
 
-// metadataBase makes relative OG image / canonical URLs resolve to the real domain
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-};
+// Default metadata for every page: base URL for OG/canonical resolution,
+// title template ("%s | ולנטינה בן עמי ריהוט"), and a fallback description.
+// Pages that define their own title/description (home, products) override this.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    title: { default: t("siteTitle"), template: t("siteTitleTemplate") },
+    description: t("siteDescription"),
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

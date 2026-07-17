@@ -10,6 +10,8 @@
  * <script type="application/ld+json"> tags from any server component.
  */
 
+import { imageUrl } from "./images";
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const PHONE = process.env.NEXT_PUBLIC_PHONE ?? "+972501234567";
 const ADDRESS = process.env.NEXT_PUBLIC_ADDRESS ?? "רחוב הרצל 1, תל אביב";
@@ -42,7 +44,6 @@ export function localBusinessJsonLd() {
         closes: "14:00",
       },
     ],
-    image: `${SITE_URL}/og-image.jpg`,
   };
 }
 
@@ -60,7 +61,7 @@ export function productJsonLd(product: {
     "@type": "Product",
     name: product.name,
     description: product.description ?? undefined,
-    image: product.imageUrl ?? undefined,
+    image: imageUrl(product.imageUrl, "detail") ?? undefined,
     url: `${SITE_URL}/products/${product.id}`,
     offers: {
       "@type": "Offer",

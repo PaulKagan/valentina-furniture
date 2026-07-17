@@ -10,7 +10,7 @@
  * persist in localStorage across visits.
  * Fully keyboard operable: the panel is a dialog, Esc closes it.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Accessibility, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -58,8 +58,6 @@ export default function AccessibilityWidget() {
       return DEFAULTS; // corrupted storage — stay on defaults
     }
   });
-  const panelRef = useRef<HTMLDivElement>(null);
-
   // Apply persisted settings to <html> once after mount
   useEffect(() => {
     apply(settings);
@@ -110,7 +108,6 @@ export default function AccessibilityWidget() {
 
       {open && (
         <div
-          ref={panelRef}
           data-a11y-widget
           role="dialog"
           aria-label={t("title")}

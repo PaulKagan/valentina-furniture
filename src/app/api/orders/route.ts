@@ -14,7 +14,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { orders } from "@/db/schema";
+import { orders, products } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
 // Input length caps — prevents absurdly long strings in the DB
 const LIMITS = {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, address, notes, items, total } = body as Record<string, unknown>;
+  const { name, phone, address, notes, items } = body as Record<string, unknown>;
 
   // Required field presence check
   if (
@@ -54,7 +55,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many items" }, { status: 400 });
   }
 
+  // Security: the client sends only {productId, quantity}. Names, prices,
+  // and the total come from the DB — a tampered request can't set its own
+  // prices or corrupt the revenue numbers in the dashboard.
+  const wanted: { productId: number; quantity: number }[] = [];
+  for (const item of items) {
+    const productId = (item as Record<string, unknown>)?.productId;
+    const quantity = (item as Record<string, unknown>)?.quantity;
+    if (
+      typeof productId !== "number" || !Number.isInteger(productId) ||
+      typeof quantity !== "number" || !Number.isInteger(quantity) ||
+      quantity < 1 || quantity > 99
+    ) {
+      return NextResponse.json({ error: "Invalid items" }, { status: 400 });
+    }
+    wanted.push({ productId, quantity });
+  }
+
   try {
+    const dbProducts = await db
+      .select({ id: products.id, name: products.name, price: products.price, inStock: products.inStock })
+      .from(products)
+      .where(inArray(products.id, wanted.map((w) => w.productId)));
+    const byId = new Map(dbProducts.map((p) => [p.id, p]));
+
+    const verifiedItems: { productId: number; name: string; price: number; quantity: number }[] = [];
+    let total = 0;
+    for (const w of wanted) {
+      const p = byId.get(w.productId);
+      if (!p) return NextResponse.json({ error: "Unknown product" }, { status: 400 });
+      const price = parseFloat(p.price);
+      verifiedItems.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
+      total += price * w.quantity;
+    }
+
     const [order] = await db
       .insert(orders)
       .values({
@@ -62,8 +96,8 @@ export async function POST(req: NextRequest) {
         customerPhone: phone.trim(),
         customerAddress: address.trim(),
         notes: typeof notes === "string" ? notes.trim().slice(0, LIMITS.notes) : null,
-        items: JSON.stringify(items),
-        total: String(total),
+        items: JSON.stringify(verifiedItems),
+        total: total.toFixed(2),
       })
       .returning({ id: orders.id });
 

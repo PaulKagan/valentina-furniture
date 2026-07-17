@@ -46,9 +46,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
+  const path = `/products/${product.id}`;
+  const prefix: Record<string, string> = { he: "", en: "/en", ru: "/ru" };
   return {
     title: name,
     description: description ?? `${name} — ₪${product.price}`,
+    alternates: {
+      canonical: `${prefix[locale] ?? ""}${path}`,
+      languages: { he: path, en: `/en${path}`, ru: `/ru${path}`, "x-default": path },
+    },
     openGraph: {
       title: name,
       description: description ?? undefined,
