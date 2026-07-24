@@ -36,6 +36,11 @@ function parseProductBody(body: Record<string, unknown>) {
   if (!price || isNaN(priceNum) || priceNum < 0) return { error: "Valid price is required" };
 
   const optText = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+  /** Positive whole number or null — used for cm dimensions */
+  const posInt = (v: unknown): number | null => {
+    const n = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
+    return Number.isInteger(n) && n > 0 ? n : null;
+  };
 
   return {
     data: {
@@ -53,6 +58,9 @@ function parseProductBody(body: Record<string, unknown>) {
       colors: Array.isArray(body.colors)
         ? body.colors.filter((c): c is string => typeof c === "string" && !!colorByKey(c))
         : [],
+      widthCm: posInt(body.widthCm),
+      depthCm: posInt(body.depthCm),
+      heightCm: posInt(body.heightCm),
       inStock: body.inStock !== false,
       featured: body.featured === true,
     },

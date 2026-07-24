@@ -4,7 +4,8 @@
  *
  * Format (Hebrew headers, one product per row):
  *   שם בעברית* | שם באנגלית | שם ברוסית | קטגוריה | תיאור בעברית |
- *   תיאור באנגלית | תיאור ברוסית | מחיר* | צבעים | במלאי | מומלץ | קובץ תמונה
+ *   תיאור באנגלית | תיאור ברוסית | מחיר* | צבעים | רוחב סמ | עומק סמ |
+ *   גובה סמ | במלאי | מומלץ | קובץ תמונה
  *
  * - קטגוריה is a path: "סלון / ספות" (missing levels are created on import)
  * - צבעים is comma-separated palette names in any supported language
@@ -26,6 +27,9 @@ export const HEADERS = [
   "תיאור ברוסית",
   "מחיר",
   "צבעים",
+  "רוחב סמ",
+  "עומק סמ",
+  "גובה סמ",
   "במלאי",
   "מומלץ",
   "קובץ תמונה",
@@ -42,6 +46,9 @@ export type ImportRow = {
   descriptionRu: string | null;
   price: string;
   colors: string[]; // palette keys
+  widthCm: number | null;
+  depthCm: number | null;
+  heightCm: number | null;
   inStock: boolean;
   featured: boolean;
   imageFile: string | null;
@@ -62,6 +69,9 @@ export function buildTemplate(): Buffer {
     "תיאור ברוסית": "",
     "מחיר": 4990,
     "צבעים": "אפור, בז'",
+    "רוחב סמ": 210,
+    "עומק סמ": 95,
+    "גובה סמ": 85,
     "במלאי": "כן",
     "מומלץ": "לא",
     "קובץ תמונה": "sofa-gray.jpg",
@@ -77,6 +87,7 @@ export function buildTemplate(): Buffer {
     ["• קטגוריה: שם הקטגוריה, ולתת-קטגוריה השתמשו ב-/ למשל: סלון / ספות. קטגוריות חדשות ייווצרו אוטומטית."],
     ["• צבעים: מופרדים בפסיק, מתוך הרשימה:"],
     [COLORS.map((c) => c.he).join(", ")],
+    ["• מידות (רוחב/עומק/גובה): מספרים בסנטימטרים בלבד, למשל 210. אופציונלי — משמש לסינון ומיון בחנות."],
     ["• במלאי / מומלץ: כן או לא."],
     ["• קובץ תמונה: שם הקובץ בדיוק כפי שהוא אצלכם במחשב (למשל sofa1.jpg). בעת הייבוא בוחרים גם את קובצי התמונות."],
     ["• אם קיים כבר מוצר עם אותו שם בעברית — הנתונים שלו יעודכנו במקום ליצור כפילות."],
@@ -115,6 +126,9 @@ export function buildExport(products: Product[], categories: Category[]): Buffer
     "תיאור ברוסית": p.descriptionRu ?? "",
     "מחיר": parseFloat(p.price),
     "צבעים": p.colors.map((k) => colorLabel(k, "he")).join(", "),
+    "רוחב סמ": p.widthCm ?? "",
+    "עומק סמ": p.depthCm ?? "",
+    "גובה סמ": p.heightCm ?? "",
     "במלאי": p.inStock ? "כן" : "לא",
     "מומלץ": p.featured ? "כן" : "לא",
     "קובץ תמונה": "", // export keeps existing images; column exists for round-trip shape
@@ -135,6 +149,12 @@ function parseBool(v: unknown, fallback: boolean): boolean {
   if (["כן", "yes", "true", "1", "да"].includes(s)) return true;
   if (["לא", "no", "false", "0", "нет"].includes(s)) return false;
   return fallback;
+}
+
+/** Excel cell → positive whole cm, or null when empty/invalid. */
+function dim(v: unknown): number | null {
+  const n = parseInt(String(v ?? "").replace(/[^\d]/g, ""), 10);
+  return Number.isInteger(n) && n > 0 ? n : null;
 }
 
 export function parseImport(buffer: Buffer): ImportRow[] {
@@ -186,6 +206,9 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       descriptionRu: opt(row["תיאור ברוסית"]),
       price: isNaN(price) ? "0" : price.toFixed(2),
       colors,
+      widthCm: dim(row["רוחב סמ"]),
+      depthCm: dim(row["עומק סמ"]),
+      heightCm: dim(row["גובה סמ"]),
       inStock: parseBool(row["במלאי"], true),
       featured: parseBool(row["מומלץ"], false),
       imageFile: opt(row["קובץ תמונה"]),

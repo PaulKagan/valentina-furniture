@@ -59,7 +59,9 @@
     "outOfStock": "Нет в наличии",
     "addToCart": "Добавить",
     "added": "Добавлено ✓",
-    "addAriaLabel": "Добавить {name} в корзину"
+    "addAriaLabel": "Добавить {name} в корзину",
+    "similarTitle": "Возможно, вам понравится",
+    "similarSubtitle": "Похожие товары, не попавшие в фильтр"
   },
   "productDetail": {
     "outOfStock": "Нет в наличии",
@@ -67,7 +69,13 @@
     "added": "Добавлено в корзину ✓",
     "backToProducts": "← Назад к товарам",
     "notFound": "Товар не найден",
-    "colorsLabel": "Доступные цвета"
+    "colorsLabel": "Доступные цвета",
+    "dimensionsLabel": "Размеры",
+    "width": "Ш",
+    "depth": "Г",
+    "height": "В",
+    "cm": "см",
+    "similarTitle": "Возможно, вам понравится"
   },
   "cart": {
     "title": "Корзина",
@@ -100,7 +108,9 @@
     "submitting": "Отправка заказа...",
     "disclaimer": "Оплата не взимается. Представитель магазина свяжется с вами для подтверждения деталей.",
     "error": "Произошла ошибка. Попробуйте ещё раз или свяжитесь с нами напрямую.",
-    "sendError": "Ошибка отправки заказа"
+    "sendError": "Ошибка отправки заказа",
+    "emailLabel": "Email (необязательно)",
+    "emailPlaceholder": "Для получения подтверждения заказа"
   },
   "orderConfirmed": {
     "title": "Заказ принят!",
@@ -199,7 +209,8 @@
       "export": "Экспорт в Excel",
       "import": "Импорт из Excel",
       "duplicate": "Дублировать",
-      "duplicateTitle": "Дублирование товара"
+      "duplicateTitle": "Дублирование товара",
+      "loadMore": "Показать ещё ({shown} из {total})"
     },
     "orders": {
       "title": "Заказы",
@@ -217,7 +228,11 @@
         "delivered": "Доставлен"
       },
       "items": "Товары",
-      "noOrders": "Заказов пока нет"
+      "noOrders": "Заказов пока нет",
+      "open": "Открыть",
+      "searchPlaceholder": "Поиск по имени, телефону или номеру заказа",
+      "allStatuses": "Все",
+      "loadMore": "Показать ещё ({shown} из {total})"
     },
     "productForm": {
       "nameLabel": "Название товара",
@@ -235,7 +250,11 @@
       "cancel": "Отмена",
       "langFallbackHint": "Необязательно — если пусто, показывается текст на иврите.",
       "uploading": "Загрузка изображения...",
-      "colorsLabel": "Цвета"
+      "colorsLabel": "Цвета",
+      "dimensionsLabel": "Размеры (см)",
+      "widthLabel": "Ширина",
+      "depthLabel": "Глубина",
+      "heightLabel": "Высота"
     },
     "import": {
       "title": "Импорт товаров из Excel",
@@ -268,6 +287,39 @@
         "imageNotProvided": "Фото не приложено: {detail}",
         "rowFailed": "Ошибка в строке"
       }
+    },
+    "orderDetail": {
+      "backToOrders": "Назад к заказам",
+      "orderNumber": "Заказ №{id}",
+      "status": "Статус",
+      "statusUpdated": "Статус обновлён",
+      "product": "Товар",
+      "quantity": "Количество",
+      "unitPrice": "Цена за штуку",
+      "lineTotal": "Сумма строки",
+      "total": "Итого по заказу",
+      "decrease": "Уменьшить количество",
+      "increase": "Увеличить количество",
+      "removeItem": "Удалить товар",
+      "customerName": "Имя клиента",
+      "customerPhone": "Телефон",
+      "customerEmail": "Email",
+      "customerAddress": "Адрес",
+      "customerNotes": "Примечания клиента",
+      "adminNote": "Внутренняя заметка (клиент её не видит)",
+      "adminNotePlaceholder": "например: доставка во вторник",
+      "print": "Печать / PDF",
+      "resendStore": "Отправить мне ещё раз",
+      "resendCustomer": "Отправить письмо клиенту",
+      "noCustomerEmail": "Клиент не оставил email",
+      "delete": "Удалить заказ",
+      "deleteConfirm": "Удалить заказ №{id}? Действие необратимо.",
+      "save": "Сохранить изменения",
+      "saving": "Сохранение...",
+      "saved": "Изменения сохранены",
+      "errorSave": "Ошибка сохранения",
+      "emailSent": "Письмо отправлено",
+      "emailFailed": "Не удалось отправить письмо"
     }
   },
   "a11y": {
@@ -314,6 +366,13 @@
     "sortPriceDesc": "Цена: по убыванию",
     "sortName": "По названию",
     "resultCount": "{count} товаров",
-    "clear": "Сбросить фильтры"
+    "clear": "Сбросить фильтры",
+    "maxWidth": "Макс. ширина",
+    "cmPlaceholder": "см",
+    "sortWidthAsc": "Ширина: по возрастанию",
+    "sortWidthDesc": "Ширина: по убыванию",
+    "loadMore": "Показать ещё товары",
+    "loading": "Загрузка...",
+    "showingCount": "Показано {shown} из {total}"
   }
 }

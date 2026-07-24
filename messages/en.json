@@ -59,7 +59,9 @@
     "outOfStock": "Out of stock",
     "addToCart": "Add",
     "added": "Added ✓",
-    "addAriaLabel": "Add {name} to cart"
+    "addAriaLabel": "Add {name} to cart",
+    "similarTitle": "You might also like",
+    "similarSubtitle": "Similar products that didn't match your filters"
   },
   "productDetail": {
     "outOfStock": "Out of stock",
@@ -67,7 +69,13 @@
     "added": "Added to cart ✓",
     "backToProducts": "← Back to products",
     "notFound": "Product not found",
-    "colorsLabel": "Available colors"
+    "colorsLabel": "Available colors",
+    "dimensionsLabel": "Dimensions",
+    "width": "W",
+    "depth": "D",
+    "height": "H",
+    "cm": "cm",
+    "similarTitle": "You might also like"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -100,7 +108,9 @@
     "submitting": "Sending order...",
     "disclaimer": "No charge now. A store representative will contact you to confirm details.",
     "error": "An error occurred. Please try again or contact us directly.",
-    "sendError": "Error sending order"
+    "sendError": "Error sending order",
+    "emailLabel": "Email (optional)",
+    "emailPlaceholder": "To receive an order confirmation"
   },
   "orderConfirmed": {
     "title": "Order received!",
@@ -199,7 +209,8 @@
       "export": "Export to Excel",
       "import": "Import from Excel",
       "duplicate": "Duplicate",
-      "duplicateTitle": "Duplicate product"
+      "duplicateTitle": "Duplicate product",
+      "loadMore": "Show more ({shown} of {total})"
     },
     "orders": {
       "title": "Orders",
@@ -217,7 +228,11 @@
         "delivered": "Delivered"
       },
       "items": "Items",
-      "noOrders": "No orders yet"
+      "noOrders": "No orders yet",
+      "open": "Open",
+      "searchPlaceholder": "Search by name, phone or order number",
+      "allStatuses": "All",
+      "loadMore": "Show more ({shown} of {total})"
     },
     "productForm": {
       "nameLabel": "Product name",
@@ -235,7 +250,11 @@
       "cancel": "Cancel",
       "langFallbackHint": "Optional — if empty, the Hebrew text is shown.",
       "uploading": "Uploading image...",
-      "colorsLabel": "Colors"
+      "colorsLabel": "Colors",
+      "dimensionsLabel": "Dimensions (cm)",
+      "widthLabel": "Width",
+      "depthLabel": "Depth",
+      "heightLabel": "Height"
     },
     "import": {
       "title": "Import products from Excel",
@@ -268,6 +287,39 @@
         "imageNotProvided": "Photo not attached: {detail}",
         "rowFailed": "Row failed"
       }
+    },
+    "orderDetail": {
+      "backToOrders": "Back to orders",
+      "orderNumber": "Order #{id}",
+      "status": "Status",
+      "statusUpdated": "Status updated",
+      "product": "Product",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "lineTotal": "Line total",
+      "total": "Order total",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "removeItem": "Remove item",
+      "customerName": "Customer name",
+      "customerPhone": "Phone",
+      "customerEmail": "Email",
+      "customerAddress": "Address",
+      "customerNotes": "Customer notes",
+      "adminNote": "Internal note (never sent to the customer)",
+      "adminNotePlaceholder": "e.g. delivery agreed for Tuesday",
+      "print": "Print / PDF",
+      "resendStore": "Email it to me again",
+      "resendCustomer": "Email the customer",
+      "noCustomerEmail": "The customer left no email",
+      "delete": "Delete order",
+      "deleteConfirm": "Delete order #{id}? This cannot be undone.",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saved": "Changes saved",
+      "errorSave": "Error saving",
+      "emailSent": "Email sent",
+      "emailFailed": "Sending the email failed"
     }
   },
   "a11y": {
@@ -314,6 +366,13 @@
     "sortPriceDesc": "Price: high to low",
     "sortName": "By name",
     "resultCount": "{count} products",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "maxWidth": "Max width",
+    "cmPlaceholder": "cm",
+    "sortWidthAsc": "Width: narrow to wide",
+    "sortWidthDesc": "Width: wide to narrow",
+    "loadMore": "Show more products",
+    "loading": "Loading...",
+    "showingCount": "Showing {shown} of {total}"
   }
 }

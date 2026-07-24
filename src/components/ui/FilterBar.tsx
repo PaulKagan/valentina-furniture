@@ -29,13 +29,16 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
   // (back button, clear), resync during render (React's sanctioned pattern).
   const urlMin = searchParams.get("min") ?? "";
   const urlMax = searchParams.get("max") ?? "";
+  const urlW = searchParams.get("w") ?? "";
   const [minPrice, setMinPrice] = useState(urlMin);
   const [maxPrice, setMaxPrice] = useState(urlMax);
-  const [prevUrl, setPrevUrl] = useState({ min: urlMin, max: urlMax });
-  if (prevUrl.min !== urlMin || prevUrl.max !== urlMax) {
-    setPrevUrl({ min: urlMin, max: urlMax });
+  const [maxWidth, setMaxWidth] = useState(urlW);
+  const [prevUrl, setPrevUrl] = useState({ min: urlMin, max: urlMax, w: urlW });
+  if (prevUrl.min !== urlMin || prevUrl.max !== urlMax || prevUrl.w !== urlW) {
+    setPrevUrl({ min: urlMin, max: urlMax, w: urlW });
     setMinPrice(urlMin);
     setMaxPrice(urlMax);
+    setMaxWidth(urlW);
   }
 
   function setParams(patch: Record<string, string | null>) {
@@ -56,7 +59,7 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
   }
 
   const hasFilters =
-    selectedColors.length > 0 || inStockOnly || !!searchParams.get("min") || !!searchParams.get("max") || sort !== "newest";
+    selectedColors.length > 0 || inStockOnly || !!urlMin || !!urlMax || !!urlW || sort !== "newest";
 
   const inputClass = "h-9 w-24 px-3 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm";
   const inputStyle = { borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--bg)" };
@@ -130,6 +133,24 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
           />
         </div>
 
+        {/* Max width — "will it fit my wall?" */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("maxWidth")}</span>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            placeholder={t("cmPlaceholder")}
+            aria-label={t("maxWidth")}
+            className={inputClass}
+            style={inputStyle}
+            value={maxWidth}
+            onChange={(e) => setMaxWidth(e.target.value)}
+            onBlur={() => setParams({ w: maxWidth || null })}
+            onKeyDown={(e) => e.key === "Enter" && setParams({ w: maxWidth || null })}
+          />
+        </div>
+
         <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--ink)" }}>
           <input
             type="checkbox"
@@ -150,6 +171,8 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
             <option value="newest">{t("sortNewest")}</option>
             <option value="price-asc">{t("sortPriceAsc")}</option>
             <option value="price-desc">{t("sortPriceDesc")}</option>
+            <option value="width-asc">{t("sortWidthAsc")}</option>
+            <option value="width-desc">{t("sortWidthDesc")}</option>
             <option value="name">{t("sortName")}</option>
           </select>
         </label>
@@ -161,7 +184,7 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
         {hasFilters && (
           <button
             type="button"
-            onClick={() => setParams({ colors: null, min: null, max: null, stock: null, sort: null })}
+            onClick={() => setParams({ colors: null, min: null, max: null, w: null, stock: null, sort: null })}
             className="underline"
             style={{ color: "var(--primary)" }}
           >

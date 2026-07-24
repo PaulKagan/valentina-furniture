@@ -13,7 +13,11 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { inArray } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
+import ProductStrip from "@/components/ui/ProductStrip";
 import FilterBar from "@/components/ui/FilterBar";
+import LoadMore from "@/components/ui/LoadMore";
+import { visibleCount } from "@/lib/pagination";
+import { pickSimilar } from "@/lib/similar";
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
@@ -35,8 +39,10 @@ type Props = {
     colors?: string;
     min?: string;
     max?: string;
+    w?: string;
     stock?: string;
     sort?: string;
+    show?: string;
   }>;
 };
 
@@ -88,7 +94,7 @@ function Chip({ href, label, active }: { href: string; label: string; active: bo
 
 export default async function ProductsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { category, colors, min, max, stock, sort } = await searchParams;
+  const { category, colors, min, max, w, stock, sort, show } = await searchParams;
   const t = await getTranslations({ locale, namespace: "products" });
 
   const active = await getActiveCategories();
@@ -110,12 +116,16 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const wantedColors = (colors ?? "").split(",").filter(Boolean);
   const minPrice = min ? parseFloat(min) : null;
   const maxPrice = max ? parseFloat(max) : null;
+  const maxWidth = w ? parseInt(w, 10) : null;
 
+  const unfiltered = productList; // kept for the "you might also like" fallback strip
   productList = productList.filter((p) => {
     const price = parseFloat(p.price);
     if (wantedColors.length > 0 && !wantedColors.some((c) => p.colors.includes(c))) return false;
     if (minPrice != null && !isNaN(minPrice) && price < minPrice) return false;
     if (maxPrice != null && !isNaN(maxPrice) && price > maxPrice) return false;
+    // Width filter: products without a stated width are kept (unknown ≠ too big)
+    if (maxWidth != null && !isNaN(maxWidth) && p.widthCm != null && p.widthCm > maxWidth) return false;
     if (stock === "1" && !p.inStock) return false;
     return true;
   });
@@ -128,12 +138,45 @@ export default async function ProductsPage({ params, searchParams }: Props) {
     case "price-desc":
       productList.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
       break;
+    case "width-asc":
+    case "width-desc": {
+      // Products without a width sort last in both directions
+      const dir = sort === "width-asc" ? 1 : -1;
+      productList.sort((a, b) => {
+        if (a.widthCm == null) return 1;
+        if (b.widthCm == null) return -1;
+        return (a.widthCm - b.widthCm) * dir;
+      });
+      break;
+    }
     case "name":
       productList.sort((a, b) => localizedName(a, locale).localeCompare(localizedName(b, locale), locale));
       break;
     default: // newest
       productList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+
+  // ── Pagination: render a page-worth, "load more" bumps ?show= ──
+  const shown = visibleCount(show, productList.length);
+  const visible = productList.slice(0, shown);
+
+  // ── Near-miss suggestions under a filtered/thin result set ──
+  const hasFilters = wantedColors.length > 0 || !!min || !!max || !!w || stock === "1";
+  const shownIds = new Set(productList.map((p) => p.id));
+  const nearMisses =
+    hasFilters && productList.length < 8
+      ? pickSimilar(
+          unfiltered.filter((p) => !shownIds.has(p.id)),
+          {
+            categoryId: activeCategory?.id ?? null,
+            branchIds: activeCategory ? descendantIds(activeCategory.id, active) : [],
+            colors: wantedColors,
+            price: minPrice != null && maxPrice != null ? (minPrice + maxPrice) / 2 : maxPrice ?? minPrice,
+            widthCm: maxWidth,
+          },
+          4
+        )
+      : [];
 
   // Sale badge: product's category sits in a promoted branch
   const promotedBranchIds = new Set<number>();
@@ -225,17 +268,26 @@ export default async function ProductsPage({ params, searchParams }: Props) {
           <p className="text-lg">{t("noProducts")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {productList.map((p, i) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              index={i}
-              onSale={p.categoryId != null && promotedBranchIds.has(p.categoryId)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {visible.map((p, i) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                index={i}
+                onSale={p.categoryId != null && promotedBranchIds.has(p.categoryId)}
+              />
+            ))}
+          </div>
+          <Suspense fallback={null}>
+            <LoadMore shown={visible.length} total={productList.length} />
+          </Suspense>
+        </>
       )}
+
+      {/* Near-miss suggestions — products that almost matched the filters.
+          Only worth showing when filters are on and results are thin. */}
+      <ProductStrip title={t("similarTitle")} subtitle={t("similarSubtitle")} items={nearMisses} />
     </div>
   );
 }

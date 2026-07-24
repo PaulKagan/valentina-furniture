@@ -19,9 +19,16 @@ import { Link } from "@/i18n/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { productJsonLd } from "@/lib/jsonld";
 import { getTranslations } from "next-intl/server";
-import { localizedName, localizedDescription } from "@/lib/catalog";
+import {
+  localizedName,
+  localizedDescription,
+  getActiveCategories,
+  descendantIds,
+} from "@/lib/catalog";
 import { imageUrl } from "@/lib/images";
 import { colorByKey, colorLabel } from "@/lib/colors";
+import { pickSimilar } from "@/lib/similar";
+import ProductStrip from "@/components/ui/ProductStrip";
 
 type Props = { params: Promise<{ id: string; locale: string }> };
 
@@ -74,6 +81,29 @@ export default async function ProductPage({ params }: Props) {
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
   const img = imageUrl(product.imageUrl, "detail");
+
+  // "You might also like" — same branch / colors / price bracket.
+  // Hidden-category products are excluded so nothing leaks into the store.
+  const activeCats = await getActiveCategories();
+  const activeIds = new Set(activeCats.map((c) => c.id));
+  const pool = (await db.select().from(products)).filter(
+    (p) => p.categoryId == null || activeIds.has(p.categoryId)
+  );
+  const branchRoot = product.categoryId != null
+    ? activeCats.find((c) => c.id === product.categoryId)?.parentId ?? product.categoryId
+    : null;
+  const similar = pickSimilar(
+    pool,
+    {
+      id: product.id,
+      categoryId: product.categoryId,
+      branchIds: branchRoot != null ? descendantIds(branchRoot, activeCats) : [],
+      colors: product.colors,
+      price,
+      widthCm: product.widthCm,
+    },
+    4
+  );
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
@@ -131,6 +161,25 @@ export default async function ProductPage({ params }: Props) {
             </p>
           )}
 
+          {/* Dimensions */}
+          {(product.widthCm || product.depthCm || product.heightCm) && (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                {t("dimensionsLabel")}
+              </span>
+              <p className="text-sm" style={{ color: "var(--muted)" }} dir="ltr">
+                {[
+                  product.widthCm && `${t("width")} ${product.widthCm}`,
+                  product.depthCm && `${t("depth")} ${product.depthCm}`,
+                  product.heightCm && `${t("height")} ${product.heightCm}`,
+                ]
+                  .filter(Boolean)
+                  .join(" × ")}{" "}
+                {t("cm")}
+              </p>
+            </div>
+          )}
+
           {/* Available colors — swatch chips from the fixed palette */}
           {product.colors.length > 0 && (
             <div className="flex flex-col gap-2">
@@ -174,6 +223,9 @@ export default async function ProductPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* Similar items */}
+      <ProductStrip title={t("similarTitle")} items={similar} />
     </div>
   );
 }

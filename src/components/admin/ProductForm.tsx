@@ -27,6 +27,9 @@ type ProductData = {
   price: string;
   categoryId: number | null;
   colors: string[];
+  widthCm: string;
+  depthCm: string;
+  heightCm: string;
   inStock: boolean;
   featured: boolean;
   imageUrl: string | null;
@@ -54,6 +57,9 @@ export default function ProductForm({
     price: "",
     categoryId: null,
     colors: [],
+    widthCm: "",
+    depthCm: "",
+    heightCm: "",
     inStock: true,
     featured: false,
     imageUrl: null,
@@ -106,8 +112,12 @@ export default function ProductForm({
     setSaving(true);
     setError("");
 
+    const num = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
     const payload = {
       ...form,
+      widthCm: num(form.widthCm),
+      depthCm: num(form.depthCm),
+      heightCm: num(form.heightCm),
       nameEn: form.nameEn || null,
       nameRu: form.nameRu || null,
       description: form.description || null,
@@ -214,6 +224,30 @@ export default function ProductForm({
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
+      </div>
+
+      {/* Dimensions — drive the "fits my space" filter and sorting */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("dimensionsLabel")}</span>
+        <div className="flex gap-3">
+          {([
+            { key: "widthCm" as const, label: t("widthLabel") },
+            { key: "depthCm" as const, label: t("depthLabel") },
+            { key: "heightCm" as const, label: t("heightLabel") },
+          ]).map((d) => (
+            <label key={d.key} className="flex-1 text-xs" style={{ color: "var(--muted)" }}>
+              {d.label}
+              <input
+                type="number"
+                min="0"
+                className={`${inputClass} mt-1`}
+                style={inputStyle}
+                value={form[d.key]}
+                onChange={(e) => setForm({ ...form, [d.key]: e.target.value })}
+              />
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* Colors — fixed palette, multi-select swatch chips */}

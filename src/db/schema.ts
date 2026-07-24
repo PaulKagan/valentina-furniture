@@ -70,6 +70,10 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
   // Palette keys from lib/colors.ts (e.g. ["gray","beige"]) — drives the store color filter
   colors: text("colors").array().default([]).notNull(),
+  // Dimensions in cm — furniture shoppers filter by "does it fit my wall"
+  widthCm: integer("width_cm"),
+  depthCm: integer("depth_cm"),
+  heightCm: integer("height_cm"),
   inStock: boolean("in_stock").default(true).notNull(),
   featured: boolean("featured").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -79,10 +83,13 @@ export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
+  // Optional — when given, the customer gets an order confirmation email
+  customerEmail: text("customer_email"),
   customerAddress: text("customer_address").notNull(),
   items: text("items").notNull(), // JSON string: [{productId, name, price, quantity}]
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   status: orderStatusEnum("status").default("pending").notNull(),
-  notes: text("notes"),
+  notes: text("notes"), // customer's note from checkout
+  adminNote: text("admin_note"), // internal, never shown to the customer
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

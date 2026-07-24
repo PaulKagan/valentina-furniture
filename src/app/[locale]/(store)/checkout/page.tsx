@@ -9,7 +9,7 @@ export default function CheckoutPage() {
   const { items, total, count, clear } = useCart();
   const router = useRouter();
   const t = useTranslations("checkout");
-  const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", notes: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -49,6 +49,8 @@ export default function CheckoutPage() {
   const fields = [
     { name: "name", label: t("nameLabel"), type: "text", placeholder: t("namePlaceholder"), required: true },
     { name: "phone", label: t("phoneLabel"), type: "tel", placeholder: t("phonePlaceholder"), required: true },
+    // Optional — when given, the customer gets an order confirmation email
+    { name: "email", label: t("emailLabel"), type: "email", placeholder: t("emailPlaceholder"), required: false },
     { name: "address", label: t("addressLabel"), type: "text", placeholder: t("addressPlaceholder"), required: true },
   ] as const;
 

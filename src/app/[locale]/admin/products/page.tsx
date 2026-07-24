@@ -5,18 +5,26 @@ import { getTranslations } from "next-intl/server";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 import Image from "next/image";
 import { imageUrl } from "@/lib/images";
+import { ADMIN_PAGE_SIZE, visibleCount } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ show?: string }>;
 }) {
   const { locale } = await params;
+  const { show } = await searchParams;
   const t = await getTranslations({ locale, namespace: "admin.products" });
-  const allProducts = await db.select().from(products);
+  const all = await db.select().from(products);
   const allCategories = await db.select().from(categories);
+
+  // Paginate — a few hundred products shouldn't all render at once
+  const shown = visibleCount(show, all.length, ADMIN_PAGE_SIZE);
+  const allProducts = all.slice(0, shown);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.id, c.name]));
 
   return (
@@ -110,6 +118,14 @@ export default async function AdminProductsPage({
           </tbody>
         </table>
       </div>
+
+      {shown < all.length && (
+        <p className="mt-4 text-sm text-center" style={{ color: "var(--muted)" }}>
+          <Link href={`/admin/products?show=${shown + ADMIN_PAGE_SIZE}`} className="underline" style={{ color: "var(--primary)" }}>
+            {t("loadMore", { shown, total: all.length })}
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

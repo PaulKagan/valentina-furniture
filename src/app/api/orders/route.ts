@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders, products } from "@/db/schema";
 import { inArray } from "drizzle-orm";
+import { sendOrderToStore, sendOrderToCustomer } from "@/lib/email";
 
 // Input length caps — prevents absurdly long strings in the DB
 const LIMITS = {
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, address, notes, items } = body as Record<string, unknown>;
+  const { name, phone, email, address, notes, items } = body as Record<string, unknown>;
 
   // Required field presence check
   if (
@@ -54,6 +55,12 @@ export async function POST(req: NextRequest) {
   if (items.length > 50) {
     return NextResponse.json({ error: "Too many items" }, { status: 400 });
   }
+
+  // Optional email — only stored when it looks like an address
+  const customerEmail =
+    typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+      ? email.trim().slice(0, 200)
+      : null;
 
   // Security: the client sends only {productId, quantity}. Names, prices,
   // and the total come from the DB — a tampered request can't set its own
@@ -94,12 +101,30 @@ export async function POST(req: NextRequest) {
       .values({
         customerName: name.trim(),
         customerPhone: phone.trim(),
+        customerEmail: customerEmail,
         customerAddress: address.trim(),
         notes: typeof notes === "string" ? notes.trim().slice(0, LIMITS.notes) : null,
         items: JSON.stringify(verifiedItems),
         total: total.toFixed(2),
       })
       .returning({ id: orders.id });
+
+    // Notify the store (and the customer, if they left an email).
+    // Deliberately not awaited-into-the-response path beyond this point:
+    // a mail failure is logged and recoverable via "resend" in admin —
+    // it must never turn a saved order into an error for the customer.
+    const emailData = {
+      id: order.id,
+      customerName: name.trim(),
+      customerPhone: phone.trim(),
+      customerEmail,
+      customerAddress: address.trim(),
+      items: verifiedItems,
+      total: total.toFixed(2),
+      notes: typeof notes === "string" ? notes.trim() : null,
+      createdAt: new Date(),
+    };
+    await Promise.allSettled([sendOrderToStore(emailData), sendOrderToCustomer(emailData)]);
 
     return NextResponse.json({ id: order.id }, { status: 201 });
   } catch (err) {

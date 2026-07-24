@@ -59,7 +59,9 @@
     "outOfStock": "אזל מהמלאי",
     "addToCart": "הוסף",
     "added": "נוסף ✓",
-    "addAriaLabel": "הוסף {name} לעגלה"
+    "addAriaLabel": "הוסף {name} לעגלה",
+    "similarTitle": "אולי יעניין אתכם",
+    "similarSubtitle": "מוצרים דומים שלא נכללו בסינון"
   },
   "productDetail": {
     "outOfStock": "אזל מהמלאי",
@@ -67,7 +69,13 @@
     "added": "נוסף לעגלה ✓",
     "backToProducts": "← חזרה למוצרים",
     "notFound": "המוצר לא נמצא",
-    "colorsLabel": "צבעים זמינים"
+    "colorsLabel": "צבעים זמינים",
+    "dimensionsLabel": "מידות",
+    "width": "רוחב",
+    "depth": "עומק",
+    "height": "גובה",
+    "cm": "ס\"מ",
+    "similarTitle": "דומים שאולי תאהבו"
   },
   "cart": {
     "title": "עגלת הקניות",
@@ -100,7 +108,9 @@
     "submitting": "שולח הזמנה...",
     "disclaimer": "אין חיוב כרגע. נציג מהחנות יחזור אליכם לאישור פרטים.",
     "error": "אירעה שגיאה. נסו שוב או פנו אלינו ישירות.",
-    "sendError": "שגיאה בשליחת ההזמנה"
+    "sendError": "שגיאה בשליחת ההזמנה",
+    "emailLabel": "אימייל (אופציונלי)",
+    "emailPlaceholder": "לקבלת אישור הזמנה במייל"
   },
   "orderConfirmed": {
     "title": "ההזמנה התקבלה!",
@@ -199,7 +209,8 @@
       "export": "ייצוא לאקסל",
       "import": "ייבוא מאקסל",
       "duplicate": "שכפל",
-      "duplicateTitle": "שכפול מוצר"
+      "duplicateTitle": "שכפול מוצר",
+      "loadMore": "הצג עוד ({shown} מתוך {total})"
     },
     "orders": {
       "title": "הזמנות",
@@ -217,7 +228,11 @@
         "delivered": "נמסרה"
       },
       "items": "פריטים",
-      "noOrders": "אין הזמנות עדיין"
+      "noOrders": "אין הזמנות עדיין",
+      "open": "פתח",
+      "searchPlaceholder": "חיפוש לפי שם, טלפון או מספר הזמנה",
+      "allStatuses": "הכל",
+      "loadMore": "הצג עוד ({shown} מתוך {total})"
     },
     "productForm": {
       "nameLabel": "שם המוצר",
@@ -235,7 +250,11 @@
       "cancel": "ביטול",
       "langFallbackHint": "אופציונלי — אם ריק, יוצג הטקסט בעברית.",
       "uploading": "מעלה תמונה...",
-      "colorsLabel": "צבעים"
+      "colorsLabel": "צבעים",
+      "dimensionsLabel": "מידות (ס\"מ)",
+      "widthLabel": "רוחב",
+      "depthLabel": "עומק",
+      "heightLabel": "גובה"
     },
     "import": {
       "title": "ייבוא מוצרים מאקסל",
@@ -268,6 +287,39 @@
         "imageNotProvided": "תמונה לא צורפה: {detail}",
         "rowFailed": "שגיאה בשורה"
       }
+    },
+    "orderDetail": {
+      "backToOrders": "חזרה להזמנות",
+      "orderNumber": "הזמנה #{id}",
+      "status": "סטטוס",
+      "statusUpdated": "הסטטוס עודכן",
+      "product": "מוצר",
+      "quantity": "כמות",
+      "unitPrice": "מחיר ליחידה",
+      "lineTotal": "סה\"כ שורה",
+      "total": "סה\"כ להזמנה",
+      "decrease": "הפחת כמות",
+      "increase": "הגדל כמות",
+      "removeItem": "הסר פריט",
+      "customerName": "שם הלקוח",
+      "customerPhone": "טלפון",
+      "customerEmail": "אימייל",
+      "customerAddress": "כתובת",
+      "customerNotes": "הערות הלקוח",
+      "adminNote": "הערה פנימית (לא נשלחת ללקוח)",
+      "adminNotePlaceholder": "למשל: סוכם משלוח ליום ג׳",
+      "print": "הדפסה / PDF",
+      "resendStore": "שלח לי שוב במייל",
+      "resendCustomer": "שלח מייל ללקוח",
+      "noCustomerEmail": "הלקוח לא השאיר אימייל",
+      "delete": "מחק הזמנה",
+      "deleteConfirm": "למחוק את הזמנה #{id}? הפעולה בלתי הפיכה.",
+      "save": "שמור שינויים",
+      "saving": "שומר...",
+      "saved": "השינויים נשמרו",
+      "errorSave": "שגיאה בשמירה",
+      "emailSent": "המייל נשלח",
+      "emailFailed": "שליחת המייל נכשלה"
     }
   },
   "a11y": {
@@ -314,6 +366,13 @@
     "sortPriceDesc": "מחיר: מהגבוה לנמוך",
     "sortName": "לפי שם",
     "resultCount": "{count} מוצרים",
-    "clear": "נקה סינון"
+    "clear": "נקה סינון",
+    "maxWidth": "רוחב מקסימלי",
+    "cmPlaceholder": "ס\"מ",
+    "sortWidthAsc": "רוחב: מהצר לרחב",
+    "sortWidthDesc": "רוחב: מהרחב לצר",
+    "loadMore": "הצג עוד מוצרים",
+    "loading": "טוען...",
+    "showingCount": "מוצגים {shown} מתוך {total}"
   }
 }
