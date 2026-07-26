@@ -218,6 +218,7 @@ ORDER_NOTIFY_EMAIL="valentina@gmail.com"
 
 | Symptom | Fix |
 |---|---|
+| `npm install` fails with `ERESOLVE` | Pull latest (a `.npmrc` in the repo fixes it), or run `npm install --legacy-peer-deps` |
 | `Cannot find module` after pulling | `npm install` |
 | Database connection errors | Check `DATABASE_URL` has no line breaks and ends with `?sslmode=require` |
 | Login always fails | `AUTH_SECRET` missing, or `ADMIN_EMAIL` doesn't match exactly |
