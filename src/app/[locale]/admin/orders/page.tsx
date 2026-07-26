@@ -52,7 +52,7 @@ export default async function AdminOrdersPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {t("title")}
       </h1>
 

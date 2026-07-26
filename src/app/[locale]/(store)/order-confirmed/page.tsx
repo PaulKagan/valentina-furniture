@@ -12,7 +12,7 @@ export default async function OrderConfirmedPage({
   return (
     <div className="max-w-lg mx-auto px-4 py-24 text-center">
       <div className="text-6xl mb-6">✅</div>
-      <h1 className="text-3xl font-bold mb-4" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-3xl font-bold mb-4" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {t("title")}
       </h1>
       <p className="text-lg leading-relaxed mb-2" style={{ color: "var(--muted)" }}>

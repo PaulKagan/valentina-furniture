@@ -13,21 +13,27 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Heebo, Playfair_Display } from "next/font/google";
+import { Assistant, Frank_Ruhl_Libre } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import { CartProvider } from "@/components/cart/CartContext";
 import type { Locale } from "@/i18n/routing";
 import "../globals.css";
 
-const heebo = Heebo({
+// Body: Assistant — a Hebrew-first humanist sans with real Latin coverage.
+// Display: Frank Ruhl Libre — a Hebrew serif that ALSO covers Latin, so
+// Hebrew headings get the same editorial weight English does. (Playfair
+// Display, used before, has no Hebrew glyphs at all — every Hebrew heading
+// silently fell back to the body sans.)
+const bodyFont = Assistant({
   subsets: ["hebrew", "latin"],
-  variable: "--font-heebo",
+  variable: "--font-body",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+const displayFont = Frank_Ruhl_Libre({
+  subsets: ["hebrew", "latin"],
+  weight: ["500", "700", "900"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -75,7 +81,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      className={`${heebo.variable} ${playfair.variable}`}
+      className={`${bodyFont.variable} ${displayFont.variable}`}
     >
       {/* suppressHydrationWarning: browser extensions (Grammarly, password
           managers, translators) inject attributes into <body> before React

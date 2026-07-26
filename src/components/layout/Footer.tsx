@@ -9,6 +9,7 @@ import { getTranslations } from "next-intl/server";
 
 export default async function Footer() {
   const t = await getTranslations("footer");
+  const tBrand = await getTranslations("brand");
   const phone = process.env.NEXT_PUBLIC_PHONE ?? "050-123-4567";
   const address = process.env.NEXT_PUBLIC_ADDRESS ?? "רחוב הרצל 1, תל אביב";
 
@@ -22,9 +23,9 @@ export default async function Footer() {
         <div>
           <p
             className="font-serif text-2xl font-bold mb-2"
-            style={{ color: "var(--primary)", fontFamily: "var(--font-playfair)" }}
+            style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}
           >
-            ולנטינה בן עמי
+            {tBrand("brandFull")}
           </p>
           <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
             {t("tagline")}

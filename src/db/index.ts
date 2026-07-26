@@ -17,7 +17,13 @@ import * as schema from "./schema";
 
 const globalForDb = global as unknown as { conn: postgres.Sql };
 
-const conn = globalForDb.conn ?? postgres(process.env.DATABASE_URL!, { ssl: "require" });
+// Neon (and every hosted PG) requires TLS; a local postgres usually has no
+// certificate, so requiring SSL there fails to connect. Decide from the host.
+const url = process.env.DATABASE_URL!;
+const isLocal = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
+
+const conn =
+  globalForDb.conn ?? postgres(url, isLocal ? {} : { ssl: "require" });
 if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
 
 export const db = drizzle(conn, { schema });

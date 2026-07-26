@@ -81,7 +81,14 @@ export default function ProductCard({
             style={{ transitionTimingFunction: "var(--ease-out)" }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">🪑</div>
+          // Shared placeholder so a missing photo still fills the tile cleanly
+          <Image
+            src="/placeholder-product.svg"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
         )}
 
         {/* Sale badge — the product's category branch is promoted */}

@@ -48,7 +48,7 @@ export default async function NewProductPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-8" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-2xl font-bold mb-8" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {initial ? t("duplicateTitle") : t("new")}
       </h1>
       <ProductForm initial={initial} categories={allCategories} />

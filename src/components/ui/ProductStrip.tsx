@@ -24,7 +24,7 @@ export default function ProductStrip({
     <section className="mt-16 pt-10 border-t" style={{ borderColor: "var(--border)" }}>
       <h2
         className="text-2xl font-bold"
-        style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+        style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
       >
         {title}
       </h2>

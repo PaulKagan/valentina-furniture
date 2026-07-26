@@ -59,21 +59,24 @@
   *, *::before, *::after { box-sizing: border-box; }
 
   html {
-    direction: rtl;
+    /* NO `direction` here on purpose. An author-stylesheet direction rule
+       beats the browser's UA mapping of the dir="" attribute, which meant
+       switching to English/Russian set dir="ltr" but the page stayed RTL.
+       Direction now comes solely from <html dir> in [locale]/layout.tsx. */
     scroll-behavior: smooth;
   }
 
   body {
     background-color: var(--bg);
     color: var(--ink);
-    font-family: var(--font-heebo, "Heebo"), system-ui, sans-serif;
+    font-family: var(--font-body, "Assistant"), system-ui, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-playfair, "Playfair Display"), Georgia, serif;
+    font-family: var(--font-display, "Frank Ruhl Libre"), Georgia, serif;
     line-height: 1.2;
     text-wrap: balance;  /* even line lengths on headings */
     color: var(--ink);

@@ -50,6 +50,7 @@ export default function OrderDetail({
 }) {
   const t = useTranslations("admin.orderDetail");
   const tStatus = useTranslations("admin.orders.statusValues");
+  const tBrand = useTranslations("brand");
   const router = useRouter();
 
   const [order, setOrder] = useState(initial);
@@ -165,7 +166,7 @@ export default function OrderDetail({
 
       {/* ── Print header (only visible on paper) ── */}
       <div className="print-only" style={{ display: "none" }}>
-        <h1 style={{ fontSize: "20px", fontWeight: "bold" }}>ולנטינה בן עמי ריהוט</h1>
+        <h1 style={{ fontSize: "20px", fontWeight: "bold" }}>{tBrand("brandStore")}</h1>
         <p style={{ fontSize: "13px" }}>
           {t("orderNumber", { id: order.id })} · {new Date(order.createdAt).toLocaleString("he-IL")}
         </p>

@@ -24,7 +24,7 @@ export default async function AccessibilityPage({ params }: Props) {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
       <h1
         className="text-3xl font-bold mb-6"
-        style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+        style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
       >
         {t("title")}
       </h1>

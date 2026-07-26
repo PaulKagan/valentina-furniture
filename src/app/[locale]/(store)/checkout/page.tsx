@@ -56,7 +56,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-      <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {t("title")}
       </h1>
 

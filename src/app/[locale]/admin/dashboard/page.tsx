@@ -23,7 +23,7 @@ export default async function DashboardPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-8" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-2xl font-bold mb-8" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {t("title")}
       </h1>
 

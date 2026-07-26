@@ -137,7 +137,13 @@ export default async function ProductPage({ params }: Props) {
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-8xl">🪑</div>
+            <Image
+              src="/placeholder-product.svg"
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           )}
         </div>
 
@@ -146,7 +152,7 @@ export default async function ProductPage({ params }: Props) {
           <div>
             <h1
               className="text-3xl font-bold mb-3"
-              style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+              style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
             >
               {name}
             </h1>

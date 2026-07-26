@@ -374,5 +374,11 @@
     "loadMore": "הצג עוד מוצרים",
     "loading": "טוען...",
     "showingCount": "מוצגים {shown} מתוך {total}"
+  },
+  "brand": {
+    "brandShort": "ולנטינה",
+    "brandFull": "ולנטינה בן עמי",
+    "brandStore": "ולנטינה בן עמי ריהוט",
+    "adminBrand": "ולנטינה — ניהול"
   }
 }

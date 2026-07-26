@@ -374,5 +374,11 @@
     "loadMore": "Показать ещё товары",
     "loading": "Загрузка...",
     "showingCount": "Показано {shown} из {total}"
+  },
+  "brand": {
+    "brandShort": "Валентина",
+    "brandFull": "Валентина Бен Ами",
+    "brandStore": "Валентина Бен Ами Мебель",
+    "adminBrand": "Валентина — Панель"
   }
 }

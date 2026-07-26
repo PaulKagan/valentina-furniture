@@ -104,11 +104,21 @@ export default async function HomePage({
             </p>
             <h1
               className="text-4xl md:text-[clamp(2.5rem,6vw,4.5rem)] font-bold mb-6"
-              style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+              style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
             >
               {t("heroTitle")}
               <br />
-              <em style={{ color: "var(--primary)", fontStyle: "italic" }}>{t("heroTitleEm")}</em>
+              <em
+                style={{
+                  color: "var(--primary)",
+                  // Hebrew has no true italics — the browser would fake a slant,
+                  // which looks like a rendering fault. Emphasis comes from
+                  // color alone in RTL; Latin keeps its real italic.
+                  fontStyle: locale === "he" ? "normal" : "italic",
+                }}
+              >
+                {t("heroTitleEm")}
+              </em>
             </h1>
             <p
               className="text-lg mb-8 leading-relaxed"
@@ -135,7 +145,7 @@ export default async function HomePage({
           </div>
         </div>
         <div
-          className="absolute bottom-0 right-0 h-1 w-1/3"
+          className="absolute bottom-0 end-0 h-1 w-1/3"
           style={{ backgroundColor: "var(--primary)", opacity: 0.3 }}
         />
       </section>
@@ -153,16 +163,14 @@ export default async function HomePage({
                   className="group relative rounded-2xl overflow-hidden aspect-[16/7] flex items-end"
                   style={{ backgroundColor: "var(--surface-elevated)" }}
                 >
-                  {img && (
-                    <Image
-                      src={img}
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      style={{ transitionTimingFunction: "var(--ease-out)" }}
-                    />
-                  )}
+                  <Image
+                    src={img ?? "/placeholder-product.svg"}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    style={{ transitionTimingFunction: "var(--ease-out)" }}
+                  />
                   {/* Legibility scrim — only over an actual photo */}
                   {img && (
                     <div
@@ -181,7 +189,7 @@ export default async function HomePage({
                     <span
                       className="text-xl sm:text-2xl font-bold"
                       style={{
-                        fontFamily: "var(--font-playfair)",
+                        fontFamily: "var(--font-display)",
                         color: img ? "oklch(0.98 0 0)" : "var(--ink)",
                       }}
                     >
@@ -200,7 +208,7 @@ export default async function HomePage({
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
           <h2
             className="text-2xl font-bold mb-8"
-            style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+            style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
           >
             {t("categoriesTitle")}
           </h2>
@@ -215,18 +223,14 @@ export default async function HomePage({
                   style={{ borderColor: "var(--border)" }}
                 >
                   <span className="block aspect-[4/3] relative" style={{ backgroundColor: "var(--surface)" }}>
-                    {img ? (
-                      <Image
-                        src={img}
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                        style={{ transitionTimingFunction: "var(--ease-out)" }}
-                      />
-                    ) : (
-                      <span className="w-full h-full flex items-center justify-center text-4xl">🪵</span>
-                    )}
+                    <Image
+                      src={img ?? "/placeholder-product.svg"}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      style={{ transitionTimingFunction: "var(--ease-out)" }}
+                    />
                   </span>
                   <span className="p-4 font-semibold text-sm" style={{ color: "var(--ink)" }}>
                     {localizedName(cat, locale)}
@@ -251,7 +255,7 @@ export default async function HomePage({
         <div className="flex items-center justify-between mb-8">
           <h2
             className="text-2xl font-bold"
-            style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+            style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
           >
             {t("featuredTitle")}
           </h2>
@@ -292,7 +296,7 @@ export default async function HomePage({
               <div key={item.label}>
                 <dt
                   className="text-2xl font-bold mb-1"
-                  style={{ color: "var(--primary)", fontFamily: "var(--font-playfair)" }}
+                  style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}
                 >
                   {item.value}
                 </dt>

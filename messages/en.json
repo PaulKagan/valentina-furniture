@@ -374,5 +374,11 @@
     "loadMore": "Show more products",
     "loading": "Loading...",
     "showingCount": "Showing {shown} of {total}"
+  },
+  "brand": {
+    "brandShort": "Valentina",
+    "brandFull": "Valentina Ben Ami",
+    "brandStore": "Valentina Ben Ami Furniture",
+    "adminBrand": "Valentina — Admin"
   }
 }

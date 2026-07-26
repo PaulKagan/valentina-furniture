@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--surface)" }}>
       <div className="w-full max-w-sm p-8 rounded-2xl shadow-sm border" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
-        <h1 className="text-2xl font-bold mb-6 text-center" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+        <h1 className="text-2xl font-bold mb-6 text-center" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
           {t("title")}
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

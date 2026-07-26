@@ -68,7 +68,7 @@ export default async function AdminOrderPage({
       </Link>
       <h1
         className="text-2xl font-bold mb-1"
-        style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}
+        style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
       >
         {t("orderNumber", { id: order.id })}
       </h1>

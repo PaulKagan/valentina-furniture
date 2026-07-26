@@ -25,13 +25,14 @@ export default async function AdminLayout({
 
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.nav" });
+  const tBrand = await getTranslations({ locale, namespace: "brand" });
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: "var(--surface)" }}>
       {/* Sidebar */}
-      <aside className="w-52 flex-shrink-0 border-l flex flex-col py-6 px-4 gap-1" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
-        <p className="font-bold text-sm mb-6 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-playfair)" }}>
-          ולנטינה — ניהול
+      <aside className="w-52 flex-shrink-0 border-e flex flex-col py-6 px-4 gap-1" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
+        <p className="font-bold text-sm mb-6 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
+          {tBrand("adminBrand")}
         </p>
         {[
           { href: "/admin/dashboard", label: t("dashboard") },

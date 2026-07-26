@@ -19,7 +19,6 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   ChevronDown,
-  ChevronLeft,
   Pencil,
   Trash2,
   Plus,
@@ -255,7 +254,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             style={{ color: "var(--muted)", visibility: children.length ? "visible" : "hidden" }}
             aria-label={isCollapsed ? t("expand") : t("collapse")}
           >
-            {isCollapsed ? <ChevronLeft size={16} className="rtl:rotate-0 ltr:rotate-180" /> : <ChevronDown size={16} />}
+            {isCollapsed ? <ChevronDown size={16} className="-rotate-90 rtl:rotate-90" /> : <ChevronDown size={16} />}
           </button>
 
           <span className="font-medium text-sm" style={{ color: "var(--ink)" }}>

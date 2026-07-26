@@ -18,6 +18,7 @@ export type NavCategory = { href: string; label: string; promoted: boolean };
 export default function Header({ navCategories }: { navCategories: NavCategory[] }) {
   const { count } = useCart();
   const t = useTranslations("header");
+  const tBrand = useTranslations("brand");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
@@ -49,9 +50,9 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
         <Link href="/" className="flex-shrink-0">
           <span
             className="font-serif text-2xl font-bold tracking-tight"
-            style={{ color: "var(--primary)", fontFamily: "var(--font-playfair)" }}
+            style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}
           >
-            ולנטינה
+            {tBrand("brandShort")}
           </span>
           <span className="block text-xs" style={{ color: "var(--muted)" }}>
             {t("logoSub")}
@@ -88,7 +89,7 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
             <ShoppingCart size={22} style={{ color: "var(--ink)" }} />
             {count > 0 && (
               <span
-                className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
+                className="absolute -top-1 -end-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
                 style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
               >
                 {count > 9 ? "9+" : count}

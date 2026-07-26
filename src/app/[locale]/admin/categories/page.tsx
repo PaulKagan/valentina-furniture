@@ -28,7 +28,7 @@ export default async function AdminCategoriesPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {t("title")}
       </h1>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>

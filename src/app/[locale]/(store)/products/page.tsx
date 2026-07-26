@@ -231,7 +231,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         </nav>
       )}
 
-      <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "var(--font-playfair)", color: "var(--ink)" }}>
+      <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {activeCategory ? localizedName(activeCategory, locale) : t("title")}
         {activeCategory?.promoted && (
           <span
