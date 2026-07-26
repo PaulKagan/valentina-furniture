@@ -15,6 +15,7 @@ import { db } from "@/db";
 import { orders, orderStatusEnum, products } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { effectivePrice } from "@/lib/pricing";
+import { getDiscountLookup } from "@/lib/catalog";
 
 async function requireAdmin() {
   const session = await auth();
@@ -91,17 +92,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const rows = await db
-      .select({ id: products.id, name: products.name, price: products.price, salePrice: products.salePrice })
+      .select({
+        id: products.id,
+        name: products.name,
+        price: products.price,
+        salePrice: products.salePrice,
+        onSale: products.onSale,
+        categoryId: products.categoryId,
+      })
       .from(products)
       .where(inArray(products.id, wanted.map((w) => w.productId)));
     const byId = new Map(rows.map((p) => [p.id, p]));
+    const discountFor = await getDiscountLookup();
 
     const verified: { productId: number; name: string; price: number; quantity: number }[] = [];
     let total = 0;
     for (const w of wanted) {
       const p = byId.get(w.productId);
       if (!p) return NextResponse.json({ error: "Unknown product" }, { status: 400 });
-      const price = effectivePrice(p);
+      const price = effectivePrice(p, discountFor(p.categoryId));
       verified.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
       total += price * w.quantity;
     }

@@ -55,7 +55,6 @@
   "products": {
     "title": "All Products",
     "filterAll": "All",
-    "saleBadge": "🔥 Sale",
     "noProducts": "No products found in this category.",
     "outOfStock": "Out of stock",
     "addToCart": "Add",
@@ -63,7 +62,10 @@
     "addAriaLabel": "Add {name} to cart",
     "similarTitle": "You might also like",
     "similarSubtitle": "Similar products that didn't match your filters",
-    "wasPrice": "Was"
+    "wasPrice": "Was",
+    "saleBannerText": "off everything in {category}",
+    "saleEndsIn": "Sale ends in",
+    "daysShort": "{days, plural, one {# day} other {# days}}"
   },
   "productDetail": {
     "outOfStock": "Out of stock",
@@ -136,7 +138,8 @@
       "products": "Products",
       "orders": "Orders",
       "signOut": "Sign out",
-      "backToStore": "To store"
+      "backToStore": "To store",
+      "sales": "Sales"
     },
     "categories": {
       "title": "Categories",
@@ -154,7 +157,7 @@
       "noParent": "— Top-level category —",
       "visibleLabel": "Visible in store",
       "promotedLabel": "Promoted category",
-      "promotedHint": "Shown on the homepage, first in the menu, with a sale badge on its products.",
+      "promotedHint": "Shown on the homepage and first in the menu. It grants no discount — tick \"Sale category\" for that.",
       "scheduleLegend": "Temporary category",
       "scheduleHint": "Optional — the category only appears between these dates (e.g. a holiday sale).",
       "startsAt": "From",
@@ -178,7 +181,13 @@
       "badgeExpired": "Expired",
       "badgeTemporary": "Temporary",
       "errorSave": "Error saving.",
-      "errorSlug": "This slug already exists."
+      "errorSlug": "This slug already exists.",
+      "saleLegend": "Sale",
+      "isSaleCategoryLabel": "Sale category",
+      "discountPercentLabel": "Discount (%)",
+      "saleHint": "The discount applies to every product in this category and its subcategories, and marks them with a flame. To end it on a date, set \"Ends at\" below.",
+      "badgeSale": "-{percent}% sale",
+      "errorSaleDiscount": "A sale category needs a discount above 0%"
     },
     "dashboard": {
       "title": "Overview",
@@ -261,7 +270,11 @@
       "onSaleLabel": "This product is on sale",
       "salePriceLabel": "Sale price (₪)",
       "discountPreview": "{percent}% off",
-      "salePriceTooHigh": "The sale price must be lower than the regular price"
+      "salePriceTooHigh": "The sale price must be lower than the regular price",
+      "discountPercentLabel": "Discount (%)",
+      "inheritedHint": "With no sale price of its own, this product takes {percent}% off from the \"{category}\" category — and follows it if that changes or ends.",
+      "saleNeedsPrice": "Enter a discount or a sale price — otherwise this product won't show as on sale.",
+      "categoryIsSaleHint": "\"{category}\" is a sale category ({percent}% off)."
     },
     "import": {
       "title": "Import products from Excel",
@@ -328,6 +341,33 @@
       "errorSave": "Error saving",
       "emailSent": "Email sent",
       "emailFailed": "Sending the email failed"
+    },
+    "sales": {
+      "title": "Sales",
+      "subtitle": "Everything the store is currently discounting — category sales and individual product sales.",
+      "categoriesTitle": "Sale categories",
+      "productsTitle": "Discounted products ({count})",
+      "category": "Category",
+      "product": "Product",
+      "discount": "Discount",
+      "status": "Status",
+      "endsAt": "Ends",
+      "was": "Was",
+      "now": "Now",
+      "origin": "Discount from",
+      "actions": "Actions",
+      "statusLive": "Live",
+      "statusInactive": "Not live (hidden or outside its dates)",
+      "originIndividual": "Own sale price",
+      "originCategory": "From {category}",
+      "edit": "Edit",
+      "endSale": "End sale",
+      "endAllIndividual": "End all individual sales ({count})",
+      "endAllConfirm": "End {count} individually-set sales? Those products go back to full price.",
+      "endCategoryConfirm": "End the sale on \"{name}\"? Every product in it goes back to full price.",
+      "endProductConfirm": "End the sale on \"{name}\"?",
+      "noSaleCategories": "No sale categories right now.",
+      "noDiscounted": "No discounted products right now."
     }
   },
   "a11y": {

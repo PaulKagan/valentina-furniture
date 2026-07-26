@@ -20,6 +20,7 @@ import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { parseImport } from "@/lib/excel";
 import { uploadImage } from "@/lib/cloudinary";
+import { categoryDiscount } from "@/lib/pricing";
 
 const MAX_EXCEL_BYTES = 5 * 1024 * 1024; // 5 MB — thousands of rows fit easily
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -177,6 +178,11 @@ export async function POST(req: NextRequest) {
           descriptionEn: row.descriptionEn,
           descriptionRu: row.descriptionRu,
           price: row.price,
+          // Same rule as the admin form: landing in a sale category ticks the
+          // box even when the row itself carried no discount. Categories the
+          // import creates are never sale categories, so the list fetched
+          // before the loop is complete for this purpose.
+          onSale: row.onSale || categoryDiscount(categoryId, allCats) > 0,
           salePrice: row.salePrice,
           colors: row.colors,
           widthCm: row.widthCm,

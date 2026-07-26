@@ -30,19 +30,19 @@ type Product = InferSelectModel<typeof products>;
 export default function ProductCard({
   product,
   index = 0,
-  onSale = false,
+  discount = 0,
 }: {
   product: Product;
   index?: number;
-  /** true when the product belongs to a promoted category branch */
-  onSale?: boolean;
+  /** Inherited category discount %, resolved by the page (0 = none) */
+  discount?: number;
 }) {
   const { add } = useCart();
   const t = useTranslations("products");
   const locale = useLocale();
-  const price = effectivePrice(product);
-  const wasPrice = listPrice(product);
-  const discount = discountPercent(product);
+  const price = effectivePrice(product, discount);
+  const wasPrice = listPrice(product, discount);
+  const percent = discountPercent(product, discount);
   const name = localizedName(product, locale);
   const img = imageUrl(product.imageUrl, "card");
 
@@ -94,13 +94,14 @@ export default function ProductCard({
           />
         )}
 
-        {/* Badge: an actual discount wins over the category promotion badge */}
-        {product.inStock && (discount !== null || onSale) && (
+        {/* Badge — shown only when the product is genuinely discounted,
+            whether that discount is its own or inherited from a sale category */}
+        {product.inStock && percent !== null && (
           <span
             className="absolute top-2 start-2 text-xs font-bold px-2.5 py-1 rounded-full"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
           >
-            {discount !== null ? `-${discount}%` : t("saleBadge")}
+            🔥 -{percent}%
           </span>
         )}
 

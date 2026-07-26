@@ -4,7 +4,9 @@
  * Fills an empty database with a realistic catalog so the store can be
  * explored without typing hundreds of products by hand:
  *   - a nested category tree (top level → subcategories, one 3 levels deep)
- *   - one promoted "sale" category, one hidden, one expired, one scheduled
+ *   - a live 20%-off sale category ending in 5 days (drives the countdown),
+ *     an expired 30% one that must grant nothing, one hidden, one scheduled
+ *   - ~8% of other products carry their own hand-set sale price
  *   - ~96 products across every category with varied prices, colors,
  *     dimensions, stock and featured flags
  *   - a handful of orders in different statuses
@@ -22,6 +24,9 @@
 import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
+
+// lib/pricing is pure (no DB), so importing it statically is safe.
+import { applyDiscount } from "@/lib/pricing";
 
 // NOTE: db/schema are imported dynamically inside main(), not at the top.
 // ES module imports are hoisted and run BEFORE the config() calls above, so
@@ -46,6 +51,8 @@ type CatSpec = {
   slug: string;
   children?: CatSpec[];
   promoted?: boolean;
+  /** discount % this category grants to its whole branch (omitted = none) */
+  sale?: number;
   visible?: boolean;
   startsAt?: Date;
   endsAt?: Date;
@@ -163,8 +170,12 @@ const TREE: CatSpec[] = [
     ],
   },
   {
+    // A live sale category with a deadline — exercises the flame badge, the
+    // inherited pricing, and the ticking countdown on the banner
     name: "מבצעי הקיץ", nameEn: "Summer Sale", nameRu: "Летняя распродажа", slug: "summer-sale",
     promoted: true,
+    sale: 20,
+    endsAt: new Date(Date.now() + 5 * DAY + 3 * 60 * 60 * 1000),
     items: [
       ["מארז סלון במבצע", "Living Room Set Deal", "Комплект для гостиной"],
       ["כורסה במחיר מיוחד", "Armchair Special", "Кресло по спеццене"],
@@ -174,7 +185,9 @@ const TREE: CatSpec[] = [
   },
   {
     // Demonstrates the schedule feature: window already closed
+    // Also a sale category — but expired, so it must grant no discount at all
     name: "מבצעי פסח", nameEn: "Passover Sale", nameRu: "Пасхальная акция", slug: "passover-sale",
+    sale: 30,
     startsAt: new Date(Date.now() - 90 * DAY),
     endsAt: new Date(Date.now() - 30 * DAY),
     items: [["ערכת ניקיון לפסח", "Passover Cleaning Set", "Набор для уборки"]],
@@ -239,6 +252,8 @@ async function main() {
         parentId,
         visible: spec.visible ?? true,
         promoted: spec.promoted ?? false,
+        isSaleCategory: (spec.sale ?? 0) > 0,
+        discountPercent: spec.sale ?? 0,
         startsAt: spec.startsAt ?? null,
         endsAt: spec.endsAt ?? null,
         sortOrder: order,
@@ -260,6 +275,11 @@ async function main() {
         }
         const suffix = v === 0 ? "" : ` ${["דגם A", "דגם B", "דגם C"][v - 1] ?? `דגם ${v}`}`;
         const price = between(3, 120) * 50 + 49; // 199 … 6049, ends in 49
+        // Two ways a product ends up on sale, both represented here:
+        // stamped by its category, or given its own price by hand (~8%).
+        const branchSale = (spec.sale ?? 0) > 0;
+        const ownSale = !branchSale && rnd() < 0.08;
+        const ownSalePrice = ownSale ? applyDiscount(price, between(10, 40)) : null;
         await db.insert(products).values({
           name: `${he}${suffix}`,
           nameEn: v === 0 ? en : `${en} ${["Model A", "Model B", "Model C"][v - 1] ?? `Model ${v}`}`,
@@ -269,6 +289,8 @@ async function main() {
           descriptionEn: rnd() > 0.4 ? `${en} in ${MATERIALS_EN[matIdx]}. Durable finish, fits any interior style.` : null,
           descriptionRu: null,
           price: String(price),
+          onSale: branchSale || ownSale,
+          salePrice: ownSalePrice != null ? ownSalePrice.toFixed(2) : null,
           categoryId: cat.id,
           colors: chosen,
           widthCm: between(40, 280),

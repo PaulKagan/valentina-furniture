@@ -15,7 +15,9 @@ import { products } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import { localBusinessJsonLd } from "@/lib/jsonld";
-import { getActiveCategories, buildTree, localizedName, descendantIds } from "@/lib/catalog";
+import { getActiveCategories, buildTree, localizedName } from "@/lib/catalog";
+import { categoryDiscount, saleSource } from "@/lib/pricing";
+import SaleCountdown from "@/components/ui/SaleCountdown";
 import { imageUrl } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
@@ -73,14 +75,16 @@ export default async function HomePage({
   );
 
   const roots = buildTree(activeCategories);
-  const promoted = roots.filter((c) => c.promoted);
-  const regular = roots.filter((c) => !c.promoted);
 
-  // Sale badge on featured cards when their category branch is promoted
-  const promotedBranchIds = new Set<number>();
-  for (const c of activeCategories) {
-    if (c.promoted) for (const id of descendantIds(c.id, activeCategories)) promotedBranchIds.add(id);
-  }
+  // Inherited sale discounts for the featured grid
+  const discountFor = (categoryId: number | null) =>
+    categoryId == null ? 0 : categoryDiscount(categoryId, activeCategories);
+
+  // Big tiles: promoted categories, plus any that are running a sale — a live
+  // discount earns the same real estate as a hand-picked promotion.
+  const promoted = roots.filter((c) => c.promoted || discountFor(c.id) > 0);
+  const promotedIds = new Set(promoted.map((c) => c.id));
+  const regular = roots.filter((c) => !promotedIds.has(c.id));
 
   return (
     <>
@@ -156,6 +160,8 @@ export default async function HomePage({
           <div className={`grid gap-4 ${promoted.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
             {promoted.map((cat) => {
               const img = imageUrl(cat.imageUrl, "tile");
+              const pct = discountFor(cat.id);
+              const src = pct > 0 ? saleSource(cat.id, activeCategories) : null;
               return (
                 <Link
                   key={cat.id}
@@ -179,12 +185,13 @@ export default async function HomePage({
                       aria-hidden="true"
                     />
                   )}
-                  <div className="relative p-5 sm:p-6 flex items-center gap-3">
+                  <div className="relative p-5 sm:p-6 flex flex-wrap items-center gap-x-3 gap-y-2 w-full">
                     <span
                       className="text-xs font-bold px-2.5 py-1 rounded-full"
                       style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+                      dir={pct > 0 ? "ltr" : undefined}
                     >
-                      {t("promotedBadge")}
+                      {pct > 0 ? `🔥 -${pct}%` : t("promotedBadge")}
                     </span>
                     <span
                       className="text-xl sm:text-2xl font-bold"
@@ -195,6 +202,18 @@ export default async function HomePage({
                     >
                       {localizedName(cat, locale)}
                     </span>
+                    {/* Ticking clock — only for a sale with an actual end date */}
+                    {src?.endsAt && (
+                      <span
+                        className="ms-auto px-2.5 py-1 rounded-full"
+                        style={{
+                          backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
+                          color: "oklch(0.98 0 0)",
+                        }}
+                      >
+                        <SaleCountdown endsAt={src.endsAt.toISOString()} />
+                      </span>
+                    )}
                   </div>
                 </Link>
               );
@@ -272,12 +291,7 @@ export default async function HomePage({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((p, i) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                index={i}
-                onSale={p.categoryId != null && promotedBranchIds.has(p.categoryId)}
-              />
+              <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
             ))}
           </div>
         )}

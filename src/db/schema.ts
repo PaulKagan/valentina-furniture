@@ -45,8 +45,13 @@ export const categories = pgTable("categories", {
   // Active when: visible AND (startsAt is null OR now >= startsAt) AND (endsAt is null OR now <= endsAt)
   startsAt: timestamp("starts_at"),
   endsAt: timestamp("ends_at"),
-  // Promotion: homepage tile, pinned first in nav, sale badge on its products
+  // Promotion: homepage tile + pinned first in nav. Purely placement —
+  // it does NOT discount anything (that's isSaleCategory below).
   promoted: boolean("promoted").default(false).notNull(),
+  // Sale category: products assigned to it are marked on sale automatically
+  // and inherit discountPercent unless they carry their own sale price.
+  isSaleCategory: boolean("is_sale_category").default(false).notNull(),
+  discountPercent: integer("discount_percent").default(0).notNull(),
   // Manual sort within siblings (lower = first); promoted categories sort before the rest in nav
   sortOrder: integer("sort_order").default(0).notNull(),
   // Optional tile image (Cloudinary) shown on the homepage category tile
@@ -65,8 +70,12 @@ export const products = pgTable("products", {
   descriptionEn: text("description_en"),
   descriptionRu: text("description_ru"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  // Discounted price. When set (and lower than price), the store shows the
-  // original struck through and charges this instead. null = not on sale.
+  // Sale flag — the single thing that decides whether a product shows the
+  // 🔥 badge and a struck-through price. Ticked by hand in admin, or set
+  // automatically when the product is put in a sale category.
+  onSale: boolean("on_sale").default(false).notNull(),
+  // Discounted price. Only honoured while onSale is true. When absent, the
+  // product falls back to its category's discountPercent.
   salePrice: decimal("sale_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),

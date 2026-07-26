@@ -19,12 +19,22 @@ import { useTranslations } from "next-intl";
 import { useState, useRef, Suspense } from "react";
 import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
 
-export type NavCategory = {
-  href: string;
-  label: string;
+/** A nav entry. `sale` is the discount percent it grants (0 = not a sale). */
+export type NavItem = { href: string; label: string; sale: number };
+export type NavCategory = NavItem & {
   promoted: boolean;
-  children: { href: string; label: string; children: { href: string; label: string }[] }[];
+  children: (NavItem & { children: NavItem[] })[];
 };
+
+/** 🔥 -20% — the same mark the product cards carry, so the two read as one thing. */
+function SaleMark({ percent }: { percent: number }) {
+  if (percent <= 0) return null;
+  return (
+    <span className="font-bold" style={{ color: "var(--primary)" }} dir="ltr">
+      🔥 -{percent}%
+    </span>
+  );
+}
 
 export default function Header({ navCategories }: { navCategories: NavCategory[] }) {
   const { count } = useCart();
@@ -39,6 +49,7 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
   const allProducts: NavCategory = {
     href: "/products",
     label: t("nav.allProducts"),
+    sale: 0,
     promoted: false,
     children: [],
   };
@@ -104,12 +115,12 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
                 <Link
                   href={l.href}
                   className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-[oklch(0.52_0.14_32)] py-2"
-                  style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
+                  style={{ color: l.promoted || l.sale > 0 ? "var(--primary)" : "var(--ink)" }}
                   onFocus={() => hasChildren && openNow(l.href)}
                   aria-expanded={hasChildren ? isOpen : undefined}
                 >
-                  {l.promoted && <span aria-hidden="true">🔥 </span>}
                   {l.label}
+                  <SaleMark percent={l.sale} />
                   {hasChildren && (
                     <ChevronDown
                       size={14}
@@ -138,22 +149,24 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
                         <div key={child.href}>
                           <Link
                             href={child.href}
-                            className="block px-4 py-2 text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]"
+                            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]"
                             style={{ color: "var(--ink)" }}
                             onClick={() => setOpenDropdown(null)}
                           >
                             {child.label}
+                            <SaleMark percent={child.sale} />
                           </Link>
                           {/* Third level, indented under its parent */}
                           {child.children.map((grand) => (
                             <Link
                               key={grand.href}
                               href={grand.href}
-                              className="block px-4 py-1.5 ps-8 text-sm transition-colors hover:bg-[oklch(0.974_0_0)]"
+                              className="flex items-center gap-1.5 px-4 py-1.5 ps-8 text-sm transition-colors hover:bg-[oklch(0.974_0_0)]"
                               style={{ color: "var(--muted)" }}
                               onClick={() => setOpenDropdown(null)}
                             >
                               {grand.label}
+                              <SaleMark percent={grand.sale} />
                             </Link>
                           ))}
                         </div>
@@ -215,12 +228,12 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
                 <div className="flex items-center">
                   <Link
                     href={l.href}
-                    className="flex-1 text-base font-medium py-3"
-                    style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
+                    className="flex-1 flex items-center gap-1.5 text-base font-medium py-3"
+                    style={{ color: l.promoted || l.sale > 0 ? "var(--primary)" : "var(--ink)" }}
                     onClick={() => setMenuOpen(false)}
                   >
-                    {l.promoted && <span aria-hidden="true">🔥 </span>}
                     {l.label}
+                    <SaleMark percent={l.sale} />
                   </Link>
                   {hasChildren && (
                     <button
@@ -246,21 +259,23 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
                       <div key={child.href}>
                         <Link
                           href={child.href}
-                          className="block py-2 text-sm font-medium"
+                          className="flex items-center gap-1.5 py-2 text-sm font-medium"
                           style={{ color: "var(--ink)" }}
                           onClick={() => setMenuOpen(false)}
                         >
                           {child.label}
+                          <SaleMark percent={child.sale} />
                         </Link>
                         {child.children.map((grand) => (
                           <Link
                             key={grand.href}
                             href={grand.href}
-                            className="block py-1.5 ps-4 text-sm"
+                            className="flex items-center gap-1.5 py-1.5 ps-4 text-sm"
                             style={{ color: "var(--muted)" }}
                             onClick={() => setMenuOpen(false)}
                           >
                             {grand.label}
+                            <SaleMark percent={grand.sale} />
                           </Link>
                         ))}
                       </div>

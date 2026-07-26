@@ -17,7 +17,8 @@ import ProductStrip from "@/components/ui/ProductStrip";
 import FilterBar from "@/components/ui/FilterBar";
 import LoadMore from "@/components/ui/LoadMore";
 import { visibleCount } from "@/lib/pagination";
-import { effectivePrice } from "@/lib/pricing";
+import { effectivePrice, categoryDiscount, saleSource } from "@/lib/pricing";
+import SaleCountdown from "@/components/ui/SaleCountdown";
 import { pickSimilar } from "@/lib/similar";
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
@@ -101,6 +102,17 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const active = await getActiveCategories();
   const activeCategory = category ? active.find((c) => c.slug === category) : undefined;
 
+  // Inherited sale discounts, resolved once and cached per category
+  const discountCache = new Map<number, number>();
+  const discountFor = (categoryId: number | null): number => {
+    if (categoryId == null) return 0;
+    const hit = discountCache.get(categoryId);
+    if (hit !== undefined) return hit;
+    const pct = categoryDiscount(categoryId, active);
+    discountCache.set(categoryId, pct);
+    return pct;
+  };
+
   // Products of the selected branch, or everything that isn't inside a
   // hidden/expired category (uncategorized products always show)
   let productList;
@@ -122,7 +134,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const unfiltered = productList; // kept for the "you might also like" fallback strip
   productList = productList.filter((p) => {
     // Filter on what the customer actually pays, not the crossed-out price
-    const price = effectivePrice(p);
+    const price = effectivePrice(p, discountFor(p.categoryId));
     if (wantedColors.length > 0 && !wantedColors.some((c) => p.colors.includes(c))) return false;
     if (minPrice != null && !isNaN(minPrice) && price < minPrice) return false;
     if (maxPrice != null && !isNaN(maxPrice) && price > maxPrice) return false;
@@ -135,10 +147,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   // ── Sort ──
   switch (sort) {
     case "price-asc":
-      productList.sort((a, b) => effectivePrice(a) - effectivePrice(b));
+      productList.sort((a, b) => effectivePrice(a, discountFor(a.categoryId)) - effectivePrice(b, discountFor(b.categoryId)));
       break;
     case "price-desc":
-      productList.sort((a, b) => effectivePrice(b) - effectivePrice(a));
+      productList.sort((a, b) => effectivePrice(b, discountFor(b.categoryId)) - effectivePrice(a, discountFor(a.categoryId)));
       break;
     case "width-asc":
     case "width-desc": {
@@ -180,12 +192,6 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         )
       : [];
 
-  // Sale badge: product's category sits in a promoted branch
-  const promotedBranchIds = new Set<number>();
-  for (const c of active) {
-    if (c.promoted) for (const id of descendantIds(c.id, active)) promotedBranchIds.add(id);
-  }
-
   // Chips: top-level categories, or the selected category's children
   const roots = buildTree(active);
   const selectedNode = activeCategory
@@ -200,6 +206,17 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const chips: Category[] = selectedNode ? selectedNode.children : roots;
 
   const trail = activeCategory ? categoryPath(activeCategory, active) : [];
+
+  // Which category actually grants the discount here — it may be an ancestor,
+  // and its endsAt is what the countdown ticks down to.
+  const saleCat = activeCategory ? saleSource(activeCategory.id, active) : null;
+  const saleBanner = saleCat
+    ? {
+        category: saleCat,
+        percent: Math.min(Math.round(saleCat.discountPercent), 95),
+        endsAt: saleCat.endsAt ? saleCat.endsAt.toISOString() : null,
+      }
+    : null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -235,15 +252,26 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
       <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
         {activeCategory ? localizedName(activeCategory, locale) : t("title")}
-        {activeCategory?.promoted && (
-          <span
-            className="inline-block align-middle ms-3 text-sm font-bold px-3 py-1 rounded-full"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
-          >
-            {t("saleBadge")}
-          </span>
-        )}
       </h1>
+
+      {/* Sale banner — shown whenever this category (or an ancestor) is on
+          sale, with a live countdown when the sale has an end date. */}
+      {saleBanner && (
+        <div
+          className="mb-6 px-5 py-4 rounded-xl flex flex-wrap items-center gap-x-4 gap-y-2"
+          style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+        >
+          <span className="text-lg font-bold" dir="ltr">🔥 -{saleBanner.percent}%</span>
+          <span className="font-medium">
+            {t("saleBannerText", { category: localizedName(saleBanner.category, locale) })}
+          </span>
+          {saleBanner.endsAt && (
+            <span className="ms-auto">
+              <SaleCountdown endsAt={saleBanner.endsAt} />
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Category chips: top-level, or subcategories of the selection */}
       {chips.length > 0 && (
@@ -273,12 +301,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {visible.map((p, i) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                index={i}
-                onSale={p.categoryId != null && promotedBranchIds.has(p.categoryId)}
-              />
+              <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
             ))}
           </div>
           <Suspense fallback={null}>
@@ -289,7 +312,12 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
       {/* Near-miss suggestions — products that almost matched the filters.
           Only worth showing when filters are on and results are thin. */}
-      <ProductStrip title={t("similarTitle")} subtitle={t("similarSubtitle")} items={nearMisses} />
+      <ProductStrip
+        title={t("similarTitle")}
+        subtitle={t("similarSubtitle")}
+        items={nearMisses}
+        discounts={Object.fromEntries(nearMisses.map((p) => [p.id, discountFor(p.categoryId)]))}
+      />
     </div>
   );
 }

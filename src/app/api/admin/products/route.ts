@@ -18,6 +18,7 @@ import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { deleteImage } from "@/lib/cloudinary";
 import { colorByKey } from "@/lib/colors";
+import { categoryDiscount } from "@/lib/pricing";
 
 /** Auth guard — call at the top of every handler */
 async function requireAdmin() {
@@ -42,11 +43,16 @@ function parseProductBody(body: Record<string, unknown>) {
     return Number.isInteger(n) && n > 0 ? n : null;
   };
 
+  // The "on sale" checkbox is the switch; the sale price is optional even
+  // when it's ticked, because the product may be inheriting its discount
+  // from a sale category (see lib/pricing).
+  const onSale = body.onSale === true;
+
   // Sale price: optional, must be a positive number below the list price.
   // Anything invalid is rejected rather than silently dropped — a wrong
   // discount is a pricing error, not a cosmetic one.
   let salePrice: string | null = null;
-  if (body.salePrice != null && String(body.salePrice).trim() !== "") {
+  if (onSale && body.salePrice != null && String(body.salePrice).trim() !== "") {
     const saleNum = parseFloat(String(body.salePrice));
     if (!Number.isFinite(saleNum) || saleNum <= 0) return { error: "Invalid sale price" };
     if (saleNum >= priceNum) return { error: "Sale price must be below the regular price" };
@@ -62,6 +68,7 @@ function parseProductBody(body: Record<string, unknown>) {
       descriptionEn: optText(body.descriptionEn),
       descriptionRu: optText(body.descriptionRu),
       price: priceNum.toFixed(2),
+      onSale,
       salePrice,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
@@ -77,6 +84,23 @@ function parseProductBody(body: Record<string, unknown>) {
       featured: body.featured === true,
     },
   };
+}
+
+/**
+ * Validate the chosen category and decide whether the product lands inside
+ * a sale branch. Dropping a product into a sale category ticks its "on sale"
+ * box automatically — the owner's model is that the category stamps its
+ * products. It only ever ticks: unticking stays her decision.
+ * Returns the category-not-found error, or the resolved onSale flag.
+ */
+async function resolveCategorySale(
+  categoryId: number | null,
+  onSale: boolean
+): Promise<{ error: string } | { onSale: boolean }> {
+  if (categoryId == null) return { onSale };
+  const all = await db.select().from(categories);
+  if (!all.some((c) => c.id === categoryId)) return { error: "Category not found" };
+  return { onSale: onSale || categoryDiscount(categoryId, all) > 0 };
 }
 
 export async function GET() {
@@ -100,12 +124,10 @@ export async function POST(req: NextRequest) {
     const parsed = parseProductBody(await req.json());
     if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-    if (parsed.data.categoryId != null) {
-      const [cat] = await db.select().from(categories).where(eq(categories.id, parsed.data.categoryId));
-      if (!cat) return NextResponse.json({ error: "Category not found" }, { status: 400 });
-    }
+    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.onSale);
+    if ("error" in sale) return NextResponse.json({ error: sale.error }, { status: 400 });
 
-    const [product] = await db.insert(products).values(parsed.data).returning();
+    const [product] = await db.insert(products).values({ ...parsed.data, onSale: sale.onSale }).returning();
     return NextResponse.json(product, { status: 201 });
   } catch (err) {
     console.error("[admin/products POST]", err);
@@ -125,12 +147,14 @@ export async function PUT(req: NextRequest) {
     const parsed = parseProductBody(body);
     if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-    if (parsed.data.categoryId != null) {
-      const [cat] = await db.select().from(categories).where(eq(categories.id, parsed.data.categoryId));
-      if (!cat) return NextResponse.json({ error: "Category not found" }, { status: 400 });
-    }
+    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.onSale);
+    if ("error" in sale) return NextResponse.json({ error: sale.error }, { status: 400 });
 
-    const [updated] = await db.update(products).set(parsed.data).where(eq(products.id, id)).returning();
+    const [updated] = await db
+      .update(products)
+      .set({ ...parsed.data, onSale: sale.onSale })
+      .where(eq(products.id, id))
+      .returning();
     if (!updated) return NextResponse.json({ error: "Product not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch (err) {

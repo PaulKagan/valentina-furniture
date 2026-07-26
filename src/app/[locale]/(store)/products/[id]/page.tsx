@@ -27,7 +27,8 @@ import {
 } from "@/lib/catalog";
 import { imageUrl } from "@/lib/images";
 import { colorByKey, colorLabel } from "@/lib/colors";
-import { effectivePrice, listPrice, discountPercent } from "@/lib/pricing";
+import { effectivePrice, listPrice, discountPercent, categoryDiscount, saleSource } from "@/lib/pricing";
+import SaleCountdown from "@/components/ui/SaleCountdown";
 import { pickSimilar } from "@/lib/similar";
 import ProductStrip from "@/components/ui/ProductStrip";
 
@@ -78,16 +79,24 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(id);
   if (!product) notFound();
 
-  const price = effectivePrice(product);
-  const wasPrice = listPrice(product);
-  const discount = discountPercent(product);
+  // Resolve any discount inherited from a sale category first — everything
+  // below (price, struck price, badge, JSON-LD, similar items) uses it.
+  const activeCatsForPrice = await getActiveCategories();
+  const inherited = categoryDiscount(product.categoryId, activeCatsForPrice);
+  const price = effectivePrice(product, inherited);
+  const wasPrice = listPrice(product, inherited);
+  const discount = discountPercent(product, inherited);
+  // The deadline only exists when the discount is inherited from a scheduled
+  // sale category — a hand-typed sale price has no end date.
+  const saleSrc = product.salePrice ? null : saleSource(product.categoryId, activeCatsForPrice);
+  const saleEndsAt = discount !== null && saleSrc?.endsAt ? saleSrc.endsAt.toISOString() : null;
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
   const img = imageUrl(product.imageUrl, "detail");
 
   // "You might also like" — same branch / colors / price bracket.
   // Hidden-category products are excluded so nothing leaks into the store.
-  const activeCats = await getActiveCategories();
+  const activeCats = activeCatsForPrice;
   const activeIds = new Set(activeCats.map((c) => c.id));
   const pool = (await db.select().from(products)).filter(
     (p) => p.categoryId == null || activeIds.has(p.categoryId)
@@ -121,7 +130,7 @@ export default async function ProductPage({ params }: Props) {
       {/* Product structured data — Google shows price in search results */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product, inherited)) }}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -177,6 +186,13 @@ export default async function ProductPage({ params }: Props) {
                 </>
               )}
             </div>
+            {/* Urgency, but only when it's true: a dated sale category is the
+                only thing here with a real deadline. */}
+            {saleEndsAt && (
+              <p className="mt-2" style={{ color: "var(--primary)" }}>
+                <SaleCountdown endsAt={saleEndsAt} />
+              </p>
+            )}
           </div>
 
           {description && (
@@ -249,7 +265,13 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       {/* Similar items */}
-      <ProductStrip title={t("similarTitle")} items={similar} />
+      <ProductStrip
+        title={t("similarTitle")}
+        items={similar}
+        discounts={Object.fromEntries(
+          similar.map((p) => [p.id, categoryDiscount(p.categoryId, activeCats)])
+        )}
+      />
     </div>
   );
 }

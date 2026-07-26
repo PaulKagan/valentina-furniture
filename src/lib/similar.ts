@@ -24,6 +24,7 @@ export type SimilarCandidate = {
   colors: string[];
   price: string;
   salePrice: string | null;
+  onSale: boolean;
   widthCm: number | null;
   inStock: boolean;
 };

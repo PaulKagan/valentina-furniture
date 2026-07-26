@@ -15,6 +15,7 @@
  */
 import * as XLSX from "xlsx";
 import { colorKeyFromName, colorLabel, COLORS } from "@/lib/colors";
+import { applyDiscount } from "@/lib/pricing";
 import type { Category, Product } from "@/lib/catalog";
 
 export const HEADERS = [
@@ -26,6 +27,7 @@ export const HEADERS = [
   "תיאור באנגלית",
   "תיאור ברוסית",
   "מחיר",
+  "אחוז הנחה",
   "מחיר מבצע",
   "צבעים",
   "רוחב סמ",
@@ -46,6 +48,7 @@ export type ImportRow = {
   descriptionEn: string | null;
   descriptionRu: string | null;
   price: string;
+  onSale: boolean;
   salePrice: string | null;
   colors: string[]; // palette keys
   widthCm: number | null;
@@ -70,6 +73,7 @@ export function buildTemplate(): Buffer {
     "תיאור באנגלית": "",
     "תיאור ברוסית": "",
     "מחיר": 4990,
+    "אחוז הנחה": "",
     "מחיר מבצע": "",
     "צבעים": "אפור, בז'",
     "רוחב סמ": 210,
@@ -91,7 +95,8 @@ export function buildTemplate(): Buffer {
     ["• צבעים: מופרדים בפסיק, מתוך הרשימה:"],
     [COLORS.map((c) => c.he).join(", ")],
     ["• מידות (רוחב/עומק/גובה): מספרים בסנטימטרים בלבד, למשל 210. אופציונלי — משמש לסינון ומיון בחנות."],
-    ["• מחיר מבצע: אופציונלי. אם מולא ונמוך מהמחיר הרגיל — המחיר הרגיל יוצג מחוק והמוצר יסומן במבצע."],
+    ["• אחוז הנחה: אופציונלי, מספר שלם בלבד (למשל 20). מחושב ממנו מחיר המבצע אוטומטית. ריק = ללא הנחה."],
+    ["• מחיר מבצע: אופציונלי, וגובר על אחוז ההנחה אם שניהם מולאו. אם נמוך מהמחיר הרגיל — המחיר הרגיל יוצג מחוק והמוצר יסומן במבצע."],
     ["• במלאי / מומלץ: כן או לא."],
     ["• קובץ תמונה: שם הקובץ בדיוק כפי שהוא אצלכם במחשב (למשל sofa1.jpg). בעת הייבוא בוחרים גם את קובצי התמונות."],
     ["• אם קיים כבר מוצר עם אותו שם בעברית — הנתונים שלו יעודכנו במקום ליצור כפילות."],
@@ -106,6 +111,22 @@ export function buildTemplate(): Buffer {
 }
 
 /* ── Export ───────────────────────────────────────────────────── */
+
+/**
+ * The product's OWN discount as a whole number, or "" when it has none.
+ * Discounts inherited from a sale category are deliberately left out: they
+ * live on the category, and writing them into each row would freeze them —
+ * re-importing the file would turn a live category sale into per-product
+ * prices that no longer end when the category's schedule does.
+ */
+function ownDiscountPercent(p: Product): number | "" {
+  const list = parseFloat(p.price);
+  const sale = p.salePrice ? parseFloat(p.salePrice) : NaN;
+  if (!Number.isFinite(list) || list <= 0 || !Number.isFinite(sale) || sale <= 0 || sale >= list) {
+    return "";
+  }
+  return Math.round((1 - sale / list) * 100);
+}
 
 export function buildExport(products: Product[], categories: Category[]): Buffer {
   const byId = new Map(categories.map((c) => [c.id, c]));
@@ -129,6 +150,9 @@ export function buildExport(products: Product[], categories: Category[]): Buffer
     "תיאור באנגלית": p.descriptionEn ?? "",
     "תיאור ברוסית": p.descriptionRu ?? "",
     "מחיר": parseFloat(p.price),
+    // Whole number, derived from the two prices — round-tripping the export
+    // back through the import must not shift anyone's price by a shekel.
+    "אחוז הנחה": ownDiscountPercent(p),
     "מחיר מבצע": p.salePrice ? parseFloat(p.salePrice) : "",
     "צבעים": p.colors.map((k) => colorLabel(k, "he")).join(", "),
     "רוחב סמ": p.widthCm ?? "",
@@ -182,8 +206,17 @@ export function parseImport(buffer: Buffer): ImportRow[] {
     const price = parseFloat(priceRaw);
     if (!priceRaw || isNaN(price) || price < 0) errors.push("badPrice");
 
-    // Sale price: ignored unless it is a positive number below the list price
+    // Sale: an explicit sale price wins; otherwise a discount % computes one.
+    // An empty percentage cell is 0 — no discount, never null/undefined, so
+    // downstream arithmetic never has to guard for it.
     const saleRaw = str(row["מחיר מבצע"]).replace(/[₪,\s]/g, "");
+    const pctRaw = str(row["אחוז הנחה"]).replace(/[%,\s]/g, "");
+    const pctNum = pctRaw ? parseFloat(pctRaw) : 0;
+    const pct = Number.isFinite(pctNum) && pctNum > 0 ? Math.round(pctNum) : 0;
+    if (pctRaw && (!Number.isFinite(pctNum) || pctNum < 0 || pctNum >= 100)) {
+      warnings.push(`badDiscountPercent:${pctRaw}`);
+    }
+
     let salePrice: string | null = null;
     if (saleRaw) {
       const saleNum = parseFloat(saleRaw);
@@ -192,6 +225,8 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       } else {
         salePrice = saleNum.toFixed(2);
       }
+    } else if (pct > 0 && pct < 100 && Number.isFinite(price) && price > 0) {
+      salePrice = applyDiscount(price, pct).toFixed(2);
     }
 
     // Colors: any language → palette key; unknown names become a warning
@@ -222,6 +257,7 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       descriptionEn: opt(row["תיאור באנגלית"]),
       descriptionRu: opt(row["תיאור ברוסית"]),
       price: isNaN(price) ? "0" : price.toFixed(2),
+      onSale: salePrice !== null,
       salePrice,
       colors,
       widthCm: dim(row["רוחב סמ"]),

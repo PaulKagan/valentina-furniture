@@ -38,6 +38,7 @@ export default async function AdminLayout({
           { href: "/admin/dashboard", label: t("dashboard") },
           { href: "/admin/categories", label: t("categories") },
           { href: "/admin/products", label: t("products") },
+          { href: "/admin/sales", label: t("sales") },
           { href: "/admin/orders", label: t("orders") },
         ].map((l) => (
           <Link

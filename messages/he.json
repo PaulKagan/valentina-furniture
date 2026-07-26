@@ -55,7 +55,6 @@
   "products": {
     "title": "כל המוצרים",
     "filterAll": "הכל",
-    "saleBadge": "🔥 מבצע",
     "noProducts": "לא נמצאו מוצרים בקטגוריה זו.",
     "outOfStock": "אזל מהמלאי",
     "addToCart": "הוסף",
@@ -63,7 +62,10 @@
     "addAriaLabel": "הוסף {name} לעגלה",
     "similarTitle": "אולי יעניין אתכם",
     "similarSubtitle": "מוצרים דומים שלא נכללו בסינון",
-    "wasPrice": "מחיר קודם"
+    "wasPrice": "מחיר קודם",
+    "saleBannerText": "הנחה על כל המוצרים בקטגוריית {category}",
+    "saleEndsIn": "המבצע מסתיים בעוד",
+    "daysShort": "{days, plural, one {יום #} two {יומיים} other {# ימים}}"
   },
   "productDetail": {
     "outOfStock": "אזל מהמלאי",
@@ -136,7 +138,8 @@
       "products": "מוצרים",
       "orders": "הזמנות",
       "signOut": "יציאה",
-      "backToStore": "לחנות"
+      "backToStore": "לחנות",
+      "sales": "מבצעים"
     },
     "categories": {
       "title": "קטגוריות",
@@ -154,7 +157,7 @@
       "noParent": "— קטגוריה ראשית —",
       "visibleLabel": "מוצגת בחנות",
       "promotedLabel": "קטגוריה מקודמת",
-      "promotedHint": "מוצגת בדף הבית, ראשונה בתפריט, ועם תג מבצע על המוצרים.",
+      "promotedHint": "מוצגת בדף הבית וראשונה בתפריט. אינה נותנת הנחה — לשם כך סמנו \"קטגוריית מבצע\".",
       "scheduleLegend": "קטגוריה זמנית",
       "scheduleHint": "אופציונלי — הקטגוריה תופיע רק בין התאריכים (למשל מבצע חג).",
       "startsAt": "מתאריך",
@@ -178,7 +181,13 @@
       "badgeExpired": "פגה",
       "badgeTemporary": "זמנית",
       "errorSave": "שגיאה בשמירה.",
-      "errorSlug": "הכתובת (slug) כבר קיימת."
+      "errorSlug": "הכתובת (slug) כבר קיימת.",
+      "saleLegend": "מבצע",
+      "isSaleCategoryLabel": "קטגוריית מבצע",
+      "discountPercentLabel": "אחוז הנחה (%)",
+      "saleHint": "ההנחה חלה על כל המוצרים בקטגוריה ובתתי-הקטגוריות שלה, ומסומנים בלהבה. לסיום המבצע בתאריך מסוים — קבעו \"עד תאריך\" למטה.",
+      "badgeSale": "מבצע {percent}%-",
+      "errorSaleDiscount": "קטגוריית מבצע חייבת אחוז הנחה גדול מ-0"
     },
     "dashboard": {
       "title": "סקירה כללית",
@@ -261,7 +270,11 @@
       "onSaleLabel": "המוצר במבצע",
       "salePriceLabel": "מחיר מבצע (₪)",
       "discountPreview": "הנחה של {percent}%",
-      "salePriceTooHigh": "מחיר המבצע חייב להיות נמוך מהמחיר הרגיל"
+      "salePriceTooHigh": "מחיר המבצע חייב להיות נמוך מהמחיר הרגיל",
+      "discountPercentLabel": "אחוז הנחה (%)",
+      "inheritedHint": "ללא מחיר מבצע ידני, המוצר יקבל {percent}% הנחה מהקטגוריה \"{category}\" — ויתעדכן אוטומטית אם ההנחה תשתנה או תסתיים.",
+      "saleNeedsPrice": "מלאו אחוז הנחה או מחיר מבצע — אחרת המוצר לא יוצג כמבצע.",
+      "categoryIsSaleHint": "\"{category}\" היא קטגוריית מבצע ({percent}% הנחה)."
     },
     "import": {
       "title": "ייבוא מוצרים מאקסל",
@@ -328,6 +341,33 @@
       "errorSave": "שגיאה בשמירה",
       "emailSent": "המייל נשלח",
       "emailFailed": "שליחת המייל נכשלה"
+    },
+    "sales": {
+      "title": "מבצעים",
+      "subtitle": "כל מה שמוצג כרגע בהנחה בחנות — מבצעי קטגוריה ומבצעים על מוצרים בודדים.",
+      "categoriesTitle": "קטגוריות במבצע",
+      "productsTitle": "מוצרים בהנחה ({count})",
+      "category": "קטגוריה",
+      "product": "מוצר",
+      "discount": "הנחה",
+      "status": "סטטוס",
+      "endsAt": "מסתיים",
+      "was": "מחיר מקורי",
+      "now": "מחיר בפועל",
+      "origin": "מקור ההנחה",
+      "actions": "פעולות",
+      "statusLive": "פעיל",
+      "statusInactive": "לא פעיל (מוסתר או מחוץ לתאריכים)",
+      "originIndividual": "מחיר מבצע ידני",
+      "originCategory": "מקטגוריית {category}",
+      "edit": "עריכה",
+      "endSale": "סיום מבצע",
+      "endAllIndividual": "סיום כל המבצעים הידניים ({count})",
+      "endAllConfirm": "לסיים {count} מבצעים שהוגדרו ידנית? המחירים יחזרו למחיר המלא.",
+      "endCategoryConfirm": "לסיים את המבצע בקטגוריה \"{name}\"? כל המוצרים בה יחזרו למחיר המלא.",
+      "endProductConfirm": "לסיים את המבצע על \"{name}\"?",
+      "noSaleCategories": "אין כרגע קטגוריות במבצע.",
+      "noDiscounted": "אין כרגע מוצרים בהנחה."
     }
   },
   "a11y": {

@@ -27,6 +27,7 @@ import {
   EyeOff,
   Clock,
   Star,
+  Flame,
 } from "lucide-react";
 import { imageUrl } from "@/lib/images";
 
@@ -41,6 +42,8 @@ type Category = {
   startsAt: string | null;
   endsAt: string | null;
   promoted: boolean;
+  isSaleCategory: boolean;
+  discountPercent: number;
   sortOrder: number;
   imageUrl: string | null;
   imagePublicId: string | null;
@@ -57,6 +60,8 @@ type FormState = {
   startsAt: string; // datetime-local strings; "" = unset
   endsAt: string;
   promoted: boolean;
+  isSaleCategory: boolean;
+  discountPercent: string; // "" is allowed while typing; sent as 0
   imageUrl: string | null;
   imagePublicId: string | null;
 };
@@ -72,6 +77,8 @@ const EMPTY_FORM: FormState = {
   startsAt: "",
   endsAt: "",
   promoted: false,
+  isSaleCategory: false,
+  discountPercent: "",
   imageUrl: null,
   imagePublicId: null,
 };
@@ -132,6 +139,10 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : null,
       endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : null,
       promoted: form.promoted,
+      isSaleCategory: form.isSaleCategory,
+      // Empty field means 0, never null — the pricing helpers treat it as
+      // "no discount" and can keep doing plain arithmetic
+      discountPercent: form.discountPercent.trim() === "" ? 0 : parseInt(form.discountPercent, 10) || 0,
       sortOrder: form.id != null ? cats.find((c) => c.id === form.id)?.sortOrder ?? 0 : (childrenOf.get(form.parentId)?.length ?? 0),
       imageUrl: form.imageUrl,
       imagePublicId: form.imagePublicId,
@@ -143,7 +154,13 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error === "Slug already exists" ? t("errorSlug") : t("errorSave"));
+      setError(
+        data.error === "Slug already exists"
+          ? t("errorSlug")
+          : data.error === "A sale category needs a discount above 0%"
+            ? t("errorSaleDiscount")
+            : t("errorSave")
+      );
     } else {
       setForm(null);
       await refresh();
@@ -270,6 +287,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           )}
 
           <span className="flex items-center gap-1.5 ms-2">
+            {cat.isSaleCategory && cat.discountPercent > 0 &&
+              badge(t("badgeSale", { percent: cat.discountPercent }), <Flame size={11} />, "promo")}
             {cat.promoted && badge(t("badgePromoted"), <Star size={11} />, "promo")}
             {!cat.visible && badge(t("badgeHidden"), <EyeOff size={11} />, "muted")}
             {sched === "future" && badge(t("badgeScheduled"), <Clock size={11} />, "warn")}
@@ -309,6 +328,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
                   startsAt: toLocalInput(cat.startsAt),
                   endsAt: toLocalInput(cat.endsAt),
                   promoted: cat.promoted,
+                  isSaleCategory: cat.isSaleCategory,
+                  discountPercent: cat.discountPercent ? String(cat.discountPercent) : "",
                   imageUrl: cat.imageUrl,
                   imagePublicId: cat.imagePublicId,
                 })
@@ -424,6 +445,41 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             {t("promotedLabel")}
           </label>
           <p className="text-xs -mt-2" style={{ color: "var(--muted)" }}>{t("promotedHint")}</p>
+
+          {/* sale category — the discount applies to this branch and every
+              subcategory under it. Nothing is written to the products'
+              prices: the percentage is applied live, so ending the sale
+              (or letting the schedule expire) restores full price by itself. */}
+          <fieldset className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
+            <legend className="text-sm font-medium px-1" style={{ color: "var(--ink)" }}>{t("saleLegend")}</legend>
+            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--ink)" }}>
+              <input
+                type="checkbox"
+                checked={form.isSaleCategory}
+                onChange={(e) => setForm({ ...form, isSaleCategory: e.target.checked })}
+              />
+              {t("isSaleCategoryLabel")}
+            </label>
+            {form.isSaleCategory && (
+              <>
+                <label className="text-xs font-medium" style={{ color: "var(--ink)" }}>
+                  {t("discountPercentLabel")}
+                  <input
+                    type="number"
+                    min="1"
+                    max="95"
+                    step="1"
+                    dir="ltr"
+                    className={`${inputClass} mt-1`}
+                    style={inputStyle}
+                    value={form.discountPercent}
+                    onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+                  />
+                </label>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>{t("saleHint")}</p>
+              </>
+            )}
+          </fieldset>
 
           {/* schedule window */}
           <fieldset className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>

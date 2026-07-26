@@ -13,10 +13,13 @@ export default function ProductStrip({
   title,
   subtitle,
   items,
+  discounts = {},
 }: {
   title: string;
   subtitle?: string;
   items: Product[];
+  /** productId → inherited category discount % */
+  discounts?: Record<number, number>;
 }) {
   if (items.length === 0) return null;
 
@@ -35,7 +38,7 @@ export default function ProductStrip({
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         {items.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} />
+          <ProductCard key={p.id} product={p} index={i} discount={discounts[p.id] ?? 0} />
         ))}
       </div>
     </section>

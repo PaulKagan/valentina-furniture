@@ -55,9 +55,10 @@ export function productJsonLd(product: {
   description: string | null;
   price: string;
   salePrice: string | null;
+  onSale: boolean;
   imageUrl: string | null;
   inStock: boolean;
-}) {
+}, discount = 0) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -68,7 +69,7 @@ export function productJsonLd(product: {
     offers: {
       "@type": "Offer",
       priceCurrency: "ILS",
-      price: effectivePrice(product).toFixed(2),
+      price: effectivePrice(product, discount).toFixed(2),
       availability: product.inStock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",

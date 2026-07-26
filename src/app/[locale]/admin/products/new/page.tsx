@@ -33,6 +33,7 @@ export default async function NewProductPage({
         descriptionEn: source.descriptionEn ?? "",
         descriptionRu: source.descriptionRu ?? "",
         price: source.price,
+        onSale: source.onSale,
         salePrice: source.salePrice ?? "",
         categoryId: source.categoryId,
         colors: source.colors,

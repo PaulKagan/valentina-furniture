@@ -15,8 +15,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { wouldCreateCycle } from "@/lib/catalog";
+import { eq, inArray } from "drizzle-orm";
+import { wouldCreateCycle, descendantIds } from "@/lib/catalog";
 import { deleteImage } from "@/lib/cloudinary";
 
 async function requireAdmin() {
@@ -54,6 +54,20 @@ function parseCategoryBody(body: Record<string, unknown>) {
   const endsAt = toDate(body.endsAt);
   if (startsAt && endsAt && endsAt < startsAt) return { error: "End date is before start date" };
 
+  // Sale category: a whole-number percentage, clamped to 0–95. An empty or
+  // unparseable field means "no discount" (0) — never null, so the pricing
+  // helpers can do arithmetic on it without guarding every call site.
+  const isSaleCategory = body.isSaleCategory === true;
+  const rawPercent =
+    typeof body.discountPercent === "number"
+      ? body.discountPercent
+      : parseFloat(String(body.discountPercent ?? ""));
+  const discountPercent = Number.isFinite(rawPercent)
+    ? Math.min(95, Math.max(0, Math.round(rawPercent)))
+    : 0;
+  if (isSaleCategory && discountPercent <= 0)
+    return { error: "A sale category needs a discount above 0%" };
+
   return {
     data: {
       name,
@@ -65,11 +79,36 @@ function parseCategoryBody(body: Record<string, unknown>) {
       startsAt,
       endsAt,
       promoted: body.promoted === true,
+      isSaleCategory,
+      // Stored even when the box is unticked, so unticking and re-ticking
+      // doesn't lose the number she typed
+      discountPercent,
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
     },
   };
+}
+
+/**
+ * Stamp every product in a branch as "on sale".
+ *
+ * The owner's mental model is that a sale category marks its products, not
+ * that it silently computes over them — so the checkbox on each product row
+ * really does get ticked. The *price* is still derived at read time from the
+ * category percentage (see lib/pricing), so the stamp is a flag, never a
+ * frozen number: change the percentage and every price follows.
+ * Best-effort — a failure here must not fail the category save.
+ */
+async function stampBranchOnSale(categoryId: number) {
+  try {
+    const all = await db.select().from(categories);
+    const ids = descendantIds(categoryId, all);
+    if (ids.length === 0) return;
+    await db.update(products).set({ onSale: true }).where(inArray(products.categoryId, ids));
+  } catch (err) {
+    console.error("[admin/categories stamp]", err);
+  }
 }
 
 export async function GET() {
@@ -98,6 +137,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
 
     const [created] = await db.insert(categories).values(parsed.data).returning();
+    if (created.isSaleCategory && created.discountPercent > 0) await stampBranchOnSale(created.id);
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     console.error("[admin/categories POST]", err);
@@ -127,6 +167,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Invalid parent — would create a cycle" }, { status: 400 });
 
     const [updated] = await db.update(categories).set(parsed.data).where(eq(categories.id, id)).returning();
+    if (updated.isSaleCategory && updated.discountPercent > 0) await stampBranchOnSale(updated.id);
     return NextResponse.json(updated);
   } catch (err) {
     console.error("[admin/categories PUT]", err);

@@ -12,8 +12,16 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
+import { applyDiscount, categoryDiscount } from "@/lib/pricing";
 
-type Category = { id: number; name: string; slug: string; parentId: number | null };
+type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  isSaleCategory: boolean;
+  discountPercent: number;
+};
 type Lang = "he" | "en" | "ru";
 
 type ProductData = {
@@ -25,6 +33,7 @@ type ProductData = {
   descriptionEn: string;
   descriptionRu: string;
   price: string;
+  onSale: boolean;
   salePrice: string;
   categoryId: number | null;
   colors: string[];
@@ -56,6 +65,7 @@ export default function ProductForm({
     descriptionEn: "",
     descriptionRu: "",
     price: "",
+    onSale: false,
     salePrice: "",
     categoryId: null,
     colors: [],
@@ -70,8 +80,16 @@ export default function ProductForm({
   });
 
   const [lang, setLang] = useState<Lang>("he");
-  // Sale toggle starts on when the product already carries a sale price
-  const [onSale, setOnSale] = useState(!!initial?.salePrice);
+  // The percent field is its own state: it's a typing aid for the sale price,
+  // not a stored column. Only the sale price is ever persisted, so there's
+  // no way for a saved percentage and a saved price to drift apart.
+  const [percentInput, setPercentInput] = useState(() => {
+    const p = parseFloat(initial?.price ?? "");
+    const s = parseFloat(initial?.salePrice ?? "");
+    return Number.isFinite(p) && p > 0 && Number.isFinite(s) && s > 0 && s < p
+      ? String(Math.round((1 - s / p) * 100))
+      : "";
+  });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -87,7 +105,10 @@ export default function ProductForm({
     const out: { id: number; label: string }[] = [];
     const walk = (parentId: number | null, depth: number) => {
       for (const c of childrenOf.get(parentId) ?? []) {
-        out.push({ id: c.id, label: `${"— ".repeat(depth)}${c.name}` });
+        // Sale categories are flagged in the dropdown so the auto-tick that
+        // follows is never a surprise
+        const sale = c.isSaleCategory && c.discountPercent > 0 ? `  🔥 -${c.discountPercent}%` : "";
+        out.push({ id: c.id, label: `${"— ".repeat(depth)}${c.name}${sale}` });
         walk(c.id, depth + 1);
       }
     };
@@ -119,7 +140,9 @@ export default function ProductForm({
     const num = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
     const payload = {
       ...form,
-      salePrice: form.salePrice.trim() === "" ? null : form.salePrice,
+      // No sale price with the box ticked is valid: the product then follows
+      // whatever its sale category grants, and follows it as it changes.
+      salePrice: form.onSale && form.salePrice.trim() !== "" ? form.salePrice : null,
       widthCm: num(form.widthCm),
       depthCm: num(form.depthCm),
       heightCm: num(form.heightCm),
@@ -145,15 +168,61 @@ export default function ProductForm({
     setSaving(false);
   }
 
-  // Live feedback while she types the discounted price
+  /* ── Sale: percent ⇄ price, bound both ways ──────────────────────────────
+     Typing a percentage fills the price (rounded to a real price tag);
+     typing a price recomputes the percentage. Because the price is rounded,
+     the percentage it implies is usually a hair off what she typed — so the
+     percent field keeps HER number while she's in it, and the store always
+     shows a whole number derived from the price that's actually charged. */
   const listNum = parseFloat(form.price);
+  const listValid = Number.isFinite(listNum) && listNum > 0;
   const saleNum = parseFloat(form.salePrice);
   const saleFilled = form.salePrice.trim() !== "" && Number.isFinite(saleNum);
-  const saleInvalid = onSale && saleFilled && Number.isFinite(listNum) && saleNum >= listNum;
-  const discountPreview =
-    onSale && saleFilled && Number.isFinite(listNum) && saleNum < listNum && listNum > 0
+  const saleInvalid = form.onSale && saleFilled && listValid && saleNum >= listNum;
+
+  /** % typed → fill the sale price. Empty percent clears the price, not the box. */
+  function onPercentChange(raw: string) {
+    setPercentInput(raw);
+    if (raw.trim() === "") return setForm((f) => ({ ...f, salePrice: "" }));
+    const pct = parseInt(raw, 10);
+    if (!Number.isFinite(pct) || pct <= 0 || pct >= 100 || !listValid) return;
+    setForm((f) => ({ ...f, salePrice: String(applyDiscount(listNum, pct)) }));
+  }
+
+  /** Price typed → recompute the percentage, whole numbers only. */
+  function onSalePriceChange(raw: string) {
+    setForm((f) => ({ ...f, salePrice: raw }));
+    const n = parseFloat(raw);
+    if (raw.trim() === "" || !Number.isFinite(n) || !listValid || n >= listNum) return setPercentInput("");
+    setPercentInput(String(Math.round((1 - n / listNum) * 100)));
+  }
+
+  // The percentage the store will actually print, derived from the price
+  const effectivePercent =
+    form.onSale && saleFilled && listValid && saleNum < listNum
       ? Math.round((1 - saleNum / listNum) * 100)
       : null;
+
+  // Discount inherited from the chosen category branch (0 = none). Shown as a
+  // note so she knows why the box ticked itself, and what happens if she
+  // leaves the sale price blank.
+  const inheritedPercent = categoryDiscount(form.categoryId, categories);
+  const inheritedFrom = useMemo(() => {
+    if (!inheritedPercent || form.categoryId == null) return null;
+    const byId = new Map(categories.map((c) => [c.id, c]));
+    let cur = byId.get(form.categoryId);
+    for (let i = 0; cur && i <= categories.length; i++) {
+      if (cur.isSaleCategory && cur.discountPercent > 0) return cur.name;
+      cur = cur.parentId != null ? byId.get(cur.parentId) : undefined;
+    }
+    return null;
+  }, [form.categoryId, categories, inheritedPercent]);
+
+  /** Category changed — a sale branch ticks the box for her (never unticks). */
+  function onCategoryChange(categoryId: number | null) {
+    const pct = categoryDiscount(categoryId, categories);
+    setForm((f) => ({ ...f, categoryId, onSale: f.onSale || pct > 0 }));
+  }
 
   const inputClass = "h-11 px-4 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm w-full";
   const inputStyle = { borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--bg)" };
@@ -226,42 +295,73 @@ export default function ProductForm({
         <input type="number" min="0" step="0.01" className={inputClass} style={inputStyle} required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
       </div>
 
-      {/* Sale — ticking the box reveals the discounted price field.
-          Unticking clears it, so a product can never keep a stale sale price. */}
-      <div className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
+      {/* Sale — ticking the box reveals the discount % and the sale price,
+          bound to each other. Unticking clears the price, so a product can
+          never keep a stale sale price it isn't showing. */}
+      <div className="flex flex-col gap-3 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
         <label className="flex items-center gap-2 text-sm font-medium cursor-pointer" style={{ color: "var(--ink)" }}>
           <input
             type="checkbox"
-            checked={onSale}
+            checked={form.onSale}
             onChange={(e) => {
-              setOnSale(e.target.checked);
-              if (!e.target.checked) setForm({ ...form, salePrice: "" });
+              const checked = e.target.checked;
+              setForm({ ...form, onSale: checked, salePrice: checked ? form.salePrice : "" });
+              if (!checked) setPercentInput("");
             }}
           />
           {t("onSaleLabel")}
         </label>
 
-        {onSale && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>{t("salePriceLabel")}</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className={inputClass}
-              style={inputStyle}
-              value={form.salePrice}
-              onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
-            />
-            {discountPreview !== null && (
+        {form.onSale && (
+          <>
+            <div className="flex gap-3">
+              <label className="flex-1 text-xs font-medium" style={{ color: "var(--muted)" }}>
+                {t("discountPercentLabel")}
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  step="1"
+                  dir="ltr"
+                  className={`${inputClass} mt-1`}
+                  style={inputStyle}
+                  value={percentInput}
+                  onChange={(e) => onPercentChange(e.target.value)}
+                />
+              </label>
+              <label className="flex-1 text-xs font-medium" style={{ color: "var(--muted)" }}>
+                {t("salePriceLabel")}
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  dir="ltr"
+                  className={`${inputClass} mt-1`}
+                  style={inputStyle}
+                  value={form.salePrice}
+                  onChange={(e) => onSalePriceChange(e.target.value)}
+                />
+              </label>
+            </div>
+
+            {effectivePercent !== null && (
               <p className="text-xs font-medium" style={{ color: "var(--primary)" }}>
-                {t("discountPreview", { percent: discountPreview })}
+                {t("discountPreview", { percent: effectivePercent })}
               </p>
             )}
             {saleInvalid && (
               <p className="text-xs" style={{ color: "oklch(0.45 0.15 25)" }}>{t("salePriceTooHigh")}</p>
             )}
-          </div>
+            {/* Blank sale price + a sale category = follow the category, live */}
+            {!saleFilled && inheritedPercent > 0 && inheritedFrom && (
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                {t("inheritedHint", { category: inheritedFrom, percent: inheritedPercent })}
+              </p>
+            )}
+            {!saleFilled && inheritedPercent === 0 && (
+              <p className="text-xs" style={{ color: "oklch(0.55 0.12 60)" }}>{t("saleNeedsPrice")}</p>
+            )}
+          </>
         )}
       </div>
 
@@ -271,13 +371,18 @@ export default function ProductForm({
           className={inputClass}
           style={inputStyle}
           value={form.categoryId ?? ""}
-          onChange={(e) => setForm({ ...form, categoryId: e.target.value ? parseInt(e.target.value) : null })}
+          onChange={(e) => onCategoryChange(e.target.value ? parseInt(e.target.value) : null)}
         >
           <option value="">{t("noCategoryOption")}</option>
           {categoryOptions.map((c) => (
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
+        {inheritedPercent > 0 && inheritedFrom && (
+          <p className="text-xs" style={{ color: "var(--primary)" }}>
+            {t("categoryIsSaleHint", { category: inheritedFrom, percent: inheritedPercent })}
+          </p>
+        )}
       </div>
 
       {/* Dimensions — drive the "fits my space" filter and sorting */}
