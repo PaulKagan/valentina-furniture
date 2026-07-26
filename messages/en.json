@@ -13,7 +13,8 @@
     "menuLabel": "Menu",
     "nav": {
       "allProducts": "All Products"
-    }
+    },
+    "brandShort": "Valentina"
   },
   "footer": {
     "tagline": "Quality home furniture — we sell not just furniture, but the feeling of home.",
@@ -61,7 +62,8 @@
     "added": "Added ✓",
     "addAriaLabel": "Add {name} to cart",
     "similarTitle": "You might also like",
-    "similarSubtitle": "Similar products that didn't match your filters"
+    "similarSubtitle": "Similar products that didn't match your filters",
+    "wasPrice": "Was"
   },
   "productDetail": {
     "outOfStock": "Out of stock",
@@ -75,7 +77,8 @@
     "depth": "D",
     "height": "H",
     "cm": "cm",
-    "similarTitle": "You might also like"
+    "similarTitle": "You might also like",
+    "wasPrice": "Was"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -254,7 +257,11 @@
       "dimensionsLabel": "Dimensions (cm)",
       "widthLabel": "Width",
       "depthLabel": "Depth",
-      "heightLabel": "Height"
+      "heightLabel": "Height",
+      "onSaleLabel": "This product is on sale",
+      "salePriceLabel": "Sale price (₪)",
+      "discountPreview": "{percent}% off",
+      "salePriceTooHigh": "The sale price must be lower than the regular price"
     },
     "import": {
       "title": "Import products from Excel",
@@ -285,7 +292,8 @@
         "willUpdate": "Will update existing product",
         "unknownColor": "Unknown color: {detail}",
         "imageNotProvided": "Photo not attached: {detail}",
-        "rowFailed": "Row failed"
+        "rowFailed": "Row failed",
+        "badSalePrice": "Invalid sale price: {detail}"
       }
     },
     "orderDetail": {

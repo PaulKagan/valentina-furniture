@@ -23,11 +23,20 @@ export default async function StoreLayout({
   const active = await getActiveCategories();
   const roots = buildTree(active);
 
-  // Cap nav length — a furniture store nav shouldn't overflow the header
+  // Cap nav length — a furniture store nav shouldn't overflow the header.
+  // Two levels of children ride along for the dropdown.
   const navCategories: NavCategory[] = roots.slice(0, 6).map((c) => ({
     href: `/products?category=${c.slug}`,
     label: localizedName(c, locale),
     promoted: c.promoted,
+    children: c.children.map((child) => ({
+      href: `/products?category=${child.slug}`,
+      label: localizedName(child, locale),
+      children: child.children.map((grand) => ({
+        href: `/products?category=${grand.slug}`,
+        label: localizedName(grand, locale),
+      })),
+    })),
   }));
 
   return (

@@ -1,3 +1,5 @@
+import { effectivePrice } from "./pricing";
+
 /**
  * "Similar items" scoring — pure, client-safe (no DB imports).
  *
@@ -21,6 +23,7 @@ export type SimilarCandidate = {
   categoryId: number | null;
   colors: string[];
   price: string;
+  salePrice: string | null;
   widthCm: number | null;
   inStock: boolean;
 };
@@ -54,7 +57,7 @@ function score(candidate: SimilarCandidate, ref: SimilarRef): number {
   }
 
   if (ref.price != null && ref.price > 0) {
-    const price = parseFloat(candidate.price);
+    const price = effectivePrice(candidate);
     const diff = Math.abs(price - ref.price) / ref.price;
     if (diff <= 0.2) s += 20;
     else if (diff <= 0.4) s += 10;
@@ -83,7 +86,7 @@ export function pickSimilar<T extends SimilarCandidate>(
     .filter((c) => c.id !== ref.id)
     .map((c) => ({ item: c, s: score(c, ref) }))
     .filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || parseFloat(a.item.price) - parseFloat(b.item.price))
+    .sort((a, b) => b.s - a.s || effectivePrice(a.item) - effectivePrice(b.item))
     .slice(0, limit)
     .map((x) => x.item);
 }

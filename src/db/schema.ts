@@ -65,6 +65,9 @@ export const products = pgTable("products", {
   descriptionEn: text("description_en"),
   descriptionRu: text("description_ru"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  // Discounted price. When set (and lower than price), the store shows the
+  // original struck through and charges this instead. null = not on sale.
+  salePrice: decimal("sale_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
   categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),

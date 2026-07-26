@@ -21,6 +21,7 @@ import { useCart } from "@/components/cart/CartContext";
 import { useTranslations, useLocale } from "next-intl";
 import { localizedName } from "@/lib/i18n-fields";
 import { imageUrl } from "@/lib/images";
+import { effectivePrice, listPrice, discountPercent } from "@/lib/pricing";
 import type { InferSelectModel } from "drizzle-orm";
 import type { products } from "@/db/schema";
 
@@ -39,7 +40,9 @@ export default function ProductCard({
   const { add } = useCart();
   const t = useTranslations("products");
   const locale = useLocale();
-  const price = parseFloat(product.price);
+  const price = effectivePrice(product);
+  const wasPrice = listPrice(product);
+  const discount = discountPercent(product);
   const name = localizedName(product, locale);
   const img = imageUrl(product.imageUrl, "card");
 
@@ -91,13 +94,13 @@ export default function ProductCard({
           />
         )}
 
-        {/* Sale badge — the product's category branch is promoted */}
-        {onSale && product.inStock && (
+        {/* Badge: an actual discount wins over the category promotion badge */}
+        {product.inStock && (discount !== null || onSale) && (
           <span
             className="absolute top-2 start-2 text-xs font-bold px-2.5 py-1 rounded-full"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
           >
-            {t("saleBadge")}
+            {discount !== null ? `-${discount}%` : t("saleBadge")}
           </span>
         )}
 
@@ -128,8 +131,18 @@ export default function ProductCard({
           className="flex items-center justify-between mt-auto pt-2 border-t"
           style={{ borderColor: "var(--border)" }}
         >
-          <span className="text-lg font-bold" style={{ color: "var(--ink)" }}>
-            ₪{price.toLocaleString("he-IL")}
+          <span className="flex items-baseline gap-2">
+            {wasPrice !== null && (
+              <s className="text-sm" style={{ color: "var(--muted)" }} aria-label={t("wasPrice")}>
+                ₪{wasPrice.toLocaleString("he-IL")}
+              </s>
+            )}
+            <span
+              className="text-lg font-bold"
+              style={{ color: wasPrice !== null ? "var(--primary)" : "var(--ink)" }}
+            >
+              ₪{price.toLocaleString("he-IL")}
+            </span>
           </span>
 
           {/* Add to cart — scale(0.97) on active gives tactile press feedback (Emil) */}

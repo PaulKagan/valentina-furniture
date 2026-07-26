@@ -27,6 +27,7 @@ import {
 } from "@/lib/catalog";
 import { imageUrl } from "@/lib/images";
 import { colorByKey, colorLabel } from "@/lib/colors";
+import { effectivePrice, listPrice, discountPercent } from "@/lib/pricing";
 import { pickSimilar } from "@/lib/similar";
 import ProductStrip from "@/components/ui/ProductStrip";
 
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const prefix: Record<string, string> = { he: "", en: "/en", ru: "/ru" };
   return {
     title: name,
-    description: description ?? `${name} — ₪${product.price}`,
+    description: description ?? `${name} — ₪${effectivePrice(product)}`,
     alternates: {
       canonical: `${prefix[locale] ?? ""}${path}`,
       languages: { he: path, en: `/en${path}`, ru: `/ru${path}`, "x-default": path },
@@ -77,7 +78,9 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(id);
   if (!product) notFound();
 
-  const price = parseFloat(product.price);
+  const price = effectivePrice(product);
+  const wasPrice = listPrice(product);
+  const discount = discountPercent(product);
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
   const img = imageUrl(product.imageUrl, "detail");
@@ -156,9 +159,24 @@ export default async function ProductPage({ params }: Props) {
             >
               {name}
             </h1>
-            <p className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
-              ₪{price.toLocaleString()}
-            </p>
+            <div className="flex items-baseline flex-wrap gap-3">
+              <p className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
+                ₪{price.toLocaleString()}
+              </p>
+              {wasPrice !== null && (
+                <>
+                  <s className="text-xl" style={{ color: "var(--muted)" }} aria-label={t("wasPrice")}>
+                    ₪{wasPrice.toLocaleString()}
+                  </s>
+                  <span
+                    className="text-sm font-bold px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+                  >
+                    -{discount}%
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           {description && (

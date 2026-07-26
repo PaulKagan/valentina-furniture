@@ -13,7 +13,8 @@
     "menuLabel": "תפריט",
     "nav": {
       "allProducts": "כל המוצרים"
-    }
+    },
+    "brandShort": "ולנטינה"
   },
   "footer": {
     "tagline": "ריהוט איכותי לבית — נמכור לכם לא רק רהיטים, אלא תחושת בית.",
@@ -61,7 +62,8 @@
     "added": "נוסף ✓",
     "addAriaLabel": "הוסף {name} לעגלה",
     "similarTitle": "אולי יעניין אתכם",
-    "similarSubtitle": "מוצרים דומים שלא נכללו בסינון"
+    "similarSubtitle": "מוצרים דומים שלא נכללו בסינון",
+    "wasPrice": "מחיר קודם"
   },
   "productDetail": {
     "outOfStock": "אזל מהמלאי",
@@ -75,7 +77,8 @@
     "depth": "עומק",
     "height": "גובה",
     "cm": "ס\"מ",
-    "similarTitle": "דומים שאולי תאהבו"
+    "similarTitle": "דומים שאולי תאהבו",
+    "wasPrice": "מחיר קודם"
   },
   "cart": {
     "title": "עגלת הקניות",
@@ -254,7 +257,11 @@
       "dimensionsLabel": "מידות (ס\"מ)",
       "widthLabel": "רוחב",
       "depthLabel": "עומק",
-      "heightLabel": "גובה"
+      "heightLabel": "גובה",
+      "onSaleLabel": "המוצר במבצע",
+      "salePriceLabel": "מחיר מבצע (₪)",
+      "discountPreview": "הנחה של {percent}%",
+      "salePriceTooHigh": "מחיר המבצע חייב להיות נמוך מהמחיר הרגיל"
     },
     "import": {
       "title": "ייבוא מוצרים מאקסל",
@@ -285,7 +292,8 @@
         "willUpdate": "יעדכן מוצר קיים",
         "unknownColor": "צבע לא מוכר: {detail}",
         "imageNotProvided": "תמונה לא צורפה: {detail}",
-        "rowFailed": "שגיאה בשורה"
+        "rowFailed": "שגיאה בשורה",
+        "badSalePrice": "מחיר מבצע לא תקין: {detail}"
       }
     },
     "orderDetail": {

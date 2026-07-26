@@ -11,6 +11,7 @@
  */
 
 import { imageUrl } from "./images";
+import { effectivePrice } from "./pricing";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const PHONE = process.env.NEXT_PUBLIC_PHONE ?? "+972501234567";
@@ -53,6 +54,7 @@ export function productJsonLd(product: {
   name: string;
   description: string | null;
   price: string;
+  salePrice: string | null;
   imageUrl: string | null;
   inStock: boolean;
 }) {
@@ -66,7 +68,7 @@ export function productJsonLd(product: {
     offers: {
       "@type": "Offer",
       priceCurrency: "ILS",
-      price: product.price,
+      price: effectivePrice(product).toFixed(2),
       availability: product.inStock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",

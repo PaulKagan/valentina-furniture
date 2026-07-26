@@ -26,6 +26,7 @@ export const HEADERS = [
   "תיאור באנגלית",
   "תיאור ברוסית",
   "מחיר",
+  "מחיר מבצע",
   "צבעים",
   "רוחב סמ",
   "עומק סמ",
@@ -45,6 +46,7 @@ export type ImportRow = {
   descriptionEn: string | null;
   descriptionRu: string | null;
   price: string;
+  salePrice: string | null;
   colors: string[]; // palette keys
   widthCm: number | null;
   depthCm: number | null;
@@ -68,6 +70,7 @@ export function buildTemplate(): Buffer {
     "תיאור באנגלית": "",
     "תיאור ברוסית": "",
     "מחיר": 4990,
+    "מחיר מבצע": "",
     "צבעים": "אפור, בז'",
     "רוחב סמ": 210,
     "עומק סמ": 95,
@@ -88,6 +91,7 @@ export function buildTemplate(): Buffer {
     ["• צבעים: מופרדים בפסיק, מתוך הרשימה:"],
     [COLORS.map((c) => c.he).join(", ")],
     ["• מידות (רוחב/עומק/גובה): מספרים בסנטימטרים בלבד, למשל 210. אופציונלי — משמש לסינון ומיון בחנות."],
+    ["• מחיר מבצע: אופציונלי. אם מולא ונמוך מהמחיר הרגיל — המחיר הרגיל יוצג מחוק והמוצר יסומן במבצע."],
     ["• במלאי / מומלץ: כן או לא."],
     ["• קובץ תמונה: שם הקובץ בדיוק כפי שהוא אצלכם במחשב (למשל sofa1.jpg). בעת הייבוא בוחרים גם את קובצי התמונות."],
     ["• אם קיים כבר מוצר עם אותו שם בעברית — הנתונים שלו יעודכנו במקום ליצור כפילות."],
@@ -125,6 +129,7 @@ export function buildExport(products: Product[], categories: Category[]): Buffer
     "תיאור באנגלית": p.descriptionEn ?? "",
     "תיאור ברוסית": p.descriptionRu ?? "",
     "מחיר": parseFloat(p.price),
+    "מחיר מבצע": p.salePrice ? parseFloat(p.salePrice) : "",
     "צבעים": p.colors.map((k) => colorLabel(k, "he")).join(", "),
     "רוחב סמ": p.widthCm ?? "",
     "עומק סמ": p.depthCm ?? "",
@@ -177,6 +182,18 @@ export function parseImport(buffer: Buffer): ImportRow[] {
     const price = parseFloat(priceRaw);
     if (!priceRaw || isNaN(price) || price < 0) errors.push("badPrice");
 
+    // Sale price: ignored unless it is a positive number below the list price
+    const saleRaw = str(row["מחיר מבצע"]).replace(/[₪,\s]/g, "");
+    let salePrice: string | null = null;
+    if (saleRaw) {
+      const saleNum = parseFloat(saleRaw);
+      if (!Number.isFinite(saleNum) || saleNum <= 0 || saleNum >= price) {
+        warnings.push(`badSalePrice:${saleRaw}`);
+      } else {
+        salePrice = saleNum.toFixed(2);
+      }
+    }
+
     // Colors: any language → palette key; unknown names become a warning
     const colors: string[] = [];
     for (const part of str(row["צבעים"]).split(",")) {
@@ -205,6 +222,7 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       descriptionEn: opt(row["תיאור באנגלית"]),
       descriptionRu: opt(row["תיאור ברוסית"]),
       price: isNaN(price) ? "0" : price.toFixed(2),
+      salePrice,
       colors,
       widthCm: dim(row["רוחב סמ"]),
       depthCm: dim(row["עומק סמ"]),

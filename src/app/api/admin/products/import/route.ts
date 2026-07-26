@@ -177,6 +177,7 @@ export async function POST(req: NextRequest) {
           descriptionEn: row.descriptionEn,
           descriptionRu: row.descriptionRu,
           price: row.price,
+          salePrice: row.salePrice,
           colors: row.colors,
           widthCm: row.widthCm,
           depthCm: row.depthCm,

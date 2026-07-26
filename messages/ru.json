@@ -13,7 +13,8 @@
     "menuLabel": "Меню",
     "nav": {
       "allProducts": "Все товары"
-    }
+    },
+    "brandShort": "Валентина"
   },
   "footer": {
     "tagline": "Качественная мебель для дома — мы продаём не просто мебель, а ощущение дома.",
@@ -61,7 +62,8 @@
     "added": "Добавлено ✓",
     "addAriaLabel": "Добавить {name} в корзину",
     "similarTitle": "Возможно, вам понравится",
-    "similarSubtitle": "Похожие товары, не попавшие в фильтр"
+    "similarSubtitle": "Похожие товары, не попавшие в фильтр",
+    "wasPrice": "Старая цена"
   },
   "productDetail": {
     "outOfStock": "Нет в наличии",
@@ -75,7 +77,8 @@
     "depth": "Г",
     "height": "В",
     "cm": "см",
-    "similarTitle": "Возможно, вам понравится"
+    "similarTitle": "Возможно, вам понравится",
+    "wasPrice": "Старая цена"
   },
   "cart": {
     "title": "Корзина",
@@ -254,7 +257,11 @@
       "dimensionsLabel": "Размеры (см)",
       "widthLabel": "Ширина",
       "depthLabel": "Глубина",
-      "heightLabel": "Высота"
+      "heightLabel": "Высота",
+      "onSaleLabel": "Товар по акции",
+      "salePriceLabel": "Акционная цена (₪)",
+      "discountPreview": "Скидка {percent}%",
+      "salePriceTooHigh": "Акционная цена должна быть ниже обычной"
     },
     "import": {
       "title": "Импорт товаров из Excel",
@@ -285,7 +292,8 @@
         "willUpdate": "Обновит существующий товар",
         "unknownColor": "Неизвестный цвет: {detail}",
         "imageNotProvided": "Фото не приложено: {detail}",
-        "rowFailed": "Ошибка в строке"
+        "rowFailed": "Ошибка в строке",
+        "badSalePrice": "Неверная акционная цена: {detail}"
       }
     },
     "orderDetail": {

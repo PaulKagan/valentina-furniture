@@ -17,6 +17,7 @@ import { db } from "@/db";
 import { orders, products } from "@/db/schema";
 import { inArray } from "drizzle-orm";
 import { sendOrderToStore, sendOrderToCustomer } from "@/lib/email";
+import { effectivePrice } from "@/lib/pricing";
 
 // Input length caps — prevents absurdly long strings in the DB
 const LIMITS = {
@@ -81,7 +82,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const dbProducts = await db
-      .select({ id: products.id, name: products.name, price: products.price, inStock: products.inStock })
+      .select({
+        id: products.id,
+        name: products.name,
+        price: products.price,
+        salePrice: products.salePrice,
+        inStock: products.inStock,
+      })
       .from(products)
       .where(inArray(products.id, wanted.map((w) => w.productId)));
     const byId = new Map(dbProducts.map((p) => [p.id, p]));
@@ -91,7 +98,8 @@ export async function POST(req: NextRequest) {
     for (const w of wanted) {
       const p = byId.get(w.productId);
       if (!p) return NextResponse.json({ error: "Unknown product" }, { status: 400 });
-      const price = parseFloat(p.price);
+      // Charge the discounted price when the product is on sale
+      const price = effectivePrice(p);
       verifiedItems.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
       total += price * w.quantity;
     }

@@ -17,6 +17,7 @@ import ProductStrip from "@/components/ui/ProductStrip";
 import FilterBar from "@/components/ui/FilterBar";
 import LoadMore from "@/components/ui/LoadMore";
 import { visibleCount } from "@/lib/pagination";
+import { effectivePrice } from "@/lib/pricing";
 import { pickSimilar } from "@/lib/similar";
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
@@ -120,7 +121,8 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
   const unfiltered = productList; // kept for the "you might also like" fallback strip
   productList = productList.filter((p) => {
-    const price = parseFloat(p.price);
+    // Filter on what the customer actually pays, not the crossed-out price
+    const price = effectivePrice(p);
     if (wantedColors.length > 0 && !wantedColors.some((c) => p.colors.includes(c))) return false;
     if (minPrice != null && !isNaN(minPrice) && price < minPrice) return false;
     if (maxPrice != null && !isNaN(maxPrice) && price > maxPrice) return false;
@@ -133,10 +135,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   // ── Sort ──
   switch (sort) {
     case "price-asc":
-      productList.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      productList.sort((a, b) => effectivePrice(a) - effectivePrice(b));
       break;
     case "price-desc":
-      productList.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      productList.sort((a, b) => effectivePrice(b) - effectivePrice(a));
       break;
     case "width-asc":
     case "width-desc": {

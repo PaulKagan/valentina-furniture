@@ -42,6 +42,17 @@ function parseProductBody(body: Record<string, unknown>) {
     return Number.isInteger(n) && n > 0 ? n : null;
   };
 
+  // Sale price: optional, must be a positive number below the list price.
+  // Anything invalid is rejected rather than silently dropped — a wrong
+  // discount is a pricing error, not a cosmetic one.
+  let salePrice: string | null = null;
+  if (body.salePrice != null && String(body.salePrice).trim() !== "") {
+    const saleNum = parseFloat(String(body.salePrice));
+    if (!Number.isFinite(saleNum) || saleNum <= 0) return { error: "Invalid sale price" };
+    if (saleNum >= priceNum) return { error: "Sale price must be below the regular price" };
+    salePrice = saleNum.toFixed(2);
+  }
+
   return {
     data: {
       name,
@@ -51,6 +62,7 @@ function parseProductBody(body: Record<string, unknown>) {
       descriptionEn: optText(body.descriptionEn),
       descriptionRu: optText(body.descriptionRu),
       price: priceNum.toFixed(2),
+      salePrice,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
       categoryId: typeof body.categoryId === "number" ? body.categoryId : null,

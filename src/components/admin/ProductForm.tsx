@@ -25,6 +25,7 @@ type ProductData = {
   descriptionEn: string;
   descriptionRu: string;
   price: string;
+  salePrice: string;
   categoryId: number | null;
   colors: string[];
   widthCm: string;
@@ -55,6 +56,7 @@ export default function ProductForm({
     descriptionEn: "",
     descriptionRu: "",
     price: "",
+    salePrice: "",
     categoryId: null,
     colors: [],
     widthCm: "",
@@ -68,6 +70,8 @@ export default function ProductForm({
   });
 
   const [lang, setLang] = useState<Lang>("he");
+  // Sale toggle starts on when the product already carries a sale price
+  const [onSale, setOnSale] = useState(!!initial?.salePrice);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -115,6 +119,7 @@ export default function ProductForm({
     const num = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
     const payload = {
       ...form,
+      salePrice: form.salePrice.trim() === "" ? null : form.salePrice,
       widthCm: num(form.widthCm),
       depthCm: num(form.depthCm),
       heightCm: num(form.heightCm),
@@ -139,6 +144,16 @@ export default function ProductForm({
     }
     setSaving(false);
   }
+
+  // Live feedback while she types the discounted price
+  const listNum = parseFloat(form.price);
+  const saleNum = parseFloat(form.salePrice);
+  const saleFilled = form.salePrice.trim() !== "" && Number.isFinite(saleNum);
+  const saleInvalid = onSale && saleFilled && Number.isFinite(listNum) && saleNum >= listNum;
+  const discountPreview =
+    onSale && saleFilled && Number.isFinite(listNum) && saleNum < listNum && listNum > 0
+      ? Math.round((1 - saleNum / listNum) * 100)
+      : null;
 
   const inputClass = "h-11 px-4 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm w-full";
   const inputStyle = { borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--bg)" };
@@ -209,6 +224,45 @@ export default function ProductForm({
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("priceLabel")} *</label>
         <input type="number" min="0" step="0.01" className={inputClass} style={inputStyle} required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+      </div>
+
+      {/* Sale — ticking the box reveals the discounted price field.
+          Unticking clears it, so a product can never keep a stale sale price. */}
+      <div className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
+        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer" style={{ color: "var(--ink)" }}>
+          <input
+            type="checkbox"
+            checked={onSale}
+            onChange={(e) => {
+              setOnSale(e.target.checked);
+              if (!e.target.checked) setForm({ ...form, salePrice: "" });
+            }}
+          />
+          {t("onSaleLabel")}
+        </label>
+
+        {onSale && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium" style={{ color: "var(--muted)" }}>{t("salePriceLabel")}</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className={inputClass}
+              style={inputStyle}
+              value={form.salePrice}
+              onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
+            />
+            {discountPreview !== null && (
+              <p className="text-xs font-medium" style={{ color: "var(--primary)" }}>
+                {t("discountPreview", { percent: discountPreview })}
+              </p>
+            )}
+            {saleInvalid && (
+              <p className="text-xs" style={{ color: "oklch(0.45 0.15 25)" }}>{t("salePriceTooHigh")}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -317,7 +371,7 @@ export default function ProductForm({
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || saleInvalid}
           className="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-60 active:scale-[0.97]"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
         >

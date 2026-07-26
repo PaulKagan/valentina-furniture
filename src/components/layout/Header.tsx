@@ -2,34 +2,64 @@
 
 /**
  * Header — sticky top navigation.
- * Nav links come from the DB (active categories, promoted pinned first),
- * computed server-side in the store layout and passed in as props.
- * Includes the cart button, mobile menu, and language switcher.
+ *
+ * Nav items come from the DB (active categories, promoted pinned first),
+ * built server-side in the store layout and passed in as props. Categories
+ * with children get a dropdown:
+ *   - desktop: opens on hover AND on keyboard focus, closes on Escape
+ *   - mobile: the burger menu expands them inline as an accordion
+ * Third-level items are listed under their parent inside the same panel —
+ * a furniture catalog is 3 deep at most, so nested flyouts would be more
+ * fiddle than help.
  */
 import { Link } from "@/i18n/navigation";
-import { ShoppingCart, Phone, Menu, X } from "lucide-react";
+import { ShoppingCart, Phone, Menu, X, ChevronDown } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
-import { useState, Suspense } from "react";
+import { useState, useRef, Suspense } from "react";
 import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
 
-export type NavCategory = { href: string; label: string; promoted: boolean };
+export type NavCategory = {
+  href: string;
+  label: string;
+  promoted: boolean;
+  children: { href: string; label: string; children: { href: string; label: string }[] }[];
+};
 
 export default function Header({ navCategories }: { navCategories: NavCategory[] }) {
   const { count } = useCart();
   const t = useTranslations("header");
-  const tBrand = useTranslations("brand");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
+  // Small close delay so moving the pointer from the trigger into the panel
+  // doesn't dismiss it through the gap
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navLinks = [
-    { href: "/products", label: t("nav.allProducts"), promoted: false },
-    ...navCategories,
-  ];
+  const allProducts: NavCategory = {
+    href: "/products",
+    label: t("nav.allProducts"),
+    promoted: false,
+    children: [],
+  };
+  const navLinks = [allProducts, ...navCategories];
+
+  function openNow(href: string) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenDropdown(href);
+  }
+  function closeSoon() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpenDropdown(null), 150);
+  }
 
   return (
     <header
       className="sticky top-0 z-[200] bg-white/95 backdrop-blur-sm border-b"
       style={{ borderColor: "var(--border)" }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") setOpenDropdown(null);
+      }}
     >
       {/* Top bar — WhatsApp CTA */}
       <div
@@ -52,7 +82,7 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
             className="font-serif text-2xl font-bold tracking-tight"
             style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}
           >
-            {tBrand("brandShort")}
+            {t("brandShort")}
           </span>
           <span className="block text-xs" style={{ color: "var(--muted)" }}>
             {t("logoSub")}
@@ -61,17 +91,79 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm font-medium transition-colors hover:text-[oklch(0.52_0.14_32)]"
-              style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
-            >
-              {l.promoted && <span aria-hidden="true">🔥 </span>}
-              {l.label}
-            </Link>
-          ))}
+          {navLinks.map((l) => {
+            const hasChildren = l.children.length > 0;
+            const isOpen = openDropdown === l.href;
+            return (
+              <div
+                key={l.href}
+                className="relative"
+                onMouseEnter={() => hasChildren && openNow(l.href)}
+                onMouseLeave={closeSoon}
+              >
+                <Link
+                  href={l.href}
+                  className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-[oklch(0.52_0.14_32)] py-2"
+                  style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
+                  onFocus={() => hasChildren && openNow(l.href)}
+                  aria-expanded={hasChildren ? isOpen : undefined}
+                >
+                  {l.promoted && <span aria-hidden="true">🔥 </span>}
+                  {l.label}
+                  {hasChildren && (
+                    <ChevronDown
+                      size={14}
+                      aria-hidden="true"
+                      className="transition-transform"
+                      style={{ transform: isOpen ? "rotate(180deg)" : undefined }}
+                    />
+                  )}
+                </Link>
+
+                {hasChildren && isOpen && (
+                  <div
+                    className="absolute top-full start-0 pt-1 z-[210]"
+                    onMouseEnter={() => openNow(l.href)}
+                    onMouseLeave={closeSoon}
+                  >
+                    <div
+                      className="min-w-[220px] rounded-xl border shadow-lg py-2 fade-up"
+                      style={{
+                        backgroundColor: "var(--bg)",
+                        borderColor: "var(--border)",
+                        "--delay": "0ms",
+                      } as React.CSSProperties}
+                    >
+                      {l.children.map((child) => (
+                        <div key={child.href}>
+                          <Link
+                            href={child.href}
+                            className="block px-4 py-2 text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]"
+                            style={{ color: "var(--ink)" }}
+                            onClick={() => setOpenDropdown(null)}
+                          >
+                            {child.label}
+                          </Link>
+                          {/* Third level, indented under its parent */}
+                          {child.children.map((grand) => (
+                            <Link
+                              key={grand.href}
+                              href={grand.href}
+                              className="block px-4 py-1.5 ps-8 text-sm transition-colors hover:bg-[oklch(0.974_0_0)]"
+                              style={{ color: "var(--muted)" }}
+                              onClick={() => setOpenDropdown(null)}
+                            >
+                              {grand.label}
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Actions */}
@@ -109,24 +201,75 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
         </div>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile nav — subcategories expand inline */}
       {menuOpen && (
         <nav
-          className="md:hidden border-t px-4 py-4 flex flex-col gap-3"
+          className="md:hidden border-t px-4 py-3 flex flex-col"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
         >
-          {navLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-base font-medium py-2"
-              style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
-              onClick={() => setMenuOpen(false)}
-            >
-              {l.promoted && <span aria-hidden="true">🔥 </span>}
-              {l.label}
-            </Link>
-          ))}
+          {navLinks.map((l) => {
+            const hasChildren = l.children.length > 0;
+            const isExpanded = expandedMobile === l.href;
+            return (
+              <div key={l.href} className="border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+                <div className="flex items-center">
+                  <Link
+                    href={l.href}
+                    className="flex-1 text-base font-medium py-3"
+                    style={{ color: l.promoted ? "var(--primary)" : "var(--ink)" }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {l.promoted && <span aria-hidden="true">🔥 </span>}
+                    {l.label}
+                  </Link>
+                  {hasChildren && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedMobile(isExpanded ? null : l.href)}
+                      className="p-3"
+                      aria-label={l.label}
+                      aria-expanded={isExpanded}
+                      style={{ color: "var(--muted)" }}
+                    >
+                      <ChevronDown
+                        size={18}
+                        className="transition-transform"
+                        style={{ transform: isExpanded ? "rotate(180deg)" : undefined }}
+                      />
+                    </button>
+                  )}
+                </div>
+
+                {hasChildren && isExpanded && (
+                  <div className="pb-2 ps-3 flex flex-col">
+                    {l.children.map((child) => (
+                      <div key={child.href}>
+                        <Link
+                          href={child.href}
+                          className="block py-2 text-sm font-medium"
+                          style={{ color: "var(--ink)" }}
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {child.label}
+                        </Link>
+                        {child.children.map((grand) => (
+                          <Link
+                            key={grand.href}
+                            href={grand.href}
+                            className="block py-1.5 ps-4 text-sm"
+                            style={{ color: "var(--muted)" }}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            {grand.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
       )}
     </header>
