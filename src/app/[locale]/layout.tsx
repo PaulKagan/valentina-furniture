@@ -77,7 +77,12 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${heebo.variable} ${playfair.variable}`}
     >
-      <body className="min-h-screen flex flex-col">
+      {/* suppressHydrationWarning: browser extensions (Grammarly, password
+          managers, translators) inject attributes into <body> before React
+          hydrates, which otherwise logs a hydration mismatch in dev. This
+          only covers <body>'s own attributes — real mismatches inside the
+          app still surface normally. */}
+      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <CartProvider>{children}</CartProvider>
         </NextIntlClientProvider>
