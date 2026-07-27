@@ -201,6 +201,32 @@ ORDER_NOTIFY_EMAIL="valentina@gmail.com"
 
 ---
 
+## Phase 3.5 — Backups (do this before she starts adding products)
+
+Once Valentina starts filling in her catalog, that data becomes precious —
+she will not want to type it all in twice. Three layers, all free:
+
+1. **In admin → Backup** — a "Download backup now" button that saves every
+   category, product, and order to one JSON file. Get in the habit of
+   downloading one after any big data-entry session and keeping it
+   somewhere outside the site (a laptop, a Drive folder — anywhere).
+2. **Nightly automatic backup** — `.github/workflows/nightly-backup.yml`
+   dumps the database every night automatically, no one has to remember
+   anything. It needs the database connection added as a GitHub secret:
+   **repo → Settings → Secrets and variables → Actions → New repository
+   secret** → name it `DATABASE_URL`, paste the same value that's in
+   Vercel's environment variables. The last 30 days of dumps are downloadable
+   from the repo's **Actions** tab under each run's "Artifacts".
+3. **Neon's own point-in-time recovery** — already on by default, no setup
+   needed; check Neon's dashboard for how far back its retention window
+   goes on the current plan.
+
+To restore: in admin → Backup, choose "Restore from a backup" and pick a
+downloaded JSON file. This **replaces every category, product, and order** —
+it asks for confirmation because it can't be undone.
+
+---
+
 ## Before handing it to Valentina
 
 - [ ] `ADMIN_PASSWORD` stored as a **bcrypt hash**, not plain text. Generate:

@@ -1,0 +1,39 @@
+name: Nightly database backup
+
+# Automated safety net on top of the in-admin "Backup now" button — this
+# runs even if nobody remembers to click it. Requires DATABASE_URL to be
+# set as a repository secret (Settings → Secrets and variables → Actions).
+#
+# Dumps go to the workflow's run artifacts, kept for 30 days. That's not
+# infinite retention, but it means there's always a same-day-to-30-days-old
+# recovery point without anyone doing anything.
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # 02:00 UTC daily
+  workflow_dispatch: {} # allow a manual run from the Actions tab
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is not set — skipping backup." >&2
+            exit 1
+          fi
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges --format=custom \
+            --file="valentina-backup-$(date +%F).dump"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: valentina-backup-*.dump
+          retention-days: 30

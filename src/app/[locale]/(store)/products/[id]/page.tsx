@@ -17,7 +17,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
-import { productJsonLd } from "@/lib/jsonld";
+import { productJsonLd, jsonLdScript } from "@/lib/jsonld";
 import { getTranslations } from "next-intl/server";
 import {
   localizedName,
@@ -130,7 +130,7 @@ export default async function ProductPage({ params }: Props) {
       {/* Product structured data — Google shows price in search results */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product, inherited)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, inherited)) }}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

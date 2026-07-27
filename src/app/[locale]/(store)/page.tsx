@@ -14,7 +14,7 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
-import { localBusinessJsonLd } from "@/lib/jsonld";
+import { localBusinessJsonLd, jsonLdScript } from "@/lib/jsonld";
 import { getActiveCategories, buildTree, localizedName } from "@/lib/catalog";
 import { categoryDiscount, saleSource } from "@/lib/pricing";
 import SaleCountdown from "@/components/ui/SaleCountdown";
@@ -90,7 +90,7 @@ export default async function HomePage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(localBusinessJsonLd()) }}
       />
 
       {/* ── Hero ── */}

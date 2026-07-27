@@ -98,7 +98,11 @@ export const orders = pgTable("orders", {
   // Optional — when given, the customer gets an order confirmation email
   customerEmail: text("customer_email"),
   customerAddress: text("customer_address").notNull(),
-  items: text("items").notNull(), // JSON string: [{productId, name, price, quantity}]
+  // JSON string: [{productId, name, price, quantity}]. Ceiling: fine while
+  // "what did this order contain" is the only question asked of it. If a
+  // "top-selling product" or per-item report is ever needed, this needs to
+  // become a real order_items table — a JSON blob can't be queried/joined.
+  items: text("items").notNull(),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   status: orderStatusEnum("status").default("pending").notNull(),
   notes: text("notes"), // customer's note from checkout

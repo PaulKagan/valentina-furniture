@@ -12,7 +12,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
-import { applyDiscount, categoryDiscount } from "@/lib/pricing";
+import { applyDiscount, categoryDiscount, saleSource, isApproximatePercent } from "@/lib/pricing";
 
 type Category = {
   id: number;
@@ -197,26 +197,26 @@ export default function ProductForm({
     setPercentInput(String(Math.round((1 - n / listNum) * 100)));
   }
 
-  // The percentage the store will actually print, derived from the price
+  // The percentage the store will actually print, derived from the price.
+  // Flagged "approximate" when the rounded price (nearest ₪10) doesn't land
+  // on the exact percentage she typed — so "~20%" never overstates precision.
   const effectivePercent =
     form.onSale && saleFilled && listValid && saleNum < listNum
       ? Math.round((1 - saleNum / listNum) * 100)
       : null;
+  const percentIsApproximate = isApproximatePercent(
+    { price: form.price, salePrice: form.salePrice, onSale: form.onSale },
+    0
+  );
 
   // Discount inherited from the chosen category branch (0 = none). Shown as a
   // note so she knows why the box ticked itself, and what happens if she
   // leaves the sale price blank.
   const inheritedPercent = categoryDiscount(form.categoryId, categories);
-  const inheritedFrom = useMemo(() => {
-    if (!inheritedPercent || form.categoryId == null) return null;
-    const byId = new Map(categories.map((c) => [c.id, c]));
-    let cur = byId.get(form.categoryId);
-    for (let i = 0; cur && i <= categories.length; i++) {
-      if (cur.isSaleCategory && cur.discountPercent > 0) return cur.name;
-      cur = cur.parentId != null ? byId.get(cur.parentId) : undefined;
-    }
-    return null;
-  }, [form.categoryId, categories, inheritedPercent]);
+  const inheritedFrom = useMemo(
+    () => saleSource(form.categoryId, categories)?.name ?? null,
+    [form.categoryId, categories]
+  );
 
   /** Category changed — a sale branch ticks the box for her (never unticks). */
   function onCategoryChange(categoryId: number | null) {
@@ -346,7 +346,9 @@ export default function ProductForm({
 
             {effectivePercent !== null && (
               <p className="text-xs font-medium" style={{ color: "var(--primary)" }}>
-                {t("discountPreview", { percent: effectivePercent })}
+                {percentIsApproximate
+                  ? t("discountPreviewApprox", { percent: effectivePercent })
+                  : t("discountPreview", { percent: effectivePercent })}
               </p>
             )}
             {saleInvalid && (

@@ -40,6 +40,7 @@ export default async function AdminLayout({
           { href: "/admin/products", label: t("products") },
           { href: "/admin/sales", label: t("sales") },
           { href: "/admin/orders", label: t("orders") },
+          { href: "/admin/backup", label: t("backup") },
         ].map((l) => (
           <Link
             key={l.href}

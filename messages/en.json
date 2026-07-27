@@ -139,7 +139,8 @@
       "orders": "Orders",
       "signOut": "Sign out",
       "backToStore": "To store",
-      "sales": "Sales"
+      "sales": "Sales",
+      "backup": "Backup"
     },
     "categories": {
       "title": "Categories",
@@ -274,7 +275,8 @@
       "discountPercentLabel": "Discount (%)",
       "inheritedHint": "With no sale price of its own, this product takes {percent}% off from the \"{category}\" category — and follows it if that changes or ends.",
       "saleNeedsPrice": "Enter a discount or a sale price — otherwise this product won't show as on sale.",
-      "categoryIsSaleHint": "\"{category}\" is a sale category ({percent}% off)."
+      "categoryIsSaleHint": "\"{category}\" is a sale category ({percent}% off).",
+      "discountPreviewApprox": "~{percent}% off (price rounded)"
     },
     "import": {
       "title": "Import products from Excel",
@@ -368,6 +370,19 @@
       "endProductConfirm": "End the sale on \"{name}\"?",
       "noSaleCategories": "No sale categories right now.",
       "noDiscounted": "No discounted products right now."
+    },
+    "backup": {
+      "title": "Backup & Restore",
+      "downloadTitle": "Download a backup",
+      "downloadHint": "One file with every category, product, and order. Keep it somewhere safe — a computer, a drive, anywhere other than just here.",
+      "downloadButton": "Download backup now",
+      "restoreTitle": "Restore from a backup",
+      "restoreHint": "Completely replaces every existing category, product, and order with the contents of the file you choose. This cannot be undone — make sure you have a recent backup before continuing.",
+      "restoreButton": "Choose a backup file to restore",
+      "restoring": "Restoring...",
+      "restoreConfirm": "Restore from \"{file}\"? Every category, product, and order currently on the site will be deleted and replaced with this file's contents. This cannot be undone.",
+      "restoreSuccess": "Restore complete: {categories} categories, {products} products, {orders} orders.",
+      "restoreError": "Restore failed. Nothing was changed — you can try again."
     }
   },
   "a11y": {

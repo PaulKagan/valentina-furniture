@@ -14,6 +14,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -22,10 +23,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = credentials?.email as string;
         const password = credentials?.password as string;
         if (!email || !password) return null;
+
+        // A handful of tries a minute is a person; more is a script guessing
+        // the password — this is the only lockout a single-admin panel needs.
+        if (!allow(`login:${clientIp(request)}`, 5, 60_000)) return null;
 
         const adminEmail = process.env.ADMIN_EMAIL!;
         const adminHash = process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD!;

@@ -13,6 +13,18 @@
 import { imageUrl } from "./images";
 import { effectivePrice } from "./pricing";
 
+/**
+ * Serialize for a <script type="application/ld+json"> tag.
+ *
+ * JSON.stringify() does not escape "<", so a name/description containing
+ * "</script>" would close the tag early and let arbitrary HTML follow it.
+ * Only admin-entered text reaches this today, but escaping costs nothing
+ * and closes the gap for good — no future admin-panel change can reopen it.
+ */
+export function jsonLdScript(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const PHONE = process.env.NEXT_PUBLIC_PHONE ?? "+972501234567";
 const ADDRESS = process.env.NEXT_PUBLIC_ADDRESS ?? "רחוב הרצל 1, תל אביב";

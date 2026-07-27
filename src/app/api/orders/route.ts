@@ -8,6 +8,9 @@
  *   - Field length limits prevent oversized inputs hitting the DB
  *   - Items array capped at 50 to prevent abuse
  *   - All fields trimmed before storage
+ *   - Rate-limited per IP — a scripted flood of fake orders would otherwise
+ *     spam Valentina's Gmail (used for order notifications) fast enough to
+ *     get the account throttled, breaking real order emails too
  *
  * Production (production-mindset):
  *   - DB errors caught and logged — customer gets a clear error, not a 500 stack trace
@@ -19,6 +22,7 @@ import { inArray } from "drizzle-orm";
 import { sendOrderToStore, sendOrderToCustomer } from "@/lib/email";
 import { effectivePrice } from "@/lib/pricing";
 import { getDiscountLookup } from "@/lib/catalog";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 // Input length caps — prevents absurdly long strings in the DB
 const LIMITS = {
@@ -29,6 +33,12 @@ const LIMITS = {
 };
 
 export async function POST(req: NextRequest) {
+  // A real customer never places 10 orders a minute — this only ever
+  // blocks scripted abuse.
+  if (!allow(`orders:${clientIp(req)}`, 10, 60_000)) {
+    return NextResponse.json({ error: "Too many requests — please wait a moment" }, { status: 429 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();

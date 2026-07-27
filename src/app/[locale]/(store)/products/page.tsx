@@ -125,7 +125,12 @@ export default async function ProductsPage({ params, searchParams }: Props) {
     productList = all.filter((p) => p.categoryId == null || activeIds.has(p.categoryId));
   }
 
-  // ── Filters (URL-driven, applied in memory — catalog is a few hundred rows) ──
+  // ── Filters (URL-driven, applied in memory) ──
+  // Ceiling: this in-memory filter/sort, plus the other full-table SELECTs
+  // across admin and the storefront, are fine up to roughly a thousand
+  // products. Past that, move filtering into SQL WHERE clauses and add a
+  // proper index on category_id — the pattern here is consistent, not
+  // accidental, but nothing here scales past a few thousand rows.
   const wantedColors = (colors ?? "").split(",").filter(Boolean);
   const minPrice = min ? parseFloat(min) : null;
   const maxPrice = max ? parseFloat(max) : null;

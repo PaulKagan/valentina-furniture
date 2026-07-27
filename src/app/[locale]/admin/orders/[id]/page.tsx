@@ -11,10 +11,9 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import OrderDetail, { type OrderData } from "@/components/admin/OrderDetail";
 import { isEmailConfigured } from "@/lib/email";
+import { parseOrderItems } from "@/lib/order-items";
 
 export const dynamic = "force-dynamic";
-
-type Item = { productId: number; name: string; price: number; quantity: number };
 
 export default async function AdminOrderPage({
   params,
@@ -30,7 +29,7 @@ export default async function AdminOrderPage({
 
   const t = await getTranslations({ locale, namespace: "admin.orderDetail" });
 
-  const items = JSON.parse(order.items) as Item[];
+  const items = parseOrderItems(order.items);
 
   // Thumbnails for the items still present in the catalog
   const images: Record<number, string | null> = {};

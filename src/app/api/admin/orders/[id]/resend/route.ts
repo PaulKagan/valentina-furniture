@@ -7,7 +7,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { sendOrderToStore, sendOrderToCustomer, isEmailConfigured, type OrderItem } from "@/lib/email";
+import { sendOrderToStore, sendOrderToCustomer, isEmailConfigured } from "@/lib/email";
+import { parseOrderItems } from "@/lib/order-items";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -26,28 +27,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid recipient" }, { status: 400 });
   }
 
-  const [order] = await db.select().from(orders).where(eq(orders.id, numId));
-  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  try {
+    const [order] = await db.select().from(orders).where(eq(orders.id, numId));
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  if (to === "customer" && !order.customerEmail) {
-    return NextResponse.json({ error: "no-customer-email" }, { status: 400 });
+    if (to === "customer" && !order.customerEmail) {
+      return NextResponse.json({ error: "no-customer-email" }, { status: 400 });
+    }
+
+    const data = {
+      id: order.id,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerEmail: order.customerEmail,
+      customerAddress: order.customerAddress,
+      items: parseOrderItems(order.items),
+      total: order.total,
+      notes: order.notes,
+      createdAt: order.createdAt,
+    };
+
+    const result = to === "store" ? await sendOrderToStore(data) : await sendOrderToCustomer(data);
+    if (!result.sent) {
+      return NextResponse.json({ error: result.error ?? result.skipped ?? "failed" }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[orders/resend]", err);
+    return NextResponse.json({ error: "Resend failed" }, { status: 500 });
   }
-
-  const data = {
-    id: order.id,
-    customerName: order.customerName,
-    customerPhone: order.customerPhone,
-    customerEmail: order.customerEmail,
-    customerAddress: order.customerAddress,
-    items: JSON.parse(order.items) as OrderItem[],
-    total: order.total,
-    notes: order.notes,
-    createdAt: order.createdAt,
-  };
-
-  const result = to === "store" ? await sendOrderToStore(data) : await sendOrderToCustomer(data);
-  if (!result.sent) {
-    return NextResponse.json({ error: result.error ?? result.skipped ?? "failed" }, { status: 502 });
-  }
-  return NextResponse.json({ ok: true });
 }
