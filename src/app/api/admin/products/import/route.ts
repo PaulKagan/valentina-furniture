@@ -18,18 +18,25 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { parseImport } from "@/lib/excel";
+import { parseImport, stripExt } from "@/lib/excel";
 import { uploadImage } from "@/lib/cloudinary";
 import { categoryDiscount } from "@/lib/pricing";
 
 const MAX_EXCEL_BYTES = 5 * 1024 * 1024; // 5 MB — thousands of rows fit easily
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_ROWS = 2000;
+const MAX_GALLERY = 8; // must match the cap in /api/admin/products
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
-/** Normalize a filename for matching: lowercase, no path. */
+/**
+ * Normalize a filename for matching: lowercase, no path, no extension —
+ * the extension is optional in the spreadsheet ("sofa1" matches an
+ * uploaded sofa1.jpg), so it's stripped from both sides before comparing.
+ * If two uploaded files share a basename with different extensions, the
+ * last one wins — not worth the complexity to handle better.
+ */
 function normName(n: string): string {
-  return n.trim().toLowerCase().split(/[\\/]/).pop() ?? "";
+  return stripExt(n.trim().toLowerCase().split(/[\\/]/).pop() ?? "");
 }
 
 function slugify(name: string): string {
@@ -82,8 +89,10 @@ export async function POST(req: NextRequest) {
     const existingByName = new Map(existing.map((p) => [p.name, p]));
 
     for (const row of rows) {
-      if (row.imageFile && !imageFiles.has(normName(row.imageFile))) {
-        row.warnings.push(`imageNotProvided:${row.imageFile}`);
+      for (const file of row.imageFiles) {
+        if (!imageFiles.has(normName(file))) {
+          row.warnings.push(`imageNotProvided:${file}`);
+        }
       }
       if (row.name) {
         if (seenNames.has(row.name)) row.errors.push("duplicateInFile");
@@ -152,22 +161,41 @@ export async function POST(req: NextRequest) {
     const uploadedByFile = new Map<string, { url: string; publicId: string }>();
     const results: { rowNumber: number; action: string; error?: string }[] = [];
 
+    async function resolveUpload(filename: string) {
+      const key = normName(filename);
+      const file = imageFiles.get(key);
+      if (!file) return null;
+      let uploaded = uploadedByFile.get(key);
+      if (!uploaded) {
+        uploaded = await uploadImage(Buffer.from(await file.arrayBuffer()));
+        uploadedByFile.set(key, uploaded);
+      }
+      return uploaded;
+    }
+
     for (const row of validRows) {
       try {
         const categoryId = await resolveCategory(row.categoryPath);
 
+        // First referenced file = primary photo, the rest = gallery
         let imageUrl: string | null = null;
         let imagePublicId: string | null = null;
-        const fileKey = row.imageFile ? normName(row.imageFile) : null;
-        if (fileKey && imageFiles.has(fileKey)) {
-          let uploaded = uploadedByFile.get(fileKey);
-          if (!uploaded) {
-            const file = imageFiles.get(fileKey)!;
-            uploaded = await uploadImage(Buffer.from(await file.arrayBuffer()));
-            uploadedByFile.set(fileKey, uploaded);
+        const galleryUrls: string[] = [];
+        const galleryPublicIds: string[] = [];
+        const [primaryFile, ...restFiles] = row.imageFiles;
+        if (primaryFile) {
+          const uploaded = await resolveUpload(primaryFile);
+          if (uploaded) {
+            imageUrl = uploaded.url;
+            imagePublicId = uploaded.publicId;
           }
-          imageUrl = uploaded.url;
-          imagePublicId = uploaded.publicId;
+        }
+        for (const filename of restFiles.slice(0, MAX_GALLERY)) {
+          const uploaded = await resolveUpload(filename);
+          if (uploaded) {
+            galleryUrls.push(uploaded.url);
+            galleryPublicIds.push(uploaded.publicId);
+          }
         }
 
         const data = {
@@ -195,14 +223,20 @@ export async function POST(req: NextRequest) {
 
         const prior = existingByName.get(row.name);
         if (prior) {
-          // Update — keep the existing image if the row didn't bring a new one
+          // Update — keep the existing primary photo / gallery if this row
+          // didn't reference any (a reimport to fix a price shouldn't wipe
+          // photos that were only ever added through the admin form)
           await db
             .update(products)
-            .set(imageUrl ? { ...data, imageUrl, imagePublicId } : data)
+            .set({
+              ...data,
+              ...(imageUrl ? { imageUrl, imagePublicId } : {}),
+              ...(galleryUrls.length > 0 ? { galleryUrls, galleryPublicIds } : {}),
+            })
             .where(eq(products.id, prior.id));
           results.push({ rowNumber: row.rowNumber, action: "updated" });
         } else {
-          await db.insert(products).values({ ...data, imageUrl, imagePublicId });
+          await db.insert(products).values({ ...data, imageUrl, imagePublicId, galleryUrls, galleryPublicIds });
           results.push({ rowNumber: row.rowNumber, action: "created" });
         }
       } catch (err) {

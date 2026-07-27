@@ -44,6 +44,10 @@ export default async function NewProductPage({
         featured: source.featured,
         imageUrl: source.imageUrl,
         imagePublicId: source.imagePublicId,
+        focalX: source.focalX,
+        focalY: source.focalY,
+        galleryUrls: source.galleryUrls,
+        galleryPublicIds: source.galleryPublicIds,
       };
     }
   }

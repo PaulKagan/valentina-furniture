@@ -44,7 +44,11 @@ export default function ProductCard({
   const wasPrice = listPrice(product, discount);
   const percent = discountPercent(product, discount);
   const name = localizedName(product, locale);
-  const img = imageUrl(product.imageUrl, "card");
+  const img = imageUrl(
+    product.imageUrl,
+    "card",
+    product.focalX != null && product.focalY != null ? { x: product.focalX, y: product.focalY } : null
+  );
 
   return (
     <article

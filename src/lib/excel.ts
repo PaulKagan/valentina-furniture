@@ -10,6 +10,10 @@
  * - קטגוריה is a path: "סלון / ספות" (missing levels are created on import)
  * - צבעים is comma-separated palette names in any supported language
  * - במלאי/מומלץ accept כן/לא, yes/no, true/false, 1/0 (empty = כן / לא resp.)
+ * - קובץ תמונה is comma-separated filenames — the first is the primary photo,
+ *   the rest become the gallery. The file extension is optional on either
+ *   side of the match (uploaded file vs. the name typed here), so "sofa1"
+ *   matches an uploaded sofa1.jpg without her having to type the extension.
  *
  * Server-only (imports xlsx).
  */
@@ -56,7 +60,8 @@ export type ImportRow = {
   heightCm: number | null;
   inStock: boolean;
   featured: boolean;
-  imageFile: string | null;
+  /** First = primary photo, rest = gallery. Empty = no photos referenced. */
+  imageFiles: string[];
   errors: string[]; // empty = valid
   warnings: string[]; // row still imports, admin should know
 };
@@ -81,7 +86,7 @@ export function buildTemplate(): Buffer {
     "גובה סמ": 85,
     "במלאי": "כן",
     "מומלץ": "לא",
-    "קובץ תמונה": "sofa-gray.jpg",
+    "קובץ תמונה": "sofa-gray, sofa-gray-side, sofa-gray-detail",
   };
   const sheet = XLSX.utils.json_to_sheet([example], { header: [...HEADERS] });
   sheet["!cols"] = HEADERS.map((h) => ({ wch: Math.max(h.length + 4, 18) }));
@@ -98,7 +103,7 @@ export function buildTemplate(): Buffer {
     ["• אחוז הנחה: אופציונלי, מספר שלם בלבד (למשל 20). מחושב ממנו מחיר המבצע אוטומטית. ריק = ללא הנחה."],
     ["• מחיר מבצע: אופציונלי, וגובר על אחוז ההנחה אם שניהם מולאו. אם נמוך מהמחיר הרגיל — המחיר הרגיל יוצג מחוק והמוצר יסומן במבצע."],
     ["• במלאי / מומלץ: כן או לא."],
-    ["• קובץ תמונה: שם הקובץ בדיוק כפי שהוא אצלכם במחשב (למשל sofa1.jpg). בעת הייבוא בוחרים גם את קובצי התמונות."],
+    ["• קובץ תמונה: שם/שמות הקבצים כפי שהם אצלכם במחשב, מופרדים בפסיק — הראשון יהיה התמונה הראשית והשאר יתווספו כגלריה (למשל sofa1, sofa1-side). אין צורך לכתוב את הסיומת (jpg/png וכו'). בעת הייבוא בוחרים גם את קובצי התמונות."],
     ["• אם קיים כבר מוצר עם אותו שם בעברית — הנתונים שלו יעודכנו במקום ליצור כפילות."],
   ];
   const instrSheet = XLSX.utils.aoa_to_sheet(instructions);
@@ -247,6 +252,11 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const imageFiles = str(row["קובץ תמונה"])
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     return {
       rowNumber: i + 2, // +1 header, +1 1-based
       name,
@@ -265,9 +275,14 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       heightCm: dim(row["גובה סמ"]),
       inStock: parseBool(row["במלאי"], true),
       featured: parseBool(row["מומלץ"], false),
-      imageFile: opt(row["קובץ תמונה"]),
+      imageFiles,
       errors,
       warnings,
     };
   });
+}
+
+/** Strip a file extension for matching — she shouldn't have to type ".jpg". */
+export function stripExt(filename: string): string {
+  return filename.replace(/\.[a-z0-9]+$/i, "");
 }

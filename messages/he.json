@@ -283,7 +283,17 @@
       "inheritedHint": "ללא מחיר מבצע ידני, המוצר יקבל {percent}% הנחה מהקטגוריה \"{category}\" — ויתעדכן אוטומטית אם ההנחה תשתנה או תסתיים.",
       "saleNeedsPrice": "מלאו אחוז הנחה או מחיר מבצע — אחרת המוצר לא יוצג כמבצע.",
       "categoryIsSaleHint": "\"{category}\" היא קטגוריית מבצע ({percent}% הנחה).",
-      "discountPreviewApprox": "הנחה של כ-{percent}% (המחיר עוגל)"
+      "discountPreviewApprox": "הנחה של כ-{percent}% (המחיר עוגל)",
+      "focalPointLabel": "נקודת מיקוד",
+      "focalPointHint": "לחצו על התמונה כדי לסמן את החלק החשוב — כך כל חיתוך (בכרטיסים, ברשימות) יתמקד בו.",
+      "focalPointReset": "איפוס",
+      "noImageYet": "טרם הועלתה תמונה",
+      "galleryLabel": "תמונות נוספות",
+      "galleryFull": "ניתן להעלות עד {max} תמונות נוספות",
+      "makePrimary": "הפוך לתמונה ראשית",
+      "moveEarlier": "הזז קודם",
+      "moveLater": "הזז אחר כך",
+      "removePhoto": "הסרה"
     },
     "import": {
       "title": "ייבוא מוצרים מאקסל",

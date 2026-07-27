@@ -14,7 +14,7 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import FallbackImage from "@/components/ui/FallbackImage";
+import ProductGallery from "@/components/ui/ProductGallery";
 import { Link } from "@/i18n/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { productJsonLd, jsonLdScript } from "@/lib/jsonld";
@@ -25,7 +25,6 @@ import {
   getActiveCategories,
   descendantIds,
 } from "@/lib/catalog";
-import { imageUrl } from "@/lib/images";
 import { colorByKey, colorLabel } from "@/lib/colors";
 import { effectivePrice, listPrice, discountPercent, categoryDiscount, saleSource } from "@/lib/pricing";
 import SaleCountdown from "@/components/ui/SaleCountdown";
@@ -92,7 +91,10 @@ export default async function ProductPage({ params }: Props) {
   const saleEndsAt = discount !== null && saleSrc?.endsAt ? saleSrc.endsAt.toISOString() : null;
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
-  const img = imageUrl(product.imageUrl, "detail");
+  const photos = [
+    ...(product.imageUrl ? [{ url: product.imageUrl, publicId: product.imagePublicId }] : []),
+    ...product.galleryUrls.map((url, i) => ({ url, publicId: product.galleryPublicIds[i] ?? null })),
+  ];
 
   // "You might also like" — same branch / colors / price bracket.
   // Hidden-category products are excluded so nothing leaks into the store.
@@ -134,20 +136,8 @@ export default async function ProductPage({ params }: Props) {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* ── Product image — square crop, identical on every product ── */}
-        <div
-          className="aspect-square relative rounded-2xl overflow-hidden"
-          style={{ backgroundColor: "var(--surface)" }}
-        >
-          <FallbackImage
-            src={img ?? ""}
-            alt={img ? name : ""}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-        </div>
+        {/* ── Product gallery — main photo + thumbnail strip, uncropped ── */}
+        <ProductGallery photos={photos} alt={name} />
 
         {/* ── Product info ── */}
         <div className="flex flex-col gap-6">

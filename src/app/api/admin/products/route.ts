@@ -20,6 +20,8 @@ import { deleteImage } from "@/lib/cloudinary";
 import { colorByKey } from "@/lib/colors";
 import { categoryDiscount } from "@/lib/pricing";
 
+const MAX_GALLERY = 8;
+
 /** Auth guard — call at the top of every handler */
 async function requireAdmin() {
   const session = await auth();
@@ -59,6 +61,28 @@ function parseProductBody(body: Record<string, unknown>) {
     salePrice = saleNum.toFixed(2);
   }
 
+  // Focal point: 0-100 integers, or both null ("no preference" — every crop
+  // falls back to auto-detection). Partial (one set, one missing) is treated
+  // as unset rather than guessing at the other half.
+  const focalRaw = (v: unknown): number | null => {
+    const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
+  };
+  const focalX = focalRaw(body.focalX);
+  const focalY = focalRaw(body.focalY);
+
+  // Gallery: parallel arrays, same length, capped — a stray huge array from
+  // a malformed request can't bloat the row or the Cloudinary cleanup loop
+  const strArray = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, MAX_GALLERY) : [];
+  let galleryUrls = strArray(body.galleryUrls);
+  let galleryPublicIds = strArray(body.galleryPublicIds);
+  // Keep them paired — an unequal pair means the client sent something
+  // inconsistent, so trim both to the shorter length rather than guess.
+  const galleryLen = Math.min(galleryUrls.length, galleryPublicIds.length);
+  galleryUrls = galleryUrls.slice(0, galleryLen);
+  galleryPublicIds = galleryPublicIds.slice(0, galleryLen);
+
   return {
     data: {
       name,
@@ -72,6 +96,10 @@ function parseProductBody(body: Record<string, unknown>) {
       salePrice,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
+      focalX: focalX != null && focalY != null ? focalX : null,
+      focalY: focalX != null && focalY != null ? focalY : null,
+      galleryUrls,
+      galleryPublicIds,
       categoryId: typeof body.categoryId === "number" ? body.categoryId : null,
       // Only palette keys survive — unknown colors are dropped, not stored
       colors: Array.isArray(body.colors)
@@ -150,12 +178,26 @@ export async function PUT(req: NextRequest) {
     const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.onSale);
     if ("error" in sale) return NextResponse.json({ error: sale.error }, { status: 400 });
 
+    const [before] = await db.select().from(products).where(eq(products.id, id));
+
     const [updated] = await db
       .update(products)
       .set({ ...parsed.data, onSale: sale.onSale })
       .where(eq(products.id, id))
       .returning();
     if (!updated) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    // Best-effort: delete any Cloudinary assets that dropped out of this
+    // save (primary photo replaced, gallery photos removed) so storage
+    // doesn't quietly accumulate orphaned uploads.
+    if (before) {
+      const keptIds = new Set([updated.imagePublicId, ...updated.galleryPublicIds].filter(Boolean));
+      const droppedIds = [before.imagePublicId, ...before.galleryPublicIds].filter(
+        (id): id is string => !!id && !keptIds.has(id)
+      );
+      for (const publicId of droppedIds) deleteImage(publicId).catch(() => {});
+    }
+
     return NextResponse.json(updated);
   } catch (err) {
     console.error("[admin/products PUT]", err);
@@ -174,9 +216,11 @@ export async function DELETE(req: NextRequest) {
     const [target] = await db.select().from(products).where(eq(products.id, id));
     await db.delete(products).where(eq(products.id, id));
 
-    // Clean up the product image on Cloudinary (best-effort)
-    if (target?.imagePublicId) {
-      deleteImage(target.imagePublicId).catch(() => {});
+    // Clean up every Cloudinary asset — primary photo and gallery — (best-effort)
+    if (target) {
+      for (const publicId of [target.imagePublicId, ...target.galleryPublicIds]) {
+        if (publicId) deleteImage(publicId).catch(() => {});
+      }
     }
 
     return NextResponse.json({ ok: true });

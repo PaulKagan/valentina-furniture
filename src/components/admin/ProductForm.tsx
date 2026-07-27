@@ -10,9 +10,13 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { Star, X, ArrowLeft, ArrowRight } from "lucide-react";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
 import { applyDiscount, categoryDiscount, saleSource, isApproximatePercent } from "@/lib/pricing";
+import FocalPointPicker from "./FocalPointPicker";
+
+const MAX_GALLERY = 8;
 
 type Category = {
   id: number;
@@ -44,6 +48,10 @@ type ProductData = {
   featured: boolean;
   imageUrl: string | null;
   imagePublicId: string | null;
+  focalX: number | null;
+  focalY: number | null;
+  galleryUrls: string[];
+  galleryPublicIds: string[];
 };
 
 export default function ProductForm({
@@ -76,6 +84,10 @@ export default function ProductForm({
     featured: false,
     imageUrl: null,
     imagePublicId: null,
+    focalX: null,
+    focalY: null,
+    galleryUrls: [],
+    galleryPublicIds: [],
     ...initial,
   });
 
@@ -116,20 +128,98 @@ export default function ProductForm({
     return out;
   }, [categories]);
 
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
+  async function uploadOne(file: File): Promise<{ url: string; publicId: string } | null> {
     const fd = new FormData();
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (res.ok) {
-      const data = await res.json();
-      setForm((f) => ({ ...f, imageUrl: data.url, imagePublicId: data.publicId }));
+    if (!res.ok) return null;
+    return res.json();
+  }
+
+  async function handlePrimaryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    const uploaded = await uploadOne(file);
+    if (uploaded) {
+      // A brand new primary photo has no focal point of its own yet —
+      // clearing it beats silently reusing a point that made sense on a
+      // completely different picture.
+      setForm((f) => ({ ...f, imageUrl: uploaded.url, imagePublicId: uploaded.publicId, focalX: null, focalY: null }));
     } else {
       setError(t("uploadError"));
     }
     setUploading(false);
+  }
+
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    const room = MAX_GALLERY - form.galleryUrls.length;
+    if (room <= 0) {
+      setError(t("galleryFull", { max: MAX_GALLERY }));
+      return;
+    }
+    setUploading(true);
+    const results = await Promise.all(files.slice(0, room).map(uploadOne));
+    const ok = results.filter((r): r is { url: string; publicId: string } => r !== null);
+    if (ok.length < results.length) setError(t("uploadError"));
+    setForm((f) => ({
+      ...f,
+      galleryUrls: [...f.galleryUrls, ...ok.map((r) => r.url)],
+      galleryPublicIds: [...f.galleryPublicIds, ...ok.map((r) => r.publicId)],
+    }));
+    setUploading(false);
+  }
+
+  /** Swap a gallery photo into the primary slot — the old primary joins the gallery in its place. */
+  function makeGalleryPrimary(index: number) {
+    setForm((f) => {
+      const nextGalleryUrls = [...f.galleryUrls];
+      const nextGalleryPublicIds = [...f.galleryPublicIds];
+      const newPrimaryUrl = nextGalleryUrls[index];
+      const newPrimaryPublicId = nextGalleryPublicIds[index];
+      if (f.imageUrl && f.imagePublicId) {
+        nextGalleryUrls[index] = f.imageUrl;
+        nextGalleryPublicIds[index] = f.imagePublicId;
+      } else {
+        nextGalleryUrls.splice(index, 1);
+        nextGalleryPublicIds.splice(index, 1);
+      }
+      return {
+        ...f,
+        imageUrl: newPrimaryUrl,
+        imagePublicId: newPrimaryPublicId,
+        // The previous focal point was chosen for the old photo — doesn't
+        // transfer to a different one.
+        focalX: null,
+        focalY: null,
+        galleryUrls: nextGalleryUrls,
+        galleryPublicIds: nextGalleryPublicIds,
+      };
+    });
+  }
+
+  function removeGalleryImage(index: number) {
+    setForm((f) => ({
+      ...f,
+      galleryUrls: f.galleryUrls.filter((_, i) => i !== index),
+      galleryPublicIds: f.galleryPublicIds.filter((_, i) => i !== index),
+    }));
+  }
+
+  function moveGalleryImage(index: number, dir: -1 | 1) {
+    setForm((f) => {
+      const target = index + dir;
+      if (target < 0 || target >= f.galleryUrls.length) return f;
+      const urls = [...f.galleryUrls];
+      const ids = [...f.galleryPublicIds];
+      [urls[index], urls[target]] = [urls[target], urls[index]];
+      [ids[index], ids[target]] = [ids[target], ids[index]];
+      return { ...f, galleryUrls: urls, galleryPublicIds: ids };
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -464,13 +554,61 @@ export default function ProductForm({
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("imageLabel")}</label>
-        {form.imageUrl && (
-          <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-            <Image src={imageUrl(form.imageUrl, "thumb") ?? form.imageUrl} alt="" fill className="object-cover" sizes="128px" />
+        {form.imageUrl ? (
+          <FocalPointPicker
+            src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
+            value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
+            onChange={(p) => setForm((f) => ({ ...f, focalX: p?.x ?? null, focalY: p?.y ?? null }))}
+            label={t("focalPointLabel")}
+            hint={t("focalPointHint")}
+            resetLabel={t("focalPointReset")}
+          />
+        ) : (
+          <div className="w-full max-w-xs aspect-[4/3] rounded-lg flex items-center justify-center text-xs" style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}>
+            {t("noImageYet")}
           </div>
         )}
-        <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
+        <input type="file" accept="image/*" onChange={handlePrimaryUpload} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
         {uploading && <p className="text-xs" style={{ color: "var(--muted)" }}>{t("uploading")}</p>}
+      </div>
+
+      {/* Gallery — additional photos shown as a thumbnail strip on the
+          product page. Any of these can be promoted to primary; the photo
+          it replaces slots back into the gallery, nothing is lost. */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+          {t("galleryLabel")} ({form.galleryUrls.length}/{MAX_GALLERY})
+        </label>
+        {form.galleryUrls.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {form.galleryUrls.map((url, i) => (
+              <div key={form.galleryPublicIds[i] ?? url} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border)" }}>
+                <Image src={imageUrl(url, "thumb") ?? url} alt="" fill className="object-cover" sizes="96px" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                  <button type="button" onClick={() => makeGalleryPrimary(i)} title={t("makePrimary")} className="p-1 rounded bg-white/90 hover:bg-white">
+                    <Star size={14} />
+                  </button>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => moveGalleryImage(i, -1)} disabled={i === 0} title={t("moveEarlier")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
+                      <ArrowRight size={12} className="rtl:hidden" />
+                      <ArrowLeft size={12} className="hidden rtl:block" />
+                    </button>
+                    <button type="button" onClick={() => moveGalleryImage(i, 1)} disabled={i === form.galleryUrls.length - 1} title={t("moveLater")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
+                      <ArrowLeft size={12} className="rtl:hidden" />
+                      <ArrowRight size={12} className="hidden rtl:block" />
+                    </button>
+                  </div>
+                  <button type="button" onClick={() => removeGalleryImage(i)} title={t("removePhoto")} className="p-1 rounded bg-white/90 hover:bg-white">
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {form.galleryUrls.length < MAX_GALLERY && (
+          <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
+        )}
       </div>
 
       {error && <p className="text-sm" style={{ color: "oklch(0.45 0.15 25)" }}>{error}</p>}

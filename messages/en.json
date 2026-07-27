@@ -283,7 +283,17 @@
       "inheritedHint": "With no sale price of its own, this product takes {percent}% off from the \"{category}\" category — and follows it if that changes or ends.",
       "saleNeedsPrice": "Enter a discount or a sale price — otherwise this product won't show as on sale.",
       "categoryIsSaleHint": "\"{category}\" is a sale category ({percent}% off).",
-      "discountPreviewApprox": "~{percent}% off (price rounded)"
+      "discountPreviewApprox": "~{percent}% off (price rounded)",
+      "focalPointLabel": "Focal point",
+      "focalPointHint": "Click the photo to mark the important part — every crop (cards, lists) will center on it.",
+      "focalPointReset": "Reset",
+      "noImageYet": "No photo uploaded yet",
+      "galleryLabel": "Additional photos",
+      "galleryFull": "Up to {max} additional photos",
+      "makePrimary": "Make primary photo",
+      "moveEarlier": "Move earlier",
+      "moveLater": "Move later",
+      "removePhoto": "Remove"
     },
     "import": {
       "title": "Import products from Excel",

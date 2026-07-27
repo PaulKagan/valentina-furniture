@@ -10,10 +10,10 @@
  * no dots when there's only one promoted category.
  *
  * Auto-advances every 6s, pauses on hover (so reading the countdown or
- * aiming a click isn't fighting a moving target). Slide changes cross-fade
- * (outgoing and incoming both rendered, opacity swapped) instead of the
- * outgoing slide just vanishing — a hard cut read as "a flash," not a
- * transition.
+ * aiming a click isn't fighting a moving target). Slide changes "push" —
+ * the incoming slide slides in from one side and shoves the outgoing one
+ * off the other side (real translateX motion), not a cross-fade — a
+ * cross-dissolve read as things "appearing on top of each other."
  */
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -34,10 +34,10 @@ export type PromotedTile = {
 };
 
 const AUTO_ADVANCE_MS = 6000;
-const FADE_MS = 600;
+const SLIDE_MS = 450;
 
 /** One slide's content — image, scrim, badge, name, countdown pill. */
-function Slide({ tile, opacity }: { tile: PromotedTile; opacity: number }) {
+function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boolean }) {
   const t = useTranslations("home");
   const img = tile.img;
   return (
@@ -45,10 +45,10 @@ function Slide({ tile, opacity }: { tile: PromotedTile; opacity: number }) {
       href={tile.href}
       className="group absolute inset-0 flex items-end"
       style={{
-        opacity,
-        transition: `opacity ${FADE_MS}ms ease`,
-        // The fading-out slide shouldn't intercept clicks meant for the one fading in
-        pointerEvents: opacity === 1 ? "auto" : "none",
+        transform: `translateX(${x}%)`,
+        transition: `transform ${SLIDE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`,
+        // The outgoing slide shouldn't intercept clicks meant for the incoming one
+        pointerEvents: active ? "auto" : "none",
       }}
     >
       <FallbackImage
@@ -108,16 +108,16 @@ function Slide({ tile, opacity }: { tile: PromotedTile; opacity: number }) {
 }
 
 /**
- * The outgoing slide: mounts at full opacity, flips to 0 on the next frame
- * (so the transition actually has a starting point to animate from), then
- * tells the parent to unmount it once the fade has had time to finish.
+ * The outgoing slide: mounts at x=0 (in place), pushed to ±100% on the next
+ * frame (so the transition has a starting point to animate from), then
+ * tells the parent to unmount it once the push has had time to finish.
  */
-function FadeOutSlide({ tile, onDone }: { tile: PromotedTile; onDone: () => void }) {
-  const [opacity, setOpacity] = useState(1);
+function PushOutSlide({ tile, dir, onDone }: { tile: PromotedTile; dir: 1 | -1; onDone: () => void }) {
+  const [x, setX] = useState(0);
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => setOpacity(0));
-    const timeout = setTimeout(onDone, FADE_MS + 50);
+    const raf = requestAnimationFrame(() => setX(-dir * 100));
+    const timeout = setTimeout(onDone, SLIDE_MS + 50);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(timeout);
@@ -125,7 +125,19 @@ function FadeOutSlide({ tile, onDone }: { tile: PromotedTile; onDone: () => void
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per mount (each outgoing tile gets a fresh instance via `key`)
   }, []);
 
-  return <Slide tile={tile} opacity={opacity} />;
+  return <Slide tile={tile} x={x} active={false} />;
+}
+
+/** The incoming slide: starts pushed off to the side it enters from, then slides to x=0. */
+function PushInSlide({ tile, dir }: { tile: PromotedTile; dir: 1 | -1 }) {
+  const [x, setX] = useState(dir * 100);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setX(0));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return <Slide tile={tile} x={x} active />;
 }
 
 export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
@@ -133,31 +145,39 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  // The previous slide stays mounted (fading to opacity 0 via FadeOutSlide)
-  // for one transition's worth of time after the index changes, so the
-  // swap reads as a cross-fade rather than the old slide just disappearing.
+  // The previous slide stays mounted (sliding out via PushOutSlide) for one
+  // transition's worth of time after the index changes, pushed out by the
+  // incoming slide rather than just disappearing.
   const [prevIndex, setPrevIndex] = useState<number | null>(null);
+  const [dir, setDir] = useState<1 | -1>(1);
 
-  useEffect(() => {
-    if (tiles.length <= 1 || paused) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % tiles.length), AUTO_ADVANCE_MS);
-    return () => clearInterval(id);
-  }, [tiles.length, paused]);
-
-  if (tiles.length === 0) return null;
-  const multi = tiles.length > 1;
-
-  function goTo(next: number) {
+  function goTo(next: number, direction: 1 | -1) {
     if (next === index) return;
+    setDir(direction);
     setPrevIndex(index);
     setIndex(next);
   }
 
   /** Prev/next always physically left/right, like a photo carousel — not
       flipped by page direction, so "next" is always the same gesture. */
-  function step(delta: number) {
-    goTo((index + delta + tiles.length) % tiles.length);
+  function step(delta: 1 | -1) {
+    goTo((index + delta + tiles.length) % tiles.length, delta);
   }
+
+  // Depends on `index` on purpose: a manual click (arrow/dot) should reset
+  // the auto-advance countdown, not fire again a moment later — restarting
+  // this interval on every index change achieves that for free, and since
+  // ticks are already exactly AUTO_ADVANCE_MS apart, restarting on the
+  // interval's own tick changes nothing.
+  useEffect(() => {
+    if (tiles.length <= 1 || paused) return;
+    const id = setInterval(() => step(1), AUTO_ADVANCE_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- step/goTo close over index/tiles, redeclared each render
+  }, [tiles.length, paused, index]);
+
+  if (tiles.length === 0) return null;
+  const multi = tiles.length > 1;
 
   return (
     <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
@@ -168,9 +188,13 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
         style={{ backgroundColor: "var(--surface-elevated)" }}
       >
         {prevIndex !== null && prevIndex !== index && (
-          <FadeOutSlide key={tiles[prevIndex].id} tile={tiles[prevIndex]} onDone={() => setPrevIndex(null)} />
+          <PushOutSlide key={tiles[prevIndex].id} tile={tiles[prevIndex]} dir={dir} onDone={() => setPrevIndex(null)} />
         )}
-        <Slide tile={tiles[index]} opacity={1} />
+        {prevIndex !== null && prevIndex !== index ? (
+          <PushInSlide key={tiles[index].id} tile={tiles[index]} dir={dir} />
+        ) : (
+          <Slide tile={tiles[index]} x={0} active />
+        )}
 
         {multi && (
           <>
@@ -205,7 +229,7 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
               role="tab"
               aria-selected={i === index}
               aria-label={t("carouselSlide", { name: tile.name })}
-              onClick={() => goTo(i)}
+              onClick={() => goTo(i, i > index ? 1 : -1)}
               className="rounded-full transition-all"
               style={{
                 width: i === index ? "20px" : "8px",

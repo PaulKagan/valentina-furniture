@@ -57,6 +57,12 @@ export const categories = pgTable("categories", {
   // Optional tile image (Cloudinary) shown on the homepage category tile
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
+  // Where the important part of the tile image is (0-100, percent from the
+  // top-left) — she clicks the photo once in admin to set it. Null means
+  // "no preference", and every crop falls back to Cloudinary's automatic
+  // subject detection (g_auto) instead.
+  focalX: integer("focal_x"),
+  focalY: integer("focal_y"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -79,6 +85,16 @@ export const products = pgTable("products", {
   salePrice: decimal("sale_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
+  // Same idea as categories.focalX/Y — click-to-set focal point for the
+  // primary photo, used by every fixed-ratio crop (card, tile, thumb).
+  focalX: integer("focal_x"),
+  focalY: integer("focal_y"),
+  // Extra gallery photos beyond the primary. Same index in both arrays =
+  // same photo. The gallery's main viewer never crops (shows the whole
+  // photo), so these don't carry their own focal point — only the small
+  // thumbnail strip crops, and it just uses g_auto.
+  galleryUrls: text("gallery_urls").array().default([]).notNull(),
+  galleryPublicIds: text("gallery_public_ids").array().default([]).notNull(),
   categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
   // Palette keys from lib/colors.ts (e.g. ["gray","beige"]) — drives the store color filter
   colors: text("colors").array().default([]).notNull(),

@@ -47,6 +47,10 @@ export default async function EditProductPage({
           featured: product.featured,
           imageUrl: product.imageUrl,
           imagePublicId: product.imagePublicId,
+          focalX: product.focalX,
+          focalY: product.focalY,
+          galleryUrls: product.galleryUrls,
+          galleryPublicIds: product.galleryPublicIds,
         }}
         categories={allCategories}
       />

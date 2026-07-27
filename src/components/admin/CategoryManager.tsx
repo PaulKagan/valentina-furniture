@@ -15,7 +15,6 @@
  * re-fetch the flat list and rebuild the tree client-side.
  */
 import { useCallback, useMemo, useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   ChevronDown,
@@ -30,6 +29,7 @@ import {
   Flame,
 } from "lucide-react";
 import { imageUrl } from "@/lib/images";
+import FocalPointPicker from "./FocalPointPicker";
 
 type Category = {
   id: number;
@@ -47,6 +47,8 @@ type Category = {
   sortOrder: number;
   imageUrl: string | null;
   imagePublicId: string | null;
+  focalX: number | null;
+  focalY: number | null;
 };
 
 type FormState = {
@@ -64,6 +66,8 @@ type FormState = {
   discountPercent: string; // "" is allowed while typing; sent as 0
   imageUrl: string | null;
   imagePublicId: string | null;
+  focalX: number | null;
+  focalY: number | null;
 };
 
 const EMPTY_FORM: FormState = {
@@ -81,6 +85,8 @@ const EMPTY_FORM: FormState = {
   discountPercent: "",
   imageUrl: null,
   imagePublicId: null,
+  focalX: null,
+  focalY: null,
 };
 
 /** ISO string → value usable by <input type="datetime-local"> (local time). */
@@ -146,6 +152,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       sortOrder: form.id != null ? cats.find((c) => c.id === form.id)?.sortOrder ?? 0 : (childrenOf.get(form.parentId)?.length ?? 0),
       imageUrl: form.imageUrl,
       imagePublicId: form.imagePublicId,
+      focalX: form.focalX,
+      focalY: form.focalY,
     };
     const res = await fetch("/api/admin/categories", {
       method: form.id != null ? "PUT" : "POST",
@@ -208,7 +216,9 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (res.ok) {
       const data = await res.json();
-      setForm({ ...form, imageUrl: data.url, imagePublicId: data.publicId });
+      // A new photo has no focal point of its own — an old one wouldn't
+      // point at anything meaningful on a different image.
+      setForm({ ...form, imageUrl: data.url, imagePublicId: data.publicId, focalX: null, focalY: null });
     }
     setUploading(false);
   }
@@ -332,6 +342,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
                   discountPercent: cat.discountPercent ? String(cat.discountPercent) : "",
                   imageUrl: cat.imageUrl,
                   imagePublicId: cat.imagePublicId,
+                  focalX: cat.focalX,
+                  focalY: cat.focalY,
                 })
               }
               className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]"
@@ -499,9 +511,14 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("tileImage")}</label>
             {form.imageUrl && (
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-                <Image src={imageUrl(form.imageUrl, "tile") ?? form.imageUrl} alt="" fill className="object-cover" sizes="384px" />
-              </div>
+              <FocalPointPicker
+                src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
+                value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
+                onChange={(p) => setForm({ ...form, focalX: p?.x ?? null, focalY: p?.y ?? null })}
+                label={t("focalPointLabel")}
+                hint={t("focalPointHint")}
+                resetLabel={t("focalPointReset")}
+              />
             )}
             <input type="file" accept="image/*" onChange={uploadTile} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
             {uploading && <p className="text-xs" style={{ color: "var(--muted)" }}>{t("uploading")}</p>}

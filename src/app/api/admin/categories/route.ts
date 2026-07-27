@@ -68,6 +68,15 @@ function parseCategoryBody(body: Record<string, unknown>) {
   if (isSaleCategory && discountPercent <= 0)
     return { error: "A sale category needs a discount above 0%" };
 
+  // Focal point: 0-100 integers, or both null ("no preference" — falls
+  // back to auto-detected crop gravity).
+  const focalRaw = (v: unknown): number | null => {
+    const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
+  };
+  const focalX = focalRaw(body.focalX);
+  const focalY = focalRaw(body.focalY);
+
   return {
     data: {
       name,
@@ -86,6 +95,8 @@ function parseCategoryBody(body: Record<string, unknown>) {
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
+      focalX: focalX != null && focalY != null ? focalX : null,
+      focalY: focalX != null && focalY != null ? focalY : null,
     },
   };
 }

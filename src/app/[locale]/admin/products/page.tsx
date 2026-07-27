@@ -83,7 +83,13 @@ export default async function AdminProductsPage({
                 <td className="px-4 py-3">
                   <div className="w-12 h-12 rounded-lg overflow-hidden" style={{ backgroundColor: "var(--surface)" }}>
                     {p.imageUrl ? (
-                      <Image src={imageUrl(p.imageUrl, "thumb") ?? p.imageUrl} alt={p.name} width={48} height={48} className="object-cover w-full h-full" />
+                      <Image
+                        src={imageUrl(p.imageUrl, "thumb", p.focalX != null && p.focalY != null ? { x: p.focalX, y: p.focalY } : null) ?? p.imageUrl}
+                        alt={p.name}
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-lg">🪑</div>
                     )}
