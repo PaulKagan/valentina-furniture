@@ -44,3 +44,20 @@
   view like it does today. Only worth building if the category tree grows
   deep/wide enough that browsing beats filtering. Waiting on Valentina to
   say whether she wants this before planning/building it.
+- **[NEEDS DECISION]** Products in a category that has sub-categories —
+  undefined today. Two options: (a) a product only ever belongs to the
+  most specific level (e.g. only "Double Beds", never also "Bedroom"), or
+  (b) a parent category page aggregates every product from all its
+  children too. Ask Valentina: if she uploads a sofa to "Living Room" but
+  there's also a sub-category "Sofas" under it, should the sofa show up
+  on both the "Living Room" page and the "Sofas" page, or only one?
+- **[NEEDS DECISION]** Filter product gallery photos by color — clicking a
+  color swatch on a product page would show only that color's photos.
+  Technically possible but a real schema change: gallery images are
+  currently attached to the product as a whole (`galleryUrls`), not to a
+  specific color, so this needs a per-color image structure (e.g.
+  `{color, url}[]` instead of a flat array), plus matching changes to the
+  admin upload form (upload per color) and the Excel import. Worth
+  asking Valentina how much effort she's actually willing to put into
+  organizing photos by color per product — if most products won't have
+  that level of organization, the feature stays half-empty.
