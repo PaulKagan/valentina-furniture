@@ -169,9 +169,9 @@ export default async function ProductPage({ params }: Props) {
             {/* Urgency, but only when it's true: a dated sale category is the
                 only thing here with a real deadline. */}
             {saleEndsAt && (
-              <p className="mt-2" style={{ color: "var(--primary)" }}>
+              <div className="mt-2" style={{ color: "var(--primary)" }}>
                 <SaleCountdown endsAt={saleEndsAt} />
-              </p>
+              </div>
             )}
           </div>
 
