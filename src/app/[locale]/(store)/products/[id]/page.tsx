@@ -15,7 +15,7 @@ import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import ProductGallery from "@/components/ui/ProductGallery";
-import { Link } from "@/i18n/navigation";
+import BackLink from "@/components/ui/BackLink";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { productJsonLd, jsonLdScript } from "@/lib/jsonld";
 import { getTranslations } from "next-intl/server";
@@ -121,13 +121,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-      <Link
-        href="/products"
-        className="inline-block text-sm mb-8 hover:opacity-70 transition-opacity"
-        style={{ color: "var(--muted)" }}
-      >
-        {t("backToProducts")}
-      </Link>
+      <BackLink label={t("backToProducts")} />
 
       {/* Product structured data — Google shows price in search results */}
       <script
