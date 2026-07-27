@@ -106,6 +106,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState(false);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/admin/categories");
@@ -178,12 +179,14 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
 
   async function remove(cat: Category) {
     if (!confirm(t("deleteConfirm", { name: cat.name }))) return;
+    setDeleteError(false);
     const res = await fetch("/api/admin/categories", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: cat.id }),
     });
     if (res.ok) await refresh();
+    else setDeleteError(true);
   }
 
   /** Swap sortOrder with the previous/next sibling. */
@@ -280,6 +283,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             className="p-0.5 rounded"
             style={{ color: "var(--muted)", visibility: children.length ? "visible" : "hidden" }}
             aria-label={isCollapsed ? t("expand") : t("collapse")}
+            title={isCollapsed ? t("expand") : t("collapse")}
           >
             {isCollapsed ? <ChevronDown size={16} className="-rotate-90 rtl:rotate-90" /> : <ChevronDown size={16} />}
           </button>
@@ -308,10 +312,10 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
 
           {/* actions */}
           <span className="ms-auto flex items-center gap-1">
-            <button type="button" onClick={() => move(cat, -1)} disabled={idx <= 0} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveUp")}>
+            <button type="button" onClick={() => move(cat, -1)} disabled={idx <= 0} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveUp")} title={t("moveUp")}>
               <ArrowUp size={14} />
             </button>
-            <button type="button" onClick={() => move(cat, 1)} disabled={idx >= siblings.length - 1} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveDown")}>
+            <button type="button" onClick={() => move(cat, 1)} disabled={idx >= siblings.length - 1} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveDown")} title={t("moveDown")}>
               <ArrowDown size={14} />
             </button>
             <button
@@ -349,10 +353,11 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
               className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]"
               style={{ color: "var(--muted)" }}
               aria-label={t("edit")}
+              title={t("edit")}
             >
               <Pencil size={14} />
             </button>
-            <button type="button" onClick={() => remove(cat)} className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]" style={{ color: "oklch(0.5 0.15 25)" }} aria-label={t("delete")}>
+            <button type="button" onClick={() => remove(cat)} className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]" style={{ color: "oklch(0.5 0.15 25)" }} aria-label={t("delete")} title={t("delete")}>
               <Trash2 size={14} />
             </button>
           </span>
@@ -392,6 +397,11 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
         >
           + {t("new")}
         </button>
+        {deleteError && (
+          <p role="status" className="text-sm mb-4" style={{ color: "oklch(0.45 0.15 25)" }}>
+            {t("deleteError")}
+          </p>
+        )}
 
         {roots.length === 0 ? (
           <p className="text-sm py-8" style={{ color: "var(--muted)" }}>

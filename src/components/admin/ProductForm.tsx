@@ -6,7 +6,7 @@
  * optional — the store falls back to whatever is filled). Category select
  * shows the tree with indentation. All labels come from next-intl.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -105,6 +105,25 @@ export default function ProductForm({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Warn before losing a half-filled form — this is a long, multi-language
+  // form and a stray back-button tap shouldn't silently discard it.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const dirty = !saving && JSON.stringify(form) !== initialSnapshot;
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
+
+  function handleCancel() {
+    if (dirty && !confirm(t("unsavedChangesConfirm"))) return;
+    router.back();
+  }
 
   // Flatten the category tree into indented <option>s (depth-first)
   const categoryOptions = useMemo(() => {
@@ -613,7 +632,12 @@ export default function ProductForm({
 
       {error && <p className="text-sm" style={{ color: "oklch(0.45 0.15 25)" }}>{error}</p>}
 
-      <div className="flex gap-3 pt-2">
+      {/* Sticky so Save/Cancel stay reachable without scrolling back down
+          through a long multi-language form, especially on mobile. */}
+      <div
+        className="sticky bottom-0 py-3 flex gap-3 border-t backdrop-blur-sm"
+        style={{ borderColor: "var(--border)", backgroundColor: "color-mix(in oklch, var(--bg) 92%, transparent)" }}
+      >
         <button
           type="submit"
           disabled={saving || saleInvalid}
@@ -624,7 +648,7 @@ export default function ProductForm({
         </button>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={handleCancel}
           className="px-6 py-3 rounded-lg font-semibold text-sm border"
           style={{ borderColor: "var(--border)", color: "var(--ink)" }}
         >

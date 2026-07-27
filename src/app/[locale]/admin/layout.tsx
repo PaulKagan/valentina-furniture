@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import AdminSignOut from "@/components/admin/AdminSignOut";
+import AdminNav from "@/components/admin/AdminNav";
 
 export default async function AdminLayout({
   children,
@@ -34,23 +35,16 @@ export default async function AdminLayout({
         <p className="font-bold text-sm mb-6 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
           {tBrand("adminBrand")}
         </p>
-        {[
-          { href: "/admin/dashboard", label: t("dashboard") },
-          { href: "/admin/categories", label: t("categories") },
-          { href: "/admin/products", label: t("products") },
-          { href: "/admin/sales", label: t("sales") },
-          { href: "/admin/orders", label: t("orders") },
-          { href: "/admin/backup", label: t("backup") },
-        ].map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]"
-            style={{ color: "var(--ink)" }}
-          >
-            {l.label}
-          </Link>
-        ))}
+        <AdminNav
+          links={[
+            { href: "/admin/dashboard", label: t("dashboard") },
+            { href: "/admin/categories", label: t("categories") },
+            { href: "/admin/products", label: t("products") },
+            { href: "/admin/sales", label: t("sales") },
+            { href: "/admin/orders", label: t("orders") },
+            { href: "/admin/backup", label: t("backup") },
+          ]}
+        />
         <div className="mt-auto pt-4 border-t" style={{ borderColor: "var(--border)" }}>
           <Link href="/" className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }}>
             ← {t("backToStore")}

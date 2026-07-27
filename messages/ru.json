@@ -197,7 +197,8 @@
       "discountPercentLabel": "Скидка (%)",
       "saleHint": "Скидка действует на все товары этой категории и её подкатегорий и отмечает их огоньком. Чтобы завершить акцию в определённую дату, задайте «До даты» ниже.",
       "badgeSale": "Акция -{percent}%",
-      "errorSaleDiscount": "Для акционной категории нужна скидка больше 0%"
+      "errorSaleDiscount": "Для акционной категории нужна скидка больше 0%",
+      "deleteError": "Ошибка при удалении категории. Попробуйте ещё раз."
     },
     "dashboard": {
       "title": "Обзор",
@@ -232,7 +233,20 @@
       "import": "Импорт из Excel",
       "duplicate": "Дублировать",
       "duplicateTitle": "Дублирование товара",
-      "loadMore": "Показать ещё ({shown} из {total})"
+      "loadMore": "Показать ещё ({shown} из {total})",
+      "searchPlaceholder": "Поиск по названию товара",
+      "allCategories": "Все категории",
+      "stockAll": "Все",
+      "stockIn": "В наличии",
+      "stockOut": "Нет в наличии",
+      "sortLabel": "Сортировка",
+      "sortName": "Название (А-Я)",
+      "sortPriceAsc": "Цена (по возрастанию)",
+      "sortPriceDesc": "Цена (по убыванию)",
+      "sortOutOfStockFirst": "Сначала нет в наличии",
+      "outOfStock": "Нет в наличии",
+      "noResults": "Нет товаров, соответствующих запросу",
+      "deleteError": "Ошибка при удалении товара. Попробуйте ещё раз."
     },
     "orders": {
       "title": "Заказы",
@@ -254,7 +268,8 @@
       "open": "Открыть",
       "searchPlaceholder": "Поиск по имени, телефону или номеру заказа",
       "allStatuses": "Все",
-      "loadMore": "Показать ещё ({shown} из {total})"
+      "loadMore": "Показать ещё ({shown} из {total})",
+      "statusUpdateError": "Ошибка при обновлении статуса. Попробуйте ещё раз."
     },
     "productForm": {
       "nameLabel": "Название товара",
@@ -295,7 +310,8 @@
       "makePrimary": "Сделать основным фото",
       "moveEarlier": "Переместить раньше",
       "moveLater": "Переместить позже",
-      "removePhoto": "Удалить"
+      "removePhoto": "Удалить",
+      "unsavedChangesConfirm": "Есть несохранённые изменения. Всё равно выйти?"
     },
     "import": {
       "title": "Импорт товаров из Excel",

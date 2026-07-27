@@ -3,9 +3,11 @@ import { products, categories } from "@/db/schema";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
+import ProductFilters, { type SortOption } from "@/components/admin/ProductFilters";
 import Image from "next/image";
 import { imageUrl } from "@/lib/images";
 import { ADMIN_PAGE_SIZE, visibleCount } from "@/lib/pagination";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -14,18 +16,44 @@ export default async function AdminProductsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ show?: string }>;
+  searchParams: Promise<{ show?: string; q?: string; category?: string; stock?: string; sort?: string }>;
 }) {
   const { locale } = await params;
-  const { show } = await searchParams;
+  const { show, q, category, stock, sort } = await searchParams;
   const t = await getTranslations({ locale, namespace: "admin.products" });
   const all = await db.select().from(products);
   const allCategories = await db.select().from(categories);
+  const catMap = Object.fromEntries(allCategories.map((c) => [c.id, c.name]));
+
+  let filtered = all;
+  if (q?.trim()) {
+    const needle = q.trim().toLowerCase();
+    filtered = filtered.filter((p) => p.name.toLowerCase().includes(needle));
+  }
+  const categoryId = category ? parseInt(category, 10) : null;
+  if (categoryId != null && !isNaN(categoryId)) {
+    filtered = filtered.filter((p) => p.categoryId === categoryId);
+  }
+  if (stock === "in") filtered = filtered.filter((p) => p.inStock);
+  else if (stock === "out") filtered = filtered.filter((p) => !p.inStock);
+
+  const sortOption = (sort as SortOption) || "name";
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sortOption) {
+      case "priceAsc":
+        return parseFloat(a.price) - parseFloat(b.price);
+      case "priceDesc":
+        return parseFloat(b.price) - parseFloat(a.price);
+      case "outOfStockFirst":
+        return Number(a.inStock) - Number(b.inStock) || a.name.localeCompare(b.name, "he");
+      default:
+        return a.name.localeCompare(b.name, "he");
+    }
+  });
 
   // Paginate — a few hundred products shouldn't all render at once
-  const shown = visibleCount(show, all.length, ADMIN_PAGE_SIZE);
-  const allProducts = all.slice(0, shown);
-  const catMap = Object.fromEntries(allCategories.map((c) => [c.id, c.name]));
+  const shown = visibleCount(show, sorted.length, ADMIN_PAGE_SIZE);
+  const allProducts = sorted.slice(0, shown);
 
   return (
     <div>
@@ -59,6 +87,10 @@ export default async function AdminProductsPage({
         </div>
       </div>
 
+      <Suspense fallback={null}>
+        <ProductFilters categories={allCategories.map((c) => ({ id: c.id, name: c.name }))} />
+      </Suspense>
+
       <div className="rounded-xl border overflow-x-auto" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
         <table className="w-full text-sm">
           <thead style={{ backgroundColor: "var(--surface)" }}>
@@ -74,12 +106,16 @@ export default async function AdminProductsPage({
             {allProducts.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-10 text-center" style={{ color: "var(--muted)" }}>
-                  {t("noProducts")}
+                  {q || categoryId != null || stock ? t("noResults") : t("noProducts")}
                 </td>
               </tr>
             )}
             {allProducts.map((p) => (
-              <tr key={p.id} className="border-t" style={{ borderColor: "var(--border)" }}>
+              <tr
+                key={p.id}
+                className="border-t"
+                style={{ borderColor: "var(--border)", backgroundColor: p.inStock ? undefined : "oklch(0.97 0.02 30)" }}
+              >
                 <td className="px-4 py-3">
                   <div className="w-12 h-12 rounded-lg overflow-hidden" style={{ backgroundColor: "var(--surface)" }}>
                     {p.imageUrl ? (
@@ -98,7 +134,13 @@ export default async function AdminProductsPage({
                 <td className="px-4 py-3 font-medium" style={{ color: "var(--ink)" }}>{p.name}</td>
                 <td className="px-4 py-3" style={{ color: "var(--muted)" }}>{p.categoryId ? catMap[p.categoryId] : "—"}</td>
                 <td className="px-4 py-3" style={{ color: "var(--ink)" }}>₪{parseFloat(p.price).toLocaleString("he-IL")}</td>
-                <td className="px-4 py-3">{p.inStock ? "✅" : "❌"}</td>
+                <td className="px-4 py-3">
+                  {p.inStock ? "✅" : (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ backgroundColor: "oklch(0.9 0.05 30)", color: "oklch(0.4 0.15 30)" }}>
+                      {t("outOfStock")}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{p.featured ? "⭐" : "—"}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
@@ -125,10 +167,20 @@ export default async function AdminProductsPage({
         </table>
       </div>
 
-      {shown < all.length && (
+      {shown < sorted.length && (
         <p className="mt-4 text-sm text-center" style={{ color: "var(--muted)" }}>
-          <Link href={`/admin/products?show=${shown + ADMIN_PAGE_SIZE}`} className="underline" style={{ color: "var(--primary)" }}>
-            {t("loadMore", { shown, total: all.length })}
+          <Link
+            href={`/admin/products?${new URLSearchParams({
+              ...(q ? { q } : {}),
+              ...(category ? { category } : {}),
+              ...(stock ? { stock } : {}),
+              ...(sort ? { sort } : {}),
+              show: String(shown + ADMIN_PAGE_SIZE),
+            })}`}
+            className="underline"
+            style={{ color: "var(--primary)" }}
+          >
+            {t("loadMore", { shown, total: sorted.length })}
           </Link>
         </p>
       )}

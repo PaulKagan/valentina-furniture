@@ -88,11 +88,13 @@ export default async function AdminOrdersPage({
                   <Td className="font-medium">{o.customerName}</Td>
                   <Td muted dir="ltr">{o.customerPhone}</Td>
                   <Td muted style={{ maxWidth: "150px" }}>
-                    <span className="truncate block">{o.customerAddress}</span>
+                    <span className="truncate block" title={o.customerAddress}>{o.customerAddress}</span>
                   </Td>
                   <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
                   <Td muted style={{ maxWidth: "180px" }}>
-                    <span className="truncate block">{items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}</span>
+                    <span className="truncate block" title={items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}>
+                      {items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
+                    </span>
                   </Td>
                   <Td>
                     <OrderStatusSelect orderId={o.id} currentStatus={o.status} labels={statusLabels} />

@@ -3,6 +3,7 @@ import { orders, products } from "@/db/schema";
 import { eq, count, sum, desc } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import { Td } from "@/components/admin/Td";
+import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -30,20 +31,36 @@ export default async function DashboardPage({
 
       <dl className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { label: t("totalOrders"), value: totalOrders.count },
-          { label: t("pendingOrders"), value: pendingOrders.count },
-          { label: t("totalProducts"), value: totalProducts.count },
-          { label: t("totalRevenue"), value: parseFloat(revenue.sum ?? "0").toLocaleString("he-IL") },
-        ].map((stat) => (
-          <div key={stat.label} className="p-5 rounded-xl border" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
-            <dd className="text-2xl font-bold mb-1" style={{ color: "var(--primary)" }}>
-              {stat.value}
-            </dd>
-            <dt className="text-sm" style={{ color: "var(--muted)" }}>
-              {stat.label}
-            </dt>
-          </div>
-        ))}
+          { label: t("totalOrders"), value: totalOrders.count, href: "/admin/orders" },
+          { label: t("pendingOrders"), value: pendingOrders.count, href: "/admin/orders?status=pending" },
+          { label: t("totalProducts"), value: totalProducts.count, href: "/admin/products" },
+          { label: t("totalRevenue"), value: parseFloat(revenue.sum ?? "0").toLocaleString("he-IL"), href: null },
+        ].map((stat) => {
+          const tile = (
+            <>
+              <dd className="text-2xl font-bold mb-1" style={{ color: "var(--primary)" }}>
+                {stat.value}
+              </dd>
+              <dt className="text-sm" style={{ color: "var(--muted)" }}>
+                {stat.label}
+              </dt>
+            </>
+          );
+          return stat.href ? (
+            <Link
+              key={stat.label}
+              href={stat.href}
+              className="p-5 rounded-xl border transition-colors hover:bg-[oklch(0.974_0_0)]"
+              style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}
+            >
+              {tile}
+            </Link>
+          ) : (
+            <div key={stat.label} className="p-5 rounded-xl border" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
+              {tile}
+            </div>
+          );
+        })}
       </dl>
 
       <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
@@ -71,18 +88,34 @@ export default async function DashboardPage({
               </tr>
             )}
             {recentOrders.map((o) => (
-              <tr key={o.id} className="border-t" style={{ borderColor: "var(--border)" }}>
-                <Td muted>#{o.id}</Td>
-                <Td className="font-medium">{o.customerName}</Td>
-                <Td muted dir="ltr">{o.customerPhone}</Td>
-                <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
+              <tr
+                key={o.id}
+                className="border-t transition-colors hover:bg-[oklch(0.985_0_0)]"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <Td muted>
+                  <Link href={`/admin/orders/${o.id}`} className="block">#{o.id}</Link>
+                </Td>
+                <Td className="font-medium">
+                  <Link href={`/admin/orders/${o.id}`} className="block">{o.customerName}</Link>
+                </Td>
+                <Td muted dir="ltr">
+                  <Link href={`/admin/orders/${o.id}`} className="block">{o.customerPhone}</Link>
+                </Td>
                 <Td>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: "oklch(0.974 0.004 32)", color: "var(--primary)" }}>
-                    {tStatus(o.status)}
-                  </span>
+                  <Link href={`/admin/orders/${o.id}`} className="block">₪{parseFloat(o.total).toLocaleString("he-IL")}</Link>
+                </Td>
+                <Td>
+                  <Link href={`/admin/orders/${o.id}`} className="block">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: "oklch(0.974 0.004 32)", color: "var(--primary)" }}>
+                      {tStatus(o.status)}
+                    </span>
+                  </Link>
                 </Td>
                 <Td muted>
-                  {new Date(o.createdAt).toLocaleDateString(locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-GB")}
+                  <Link href={`/admin/orders/${o.id}`} className="block">
+                    {new Date(o.createdAt).toLocaleDateString(locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-GB")}
+                  </Link>
                 </Td>
               </tr>
             ))}

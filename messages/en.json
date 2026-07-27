@@ -197,7 +197,8 @@
       "discountPercentLabel": "Discount (%)",
       "saleHint": "The discount applies to every product in this category and its subcategories, and marks them with a flame. To end it on a date, set \"Ends at\" below.",
       "badgeSale": "-{percent}% sale",
-      "errorSaleDiscount": "A sale category needs a discount above 0%"
+      "errorSaleDiscount": "A sale category needs a discount above 0%",
+      "deleteError": "Error deleting the category. Please try again."
     },
     "dashboard": {
       "title": "Overview",
@@ -232,7 +233,20 @@
       "import": "Import from Excel",
       "duplicate": "Duplicate",
       "duplicateTitle": "Duplicate product",
-      "loadMore": "Show more ({shown} of {total})"
+      "loadMore": "Show more ({shown} of {total})",
+      "searchPlaceholder": "Search by product name",
+      "allCategories": "All categories",
+      "stockAll": "All",
+      "stockIn": "In stock",
+      "stockOut": "Out of stock",
+      "sortLabel": "Sort",
+      "sortName": "Name (A-Z)",
+      "sortPriceAsc": "Price (low to high)",
+      "sortPriceDesc": "Price (high to low)",
+      "sortOutOfStockFirst": "Out of stock first",
+      "outOfStock": "Out of stock",
+      "noResults": "No products match your search",
+      "deleteError": "Error deleting the product. Please try again."
     },
     "orders": {
       "title": "Orders",
@@ -254,7 +268,8 @@
       "open": "Open",
       "searchPlaceholder": "Search by name, phone or order number",
       "allStatuses": "All",
-      "loadMore": "Show more ({shown} of {total})"
+      "loadMore": "Show more ({shown} of {total})",
+      "statusUpdateError": "Error updating the status. Please try again."
     },
     "productForm": {
       "nameLabel": "Product name",
@@ -295,7 +310,8 @@
       "makePrimary": "Make primary photo",
       "moveEarlier": "Move earlier",
       "moveLater": "Move later",
-      "removePhoto": "Remove"
+      "removePhoto": "Remove",
+      "unsavedChangesConfirm": "You have unsaved changes. Leave anyway?"
     },
     "import": {
       "title": "Import products from Excel",

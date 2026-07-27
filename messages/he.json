@@ -197,7 +197,8 @@
       "discountPercentLabel": "אחוז הנחה (%)",
       "saleHint": "ההנחה חלה על כל המוצרים בקטגוריה ובתתי-הקטגוריות שלה, ומסומנים בלהבה. לסיום המבצע בתאריך מסוים — קבעו \"עד תאריך\" למטה.",
       "badgeSale": "מבצע {percent}%-",
-      "errorSaleDiscount": "קטגוריית מבצע חייבת אחוז הנחה גדול מ-0"
+      "errorSaleDiscount": "קטגוריית מבצע חייבת אחוז הנחה גדול מ-0",
+      "deleteError": "שגיאה במחיקת הקטגוריה. נסו שוב."
     },
     "dashboard": {
       "title": "סקירה כללית",
@@ -232,7 +233,20 @@
       "import": "ייבוא מאקסל",
       "duplicate": "שכפל",
       "duplicateTitle": "שכפול מוצר",
-      "loadMore": "הצג עוד ({shown} מתוך {total})"
+      "loadMore": "הצג עוד ({shown} מתוך {total})",
+      "searchPlaceholder": "חיפוש לפי שם מוצר",
+      "allCategories": "כל הקטגוריות",
+      "stockAll": "הכל",
+      "stockIn": "במלאי",
+      "stockOut": "אזל מהמלאי",
+      "sortLabel": "מיון",
+      "sortName": "שם (א-ת)",
+      "sortPriceAsc": "מחיר (מהנמוך לגבוה)",
+      "sortPriceDesc": "מחיר (מהגבוה לנמוך)",
+      "sortOutOfStockFirst": "אזל מהמלאי קודם",
+      "outOfStock": "אזל מהמלאי",
+      "noResults": "אין מוצרים התואמים את החיפוש",
+      "deleteError": "שגיאה במחיקת המוצר. נסו שוב."
     },
     "orders": {
       "title": "הזמנות",
@@ -254,7 +268,8 @@
       "open": "פתח",
       "searchPlaceholder": "חיפוש לפי שם, טלפון או מספר הזמנה",
       "allStatuses": "הכל",
-      "loadMore": "הצג עוד ({shown} מתוך {total})"
+      "loadMore": "הצג עוד ({shown} מתוך {total})",
+      "statusUpdateError": "שגיאה בעדכון הסטטוס. נסו שוב."
     },
     "productForm": {
       "nameLabel": "שם המוצר",
@@ -295,7 +310,8 @@
       "makePrimary": "הפוך לתמונה ראשית",
       "moveEarlier": "הזז קודם",
       "moveLater": "הזז אחר כך",
-      "removePhoto": "הסרה"
+      "removePhoto": "הסרה",
+      "unsavedChangesConfirm": "יש שינויים שלא נשמרו. לצאת בכל זאת?"
     },
     "import": {
       "title": "ייבוא מוצרים מאקסל",
