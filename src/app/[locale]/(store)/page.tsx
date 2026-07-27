@@ -7,7 +7,7 @@
  * SEO: LocalBusiness JSON-LD embedded for Google rich results.
  */
 import type { Metadata } from "next";
-import Image from "next/image";
+import FallbackImage from "@/components/ui/FallbackImage";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { db } from "@/db";
@@ -169,8 +169,8 @@ export default async function HomePage({
                   className="group relative rounded-2xl overflow-hidden aspect-[16/7] flex items-end"
                   style={{ backgroundColor: "var(--surface-elevated)" }}
                 >
-                  <Image
-                    src={img ?? "/placeholder-product.svg"}
+                  <FallbackImage
+                    src={img ?? ""}
                     alt=""
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -242,8 +242,8 @@ export default async function HomePage({
                   style={{ borderColor: "var(--border)" }}
                 >
                   <span className="block aspect-[4/3] relative" style={{ backgroundColor: "var(--surface)" }}>
-                    <Image
-                      src={img ?? "/placeholder-product.svg"}
+                    <FallbackImage
+                      src={img ?? ""}
                       alt=""
                       fill
                       sizes="(max-width: 768px) 50vw, 25vw"

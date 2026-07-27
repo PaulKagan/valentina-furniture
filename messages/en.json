@@ -443,5 +443,12 @@
     "brandFull": "Valentina Ben Ami",
     "brandStore": "Valentina Ben Ami Furniture",
     "adminBrand": "Valentina — Admin"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "A temporary error occurred. You can try again, or go back to the homepage.",
+    "retry": "Try again",
+    "home": "Go home",
+    "whatsapp": "Contact us on WhatsApp"
   }
 }

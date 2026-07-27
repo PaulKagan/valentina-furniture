@@ -88,6 +88,15 @@ export async function POST(req: NextRequest) {
   if (!isRecord(body) || body.confirm !== true) {
     return NextResponse.json({ error: "Missing confirmation" }, { status: 400 });
   }
+  // Reject anything from a future backup format outright — a version bump
+  // means the insert shape below changed too, and guessing at an unknown
+  // shape is how a "restore" quietly corrupts data instead of failing loudly.
+  if (body.version !== BACKUP_VERSION) {
+    return NextResponse.json(
+      { error: `Unsupported backup version (expected ${BACKUP_VERSION}, got ${body.version})` },
+      { status: 400 }
+    );
+  }
   if (
     !Array.isArray(body.categories) ||
     !Array.isArray(body.products) ||

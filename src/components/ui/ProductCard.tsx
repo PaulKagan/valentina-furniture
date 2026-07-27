@@ -14,7 +14,7 @@
  */
 "use client";
 
-import Image from "next/image";
+import FallbackImage from "./FallbackImage";
 import { Link } from "@/i18n/navigation";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
@@ -74,25 +74,16 @@ export default function ProductCard({
         className="block aspect-[4/3] relative overflow-hidden"
         style={{ backgroundColor: "var(--surface)" }}
       >
-        {img ? (
-          <Image
-            src={img}
-            alt={name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-300"
-            style={{ transitionTimingFunction: "var(--ease-out)" }}
-          />
-        ) : (
-          // Shared placeholder so a missing photo still fills the tile cleanly
-          <Image
-            src="/placeholder-product.svg"
-            alt=""
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-        )}
+        {/* Falls back to the shared placeholder both when there's no photo
+            and if a real URL ever stops resolving (e.g. Cloudinary outage) */}
+        <FallbackImage
+          src={img ?? ""}
+          alt={img ? name : ""}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition-transform duration-300"
+          style={{ transitionTimingFunction: "var(--ease-out)" }}
+        />
 
         {/* Badge — shown only when the product is genuinely discounted,
             whether that discount is its own or inherited from a sale category */}

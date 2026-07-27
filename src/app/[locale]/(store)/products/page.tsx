@@ -30,6 +30,7 @@ import {
   categoryPath,
   localizedName,
   type Category,
+  type Product,
 } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -114,8 +115,12 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   };
 
   // Products of the selected branch, or everything that isn't inside a
-  // hidden/expired category (uncategorized products always show)
-  let productList;
+  // hidden/expired category (uncategorized products always show).
+  // Deliberately NOT try/catch'd into an empty list here: on a real DB
+  // outage, "no products found" would misleadingly look like an empty
+  // store. Letting it throw hits the app-wide error boundary (error.tsx),
+  // which is honest about it being a temporary problem and offers a retry.
+  let productList: Product[];
   if (activeCategory) {
     const branchIds = descendantIds(activeCategory.id, active);
     productList = await db.select().from(products).where(inArray(products.categoryId, branchIds));

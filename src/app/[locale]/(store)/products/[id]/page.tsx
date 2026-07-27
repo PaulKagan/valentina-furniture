@@ -14,7 +14,7 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import FallbackImage from "@/components/ui/FallbackImage";
 import { Link } from "@/i18n/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { productJsonLd, jsonLdScript } from "@/lib/jsonld";
@@ -139,24 +139,14 @@ export default async function ProductPage({ params }: Props) {
           className="aspect-square relative rounded-2xl overflow-hidden"
           style={{ backgroundColor: "var(--surface)" }}
         >
-          {img ? (
-            <Image
-              src={img}
-              alt={name}
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          ) : (
-            <Image
-              src="/placeholder-product.svg"
-              alt=""
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          )}
+          <FallbackImage
+            src={img ?? ""}
+            alt={img ? name : ""}
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         </div>
 
         {/* ── Product info ── */}
