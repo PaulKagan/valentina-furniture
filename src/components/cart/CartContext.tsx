@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Shopping cart — entirely client-side, persisted to localStorage.
+ * No server cart/session: the price shown here is provisional (for display
+ * only). The real, trusted price is computed server-side at checkout from
+ * the DB (see lib/orders.ts) — a tampered cart in localStorage can't change
+ * what's actually charged.
+ */
 import { createContext, useContext, useEffect, useReducer } from "react";
 
 export type CartItem = {

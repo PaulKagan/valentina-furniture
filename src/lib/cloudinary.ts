@@ -1,3 +1,8 @@
+/**
+ * Cloudinary SDK setup + the two operations every upload/delete flow uses.
+ * URL-building (resizing/cropping already-uploaded photos) lives in
+ * images.ts instead — this file only ever talks to the Cloudinary API.
+ */
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
