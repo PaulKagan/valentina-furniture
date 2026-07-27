@@ -17,11 +17,11 @@
  * without a tone prop — the box tint is a color-mix off whatever text
  * color it inherits.
  *
- * Flip mechanic: each tile keeps the settled value on screen and, on
- * change, layers a "flying out" copy of the old value over a "flying in"
- * copy of the new one (CSS 3D rotateX, see globals.css) for one CSS
- * animation duration, then drops back to a single static span. Simpler
- * and more predictable than juggling continuous animation state.
+ * The tile row is forced dir="ltr" independent of the page language —
+ * countdowns are conventionally read left-to-right (days → seconds) even
+ * on an RTL page, the same reason each tile's digits are dir="ltr" too.
+ * Only the "ends in" label outside the tile group follows the page's own
+ * direction.
  *
  * Two details worth keeping from the previous version:
  *  - Renders nothing until mounted, so the server's static HTML always
@@ -35,8 +35,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-const FLIP_MS = 470; // must stay under the 1000ms tick, or a fast tick could overlap animations
-
 function timeParts(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
   return {
@@ -47,48 +45,20 @@ function timeParts(ms: number) {
   };
 }
 
-/** One flip tile: a settled value, or a brief out/in transition between two. */
-function FlipTile({ value, label, pad = true }: { value: number; label: string; pad?: boolean }) {
+/** One tile: a two-digit box (days excepted — see `pad`) with a label under it. */
+function Tile({ value, label, pad = true }: { value: number; label: string; pad?: boolean }) {
   // Days is deliberately NOT zero-padded and has no digit ceiling — a sale
   // scheduled 150 days out must widen the tile, never clip inside it.
   const display = pad ? String(value).padStart(2, "0") : String(value);
-  const [shown, setShown] = useState(display);
-  const [outgoing, setOutgoing] = useState<string | null>(null);
-
-  // Detected and applied during render (React's documented pattern for
-  // "state changed because a prop changed") rather than in an effect —
-  // starting the flip is synchronous with the new value arriving, no
-  // extra render pass needed for that part.
-  if (display !== shown) {
-    setOutgoing(shown);
-    setShown(display);
-  }
-
-  // The timer is the one genuinely external thing here (clearing the
-  // outgoing tile once its CSS animation has finished), so it's the only
-  // part that belongs in an effect.
-  useEffect(() => {
-    if (outgoing === null) return;
-    const id = setTimeout(() => setOutgoing(null), FLIP_MS);
-    return () => clearTimeout(id);
-  }, [outgoing]);
 
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        className="relative min-w-9 sm:min-w-10 px-1 h-8 sm:h-9 rounded-md overflow-hidden font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
-        style={{
-          backgroundColor: "color-mix(in oklab, currentColor 16%, transparent)",
-          perspective: "200px",
-        }}
+        className="min-w-9 sm:min-w-10 px-1 h-8 sm:h-9 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
+        style={{ backgroundColor: "color-mix(in oklab, currentColor 16%, transparent)" }}
         dir="ltr"
       >
-        {outgoing !== null && (
-          <span className="absolute inset-0 flex items-center justify-center flip-digit-out" aria-hidden="true">
-            {outgoing}
-          </span>
-        )}
-        <span className={outgoing !== null ? "flip-digit-in" : undefined}>{shown}</span>
+        {display}
       </div>
       <span className="text-[10px] sm:text-xs font-medium opacity-80">{label}</span>
     </div>
@@ -125,10 +95,14 @@ export default function SaleCountdown({ endsAt }: { endsAt: string }) {
   return (
     <div className="inline-flex items-end gap-2.5 sm:gap-3">
       <span className="text-xs sm:text-sm font-medium self-center opacity-90">{t("saleEndsIn")}</span>
-      {days > 0 && <FlipTile value={days} label={t("unitDays")} pad={false} />}
-      <FlipTile value={hours} label={t("unitHours")} />
-      <FlipTile value={minutes} label={t("unitMinutes")} />
-      <FlipTile value={seconds} label={t("unitSeconds")} />
+      {/* Forced LTR so the sequence always reads days → seconds left to
+          right, regardless of the page's own direction */}
+      <div dir="ltr" className="inline-flex items-end gap-2.5 sm:gap-3">
+        {days > 0 && <Tile value={days} label={t("unitDays")} pad={false} />}
+        <Tile value={hours} label={t("unitHours")} />
+        <Tile value={minutes} label={t("unitMinutes")} />
+        <Tile value={seconds} label={t("unitSeconds")} />
+      </div>
     </div>
   );
 }
