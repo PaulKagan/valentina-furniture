@@ -59,9 +59,9 @@ export default async function AdminOrderPage({
   return (
     <div>
       <BackLink
-        label={`← ${t("backToOrders")}`}
+        label={t("backToOrders")}
         fallbackHref="/admin/orders"
-        className="no-print inline-block text-sm mb-4 hover:opacity-70"
+        className="no-print inline-flex items-center gap-1 text-sm mb-4 hover:opacity-70"
       />
       <h1
         className="text-2xl font-bold mb-1"
