@@ -54,7 +54,7 @@ function Tile({ value, label, pad = true }: { value: number; label: string; pad?
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        className="min-w-9 sm:min-w-10 px-1 h-8 sm:h-9 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
+        className="min-w-10 sm:min-w-11 px-1.5 h-9 sm:h-10 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
         style={{ backgroundColor: "color-mix(in oklab, currentColor 16%, transparent)" }}
         dir="ltr"
       >
@@ -93,11 +93,11 @@ export default function SaleCountdown({ endsAt }: { endsAt: string }) {
   const { days, hours, minutes, seconds } = timeParts(remaining);
 
   return (
-    <div className="inline-flex items-end gap-2.5 sm:gap-3">
+    <div className="inline-flex items-end gap-3 sm:gap-3.5">
       <span className="text-xs sm:text-sm font-medium self-center opacity-90">{t("saleEndsIn")}</span>
       {/* Forced LTR so the sequence always reads days → seconds left to
           right, regardless of the page's own direction */}
-      <div dir="ltr" className="inline-flex items-end gap-2.5 sm:gap-3">
+      <div dir="ltr" className="inline-flex items-end gap-3 sm:gap-3.5">
         {days > 0 && <Tile value={days} label={t("unitDays")} pad={false} />}
         <Tile value={hours} label={t("unitHours")} />
         <Tile value={minutes} label={t("unitMinutes")} />

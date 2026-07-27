@@ -166,16 +166,18 @@ export default async function HomePage({
           </g>
         </svg>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
+        {/* -25% from the original py-24/py-32, per feedback that the hero +
+            carousel together didn't fit a laptop's 100vh without scrolling */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-18 md:py-24">
           <div
             className="max-w-2xl fade-up"
             style={{ "--delay": "0ms" } as React.CSSProperties}
           >
-            <p className="text-sm font-semibold mb-3" style={{ color: "var(--primary)" }}>
+            <p className="text-sm font-semibold mb-2" style={{ color: "var(--primary)" }}>
               {t("heroTag")}
             </p>
             <h1
-              className="text-4xl md:text-[clamp(2.5rem,6vw,4.5rem)] font-bold mb-6"
+              className="text-4xl md:text-[clamp(2.5rem,5.5vw,4rem)] font-bold mb-4"
               style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
             >
               {t("heroTitle")}
@@ -193,7 +195,7 @@ export default async function HomePage({
               </em>
             </h1>
             <p
-              className="text-lg mb-8 leading-relaxed"
+              className="text-lg mb-6 leading-relaxed"
               style={{ color: "var(--muted)", maxWidth: "52ch" }}
             >
               {t("heroDesc")}
@@ -224,7 +226,7 @@ export default async function HomePage({
 
       {/* ── Promoted categories — carousel of large image banners ── */}
       {promotedTiles.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
           <PromotedCarousel tiles={promotedTiles} />
         </section>
       )}
