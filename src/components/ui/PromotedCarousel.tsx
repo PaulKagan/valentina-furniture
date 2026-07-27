@@ -16,6 +16,7 @@
  */
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import FallbackImage from "./FallbackImage";
 import SaleCountdown from "./SaleCountdown";
@@ -47,9 +48,16 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
   if (tiles.length === 0) return null;
   const active = tiles[index % tiles.length];
   const img = active.img;
+  const multi = tiles.length > 1;
+
+  /** Prev/next always physically left/right, like a photo carousel — not
+      flipped by page direction, so "next" is always the same gesture. */
+  function step(delta: number) {
+    setIndex((i) => (i + delta + tiles.length) % tiles.length);
+  }
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <Link
         key={active.id}
         href={active.href}
@@ -96,8 +104,10 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
               it from getting squeezed narrower than its own content by the
               flex-wrap row above. */}
           {active.endsAt && (
+            // Wider padding — was tight enough that the tiles nearly
+            // touched the pill's own rounded edge
             <div
-              className="ms-auto inline-flex flex-shrink-0 px-2.5 py-1.5 rounded-full"
+              className="ms-auto inline-flex flex-shrink-0 px-4 py-2 rounded-full"
               style={{
                 backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
                 color: "oklch(0.98 0 0)",
@@ -109,7 +119,30 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
         </div>
       </Link>
 
-      {tiles.length > 1 && (
+      {multi && (
+        <>
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            aria-label={t("carouselPrev")}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+            style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => step(1)}
+            aria-label={t("carouselNext")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+            style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
+          >
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
+        </>
+      )}
+
+      {multi && (
         <div className="flex items-center justify-center gap-2 mt-3" role="tablist" aria-label={t("carouselNav")}>
           {tiles.map((tile, i) => (
             <button

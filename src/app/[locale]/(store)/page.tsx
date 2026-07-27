@@ -112,26 +112,26 @@ export default async function HomePage({
         style={{ backgroundColor: "var(--surface-elevated)" }}
       >
         {/* Soft warm gradient wash behind the silhouette — pure CSS, no
-            image asset. Blurred radial blobs in the brand color, kept
-            subtle (low opacity) so it reads as depth, not a spotlight. */}
+            image asset. Low-chroma sand/cream tones (not the saturated
+            brand red) so it reads as ambient warmth, not a red spotlight. */}
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 60% 70% at 85% 40%, oklch(0.72 0.11 40 / 0.35), transparent 70%), " +
-              "radial-gradient(ellipse 45% 55% at 95% 75%, oklch(0.52 0.14 32 / 0.18), transparent 70%)",
+              "radial-gradient(ellipse 60% 70% at 85% 35%, oklch(0.93 0.025 75 / 0.55), transparent 70%), " +
+              "radial-gradient(ellipse 50% 60% at 95% 80%, oklch(0.8 0.03 55 / 0.3), transparent 70%)",
             filter: "blur(40px)",
           }}
         />
 
-        {/* Decorative armchair line-art filling the empty side opposite the
-            text — always the "end" logical side (right in LTR, left in
-            RTL), since the text block itself always starts from "start".
-            Purely decorative: aria-hidden, no pointer events, hidden on
-            narrow screens where there's no spare room for it anyway. */}
+        {/* Decorative wingback armchair line-art filling the empty side
+            opposite the text — always the "end" logical side (right in
+            LTR, left in RTL), since the text block itself always starts
+            from "start". Purely decorative: aria-hidden, no pointer
+            events, hidden on narrow screens where there's no spare room. */}
         <svg
-          viewBox="0 0 400 400"
+          viewBox="0 0 400 440"
           aria-hidden="true"
           className="hidden md:block absolute pointer-events-none"
           style={{
@@ -144,17 +144,25 @@ export default async function HomePage({
             color: "var(--border)",
           }}
         >
-          <g fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
-            {/* backrest */}
-            <path d="M120 70a30 30 0 0 1 30-30h100a30 30 0 0 1 30 30v150H120z" />
+          <g fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+            {/* backrest with flared wingback top corners */}
+            <path d="M110 130 Q110 60 150 40 Q160 20 185 20 H215 Q240 20 250 40 Q290 60 290 130 V230 H110 Z" />
+            {/* tufted channel lines inside the backrest */}
+            <path d="M160 55 Q155 140 160 220" strokeWidth="3" />
+            <path d="M200 45 Q198 140 200 225" strokeWidth="3" />
+            <path d="M240 55 Q245 140 240 220" strokeWidth="3" />
+            {/* rolled left armrest */}
+            <path d="M75 175 Q75 145 105 145 V270 Q75 270 75 240 Z" />
+            {/* rolled right armrest */}
+            <path d="M325 175 Q325 145 295 145 V270 Q325 270 325 240 Z" />
             {/* seat cushion */}
-            <path d="M90 220h220v55a15 15 0 0 1-15 15H105a15 15 0 0 1-15-15z" />
-            {/* left armrest */}
-            <path d="M65 160a25 25 0 0 1 25-25h5v130h-10a20 20 0 0 1-20-20z" />
-            {/* right armrest */}
-            <path d="M335 160a25 25 0 0 1-25-25h-5v130h10a20 20 0 0 0 20-20z" />
-            {/* legs */}
-            <path d="M120 290v40M280 290v40" />
+            <path d="M85 235 H315 V300 Q315 320 295 320 H105 Q85 320 85 300 Z" />
+            {/* seat cushion seam + inset welt line, for depth without a fill */}
+            <path d="M110 260 Q200 250 290 260" strokeWidth="3" />
+            <path d="M95 240 H305 V298 Q305 310 293 310 H107 Q95 310 95 298 Z" strokeWidth="3" />
+            {/* tapered front legs with feet */}
+            <path d="M130 320 L120 375 M113 375 H127" />
+            <path d="M270 320 L280 375 M273 375 H287" />
           </g>
         </svg>
 
@@ -288,9 +296,12 @@ export default async function HomePage({
             <p className="text-sm mt-2">{t("noProductsContact")}</p>
           </div>
         ) : (
-          // lg:3 before xl:4 — jumping straight from 2 to 4 columns at 1024px
-          // left almost no breathing room per card at common laptop widths
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          // Width-driven column count instead of fixed breakpoints — a card
+          // never gets narrower than 240px, so the number of columns
+          // responds to the container's actual width (OS display scaling,
+          // a laptop's effective viewport, browser zoom) rather than only
+          // changing at exact breakpoint pixels.
+          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
             {featuredProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
             ))}

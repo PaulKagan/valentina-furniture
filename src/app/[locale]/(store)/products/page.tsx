@@ -309,7 +309,9 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Width-driven column count — see the featured grid on the
+              homepage for why this replaced fixed sm/lg/xl breakpoints. */}
+          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
             {visible.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
             ))}

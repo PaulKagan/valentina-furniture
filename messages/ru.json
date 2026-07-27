@@ -52,7 +52,9 @@
     },
     "promotedBadge": "Рекомендуем",
     "carouselNav": "Рекомендуемые категории",
-    "carouselSlide": "Перейти к {name}"
+    "carouselSlide": "Перейти к {name}",
+    "carouselPrev": "Назад",
+    "carouselNext": "Далее"
   },
   "products": {
     "title": "Все товары",

@@ -52,7 +52,9 @@
     },
     "promotedBadge": "Featured",
     "carouselNav": "Featured categories",
-    "carouselSlide": "Go to {name}"
+    "carouselSlide": "Go to {name}",
+    "carouselPrev": "Previous",
+    "carouselNext": "Next"
   },
   "products": {
     "title": "All Products",

@@ -52,7 +52,9 @@
     },
     "promotedBadge": "מומלץ",
     "carouselNav": "קטגוריות מומלצות",
-    "carouselSlide": "עבור אל {name}"
+    "carouselSlide": "עבור אל {name}",
+    "carouselPrev": "הקודם",
+    "carouselNext": "הבא"
   },
   "products": {
     "title": "כל המוצרים",
