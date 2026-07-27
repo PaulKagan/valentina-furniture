@@ -65,7 +65,10 @@
     "wasPrice": "Старая цена",
     "saleBannerText": "скидка на все товары в категории {category}",
     "saleEndsIn": "Акция заканчивается через",
-    "daysShort": "{days, plural, one {# день} few {# дня} other {# дней}}"
+    "unitDays": "дн",
+    "unitHours": "ч",
+    "unitMinutes": "мин",
+    "unitSeconds": "сек"
   },
   "productDetail": {
     "outOfStock": "Нет в наличии",

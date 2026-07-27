@@ -65,7 +65,10 @@
     "wasPrice": "Was",
     "saleBannerText": "off everything in {category}",
     "saleEndsIn": "Sale ends in",
-    "daysShort": "{days, plural, one {# day} other {# days}}"
+    "unitDays": "days",
+    "unitHours": "hrs",
+    "unitMinutes": "min",
+    "unitSeconds": "sec"
   },
   "productDetail": {
     "outOfStock": "Out of stock",

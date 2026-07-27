@@ -65,7 +65,10 @@
     "wasPrice": "מחיר קודם",
     "saleBannerText": "הנחה על כל המוצרים בקטגוריית {category}",
     "saleEndsIn": "המבצע מסתיים בעוד",
-    "daysShort": "{days, plural, one {יום #} two {יומיים} other {# ימים}}"
+    "unitDays": "ימים",
+    "unitHours": "שעות",
+    "unitMinutes": "דקות",
+    "unitSeconds": "שניות"
   },
   "productDetail": {
     "outOfStock": "אזל מהמלאי",
