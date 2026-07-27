@@ -54,7 +54,8 @@
     "carouselNav": "Рекомендуемые категории",
     "carouselSlide": "Перейти к {name}",
     "carouselPrev": "Назад",
-    "carouselNext": "Далее"
+    "carouselNext": "Далее",
+    "categoriesAll": "Все категории →"
   },
   "products": {
     "title": "Все товары",
@@ -467,5 +468,9 @@
     "retry": "Повторить",
     "home": "На главную",
     "whatsapp": "Написать в WhatsApp"
+  },
+  "categories": {
+    "title": "Все категории",
+    "empty": "Пока нет категорий для отображения."
   }
 }

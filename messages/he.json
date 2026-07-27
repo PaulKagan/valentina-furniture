@@ -54,7 +54,8 @@
     "carouselNav": "קטגוריות מומלצות",
     "carouselSlide": "עבור אל {name}",
     "carouselPrev": "הקודם",
-    "carouselNext": "הבא"
+    "carouselNext": "הבא",
+    "categoriesAll": "לכל הקטגוריות ←"
   },
   "products": {
     "title": "כל המוצרים",
@@ -467,5 +468,9 @@
     "retry": "ניסיון נוסף",
     "home": "לדף הבית",
     "whatsapp": "יצירת קשר בוואטסאפ"
+  },
+  "categories": {
+    "title": "כל הקטגוריות",
+    "empty": "אין קטגוריות להצגה כרגע."
   }
 }

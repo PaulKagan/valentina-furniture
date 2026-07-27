@@ -54,7 +54,8 @@
     "carouselNav": "Featured categories",
     "carouselSlide": "Go to {name}",
     "carouselPrev": "Previous",
-    "carouselNext": "Next"
+    "carouselNext": "Next",
+    "categoriesAll": "All categories →"
   },
   "products": {
     "title": "All Products",
@@ -467,5 +468,9 @@
     "retry": "Try again",
     "home": "Go home",
     "whatsapp": "Contact us on WhatsApp"
+  },
+  "categories": {
+    "title": "All Categories",
+    "empty": "No categories to show right now."
   }
 }

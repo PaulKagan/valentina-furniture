@@ -234,12 +234,17 @@ export default async function HomePage({
       {/* ── Categories ── */}
       {regular.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-          <h2
-            className="text-2xl font-bold mb-8"
-            style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
-          >
-            {t("categoriesTitle")}
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2
+              className="text-2xl font-bold"
+              style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+            >
+              {t("categoriesTitle")}
+            </h2>
+            <Link href="/categories" className="text-sm font-medium" style={{ color: "var(--primary)" }}>
+              {t("categoriesAll")}
+            </Link>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {regular.map((cat) => {
               const img = imageUrl(cat.imageUrl, "card", cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null);
