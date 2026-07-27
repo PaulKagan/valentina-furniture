@@ -50,7 +50,9 @@
       "warranty": "Гарантия",
       "warrantyValue": "На все товары"
     },
-    "promotedBadge": "Горячая акция"
+    "promotedBadge": "Рекомендуем",
+    "carouselNav": "Рекомендуемые категории",
+    "carouselSlide": "Перейти к {name}"
   },
   "products": {
     "title": "Все товары",

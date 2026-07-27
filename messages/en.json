@@ -50,7 +50,9 @@
       "warranty": "Warranty",
       "warrantyValue": "On all products"
     },
-    "promotedBadge": "Hot deal"
+    "promotedBadge": "Featured",
+    "carouselNav": "Featured categories",
+    "carouselSlide": "Go to {name}"
   },
   "products": {
     "title": "All Products",

@@ -50,7 +50,9 @@
       "warranty": "אחריות",
       "warrantyValue": "על כל המוצרים"
     },
-    "promotedBadge": "מבצע חם"
+    "promotedBadge": "מומלץ",
+    "carouselNav": "קטגוריות מומלצות",
+    "carouselSlide": "עבור אל {name}"
   },
   "products": {
     "title": "כל המוצרים",

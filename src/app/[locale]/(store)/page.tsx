@@ -17,7 +17,7 @@ import ProductCard from "@/components/ui/ProductCard";
 import { localBusinessJsonLd, jsonLdScript } from "@/lib/jsonld";
 import { getActiveCategories, buildTree, localizedName } from "@/lib/catalog";
 import { categoryDiscount, saleSource } from "@/lib/pricing";
-import SaleCountdown from "@/components/ui/SaleCountdown";
+import PromotedCarousel, { type PromotedTile } from "@/components/ui/PromotedCarousel";
 import { imageUrl } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
@@ -86,6 +86,19 @@ export default async function HomePage({
   const promotedIds = new Set(promoted.map((c) => c.id));
   const regular = roots.filter((c) => !promotedIds.has(c.id));
 
+  const promotedTiles: PromotedTile[] = promoted.map((cat) => {
+    const pct = discountFor(cat.id);
+    const src = pct > 0 ? saleSource(cat.id, activeCategories) : null;
+    return {
+      id: cat.id,
+      href: `/products?category=${cat.slug}`,
+      name: localizedName(cat, locale),
+      img: imageUrl(cat.imageUrl, "tile"),
+      percent: pct,
+      endsAt: src?.endsAt ? src.endsAt.toISOString() : null,
+    };
+  });
+
   return (
     <>
       <script
@@ -98,6 +111,53 @@ export default async function HomePage({
         className="relative overflow-hidden"
         style={{ backgroundColor: "var(--surface-elevated)" }}
       >
+        {/* Soft warm gradient wash behind the silhouette — pure CSS, no
+            image asset. Blurred radial blobs in the brand color, kept
+            subtle (low opacity) so it reads as depth, not a spotlight. */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 70% at 85% 40%, oklch(0.72 0.11 40 / 0.35), transparent 70%), " +
+              "radial-gradient(ellipse 45% 55% at 95% 75%, oklch(0.52 0.14 32 / 0.18), transparent 70%)",
+            filter: "blur(40px)",
+          }}
+        />
+
+        {/* Decorative armchair line-art filling the empty side opposite the
+            text — always the "end" logical side (right in LTR, left in
+            RTL), since the text block itself always starts from "start".
+            Purely decorative: aria-hidden, no pointer events, hidden on
+            narrow screens where there's no spare room for it anyway. */}
+        <svg
+          viewBox="0 0 400 400"
+          aria-hidden="true"
+          className="hidden md:block absolute pointer-events-none"
+          style={{
+            insetInlineEnd: "-40px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: "min(38vw, 420px)",
+            height: "auto",
+            opacity: 0.5,
+            color: "var(--border)",
+          }}
+        >
+          <g fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
+            {/* backrest */}
+            <path d="M120 70a30 30 0 0 1 30-30h100a30 30 0 0 1 30 30v150H120z" />
+            {/* seat cushion */}
+            <path d="M90 220h220v55a15 15 0 0 1-15 15H105a15 15 0 0 1-15-15z" />
+            {/* left armrest */}
+            <path d="M65 160a25 25 0 0 1 25-25h5v130h-10a20 20 0 0 1-20-20z" />
+            {/* right armrest */}
+            <path d="M335 160a25 25 0 0 1-25-25h-5v130h10a20 20 0 0 0 20-20z" />
+            {/* legs */}
+            <path d="M120 290v40M280 290v40" />
+          </g>
+        </svg>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
           <div
             className="max-w-2xl fade-up"
@@ -154,71 +214,10 @@ export default async function HomePage({
         />
       </section>
 
-      {/* ── Promoted categories — large image banners ── */}
-      {promoted.length > 0 && (
+      {/* ── Promoted categories — carousel of large image banners ── */}
+      {promotedTiles.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16">
-          <div className={`grid gap-4 ${promoted.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
-            {promoted.map((cat) => {
-              const img = imageUrl(cat.imageUrl, "tile");
-              const pct = discountFor(cat.id);
-              const src = pct > 0 ? saleSource(cat.id, activeCategories) : null;
-              return (
-                <Link
-                  key={cat.id}
-                  href={`/products?category=${cat.slug}`}
-                  className="group relative rounded-2xl overflow-hidden aspect-[16/7] flex items-end"
-                  style={{ backgroundColor: "var(--surface-elevated)" }}
-                >
-                  <FallbackImage
-                    src={img ?? ""}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                    style={{ transitionTimingFunction: "var(--ease-out)" }}
-                  />
-                  {/* Legibility scrim — only over an actual photo */}
-                  {img && (
-                    <div
-                      className="absolute inset-0"
-                      style={{ background: "linear-gradient(to top, oklch(0.18 0.012 32 / 0.65), transparent 55%)" }}
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div className="relative p-5 sm:p-6 flex flex-wrap items-center gap-x-3 gap-y-2 w-full">
-                    <span
-                      className="text-xs font-bold px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
-                      dir={pct > 0 ? "ltr" : undefined}
-                    >
-                      {pct > 0 ? `🔥 -${pct}%` : t("promotedBadge")}
-                    </span>
-                    <span
-                      className="text-xl sm:text-2xl font-bold"
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        color: img ? "oklch(0.98 0 0)" : "var(--ink)",
-                      }}
-                    >
-                      {localizedName(cat, locale)}
-                    </span>
-                    {/* Ticking clock — only for a sale with an actual end date */}
-                    {src?.endsAt && (
-                      <span
-                        className="ms-auto px-2.5 py-1 rounded-full"
-                        style={{
-                          backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
-                          color: "oklch(0.98 0 0)",
-                        }}
-                      >
-                        <SaleCountdown endsAt={src.endsAt.toISOString()} />
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <PromotedCarousel tiles={promotedTiles} />
         </section>
       )}
 
@@ -289,7 +288,9 @@ export default async function HomePage({
             <p className="text-sm mt-2">{t("noProductsContact")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          // lg:3 before xl:4 — jumping straight from 2 to 4 columns at 1024px
+          // left almost no breathing room per card at common laptop widths
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {featuredProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
             ))}
