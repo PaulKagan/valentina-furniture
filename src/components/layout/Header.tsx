@@ -53,7 +53,14 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
     promoted: false,
     children: [],
   };
-  const navLinks = [allProducts, ...navCategories];
+  const allCategories: NavCategory = {
+    href: "/categories",
+    label: t("nav.allCategories"),
+    sale: 0,
+    promoted: false,
+    children: [],
+  };
+  const navLinks = [allProducts, allCategories, ...navCategories];
 
   function openNow(href: string) {
     if (closeTimer.current) clearTimeout(closeTimer.current);

@@ -38,4 +38,9 @@
 
 ## 🟡 Nice to have — not urgent
 
-(nothing right now)
+- **[NEEDS DECISION]** Sub-category page (`/categories/[slug]`) — a landing
+  page per root category listing its children + products, instead of
+  clicking a subcategory jumping straight to the filtered `/products?category=`
+  view like it does today. Only worth building if the category tree grows
+  deep/wide enough that browsing beats filtering. Waiting on Valentina to
+  say whether she wants this before planning/building it.

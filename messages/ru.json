@@ -12,7 +12,8 @@
     "cartLabel": "Корзина — {count} товаров",
     "menuLabel": "Меню",
     "nav": {
-      "allProducts": "Все товары"
+      "allProducts": "Все товары",
+      "allCategories": "Все категории"
     },
     "brandShort": "Валентина"
   },

@@ -12,7 +12,8 @@
     "cartLabel": "עגלת קניות — {count} פריטים",
     "menuLabel": "תפריט",
     "nav": {
-      "allProducts": "כל המוצרים"
+      "allProducts": "כל המוצרים",
+      "allCategories": "כל הקטגוריות"
     },
     "brandShort": "ולנטינה"
   },

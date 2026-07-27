@@ -12,7 +12,8 @@
     "cartLabel": "Shopping cart — {count} items",
     "menuLabel": "Menu",
     "nav": {
-      "allProducts": "All Products"
+      "allProducts": "All Products",
+      "allCategories": "All Categories"
     },
     "brandShort": "Valentina"
   },
