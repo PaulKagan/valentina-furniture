@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm";
 import { deleteImage } from "@/lib/cloudinary";
 import { colorByKey } from "@/lib/colors";
 import { categoryDiscount } from "@/lib/pricing";
+import { focalPair } from "@/lib/validation";
 
 const MAX_GALLERY = 8;
 
@@ -64,12 +65,7 @@ function parseProductBody(body: Record<string, unknown>) {
   // Focal point: 0-100 integers, or both null ("no preference" — every crop
   // falls back to auto-detection). Partial (one set, one missing) is treated
   // as unset rather than guessing at the other half.
-  const focalRaw = (v: unknown): number | null => {
-    const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
-  };
-  const focalX = focalRaw(body.focalX);
-  const focalY = focalRaw(body.focalY);
+  const { focalX, focalY } = focalPair(body.focalX, body.focalY);
 
   // Gallery: parallel arrays, same length, capped — a stray huge array from
   // a malformed request can't bloat the row or the Cloudinary cleanup loop
@@ -96,8 +92,8 @@ function parseProductBody(body: Record<string, unknown>) {
       salePrice,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
-      focalX: focalX != null && focalY != null ? focalX : null,
-      focalY: focalX != null && focalY != null ? focalY : null,
+      focalX,
+      focalY,
       galleryUrls,
       galleryPublicIds,
       categoryId: typeof body.categoryId === "number" ? body.categoryId : null,

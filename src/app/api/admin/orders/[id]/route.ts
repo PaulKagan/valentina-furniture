@@ -12,10 +12,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { orders, orderStatusEnum, products } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
-import { effectivePrice } from "@/lib/pricing";
-import { getDiscountLookup } from "@/lib/catalog";
+import { orders, orderStatusEnum } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { parseOrderItemsInput, repriceOrderItems } from "@/lib/catalog";
 
 async function requireAdmin() {
   const session = await auth();
@@ -77,45 +76,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: "Order must have at least one item" }, { status: 400 });
     }
-    const wanted: { productId: number; quantity: number }[] = [];
-    for (const item of body.items) {
-      const productId = item?.productId;
-      const quantity = item?.quantity;
-      if (
-        typeof productId !== "number" || !Number.isInteger(productId) ||
-        typeof quantity !== "number" || !Number.isInteger(quantity) ||
-        quantity < 1 || quantity > 99
-      ) {
-        return NextResponse.json({ error: "Invalid items" }, { status: 400 });
-      }
-      wanted.push({ productId, quantity });
-    }
+    const wanted = parseOrderItemsInput(body.items);
+    if (!wanted) return NextResponse.json({ error: "Invalid items" }, { status: 400 });
 
-    const rows = await db
-      .select({
-        id: products.id,
-        name: products.name,
-        price: products.price,
-        salePrice: products.salePrice,
-        onSale: products.onSale,
-        categoryId: products.categoryId,
-      })
-      .from(products)
-      .where(inArray(products.id, wanted.map((w) => w.productId)));
-    const byId = new Map(rows.map((p) => [p.id, p]));
-    const discountFor = await getDiscountLookup();
-
-    const verified: { productId: number; name: string; price: number; quantity: number }[] = [];
-    let total = 0;
-    for (const w of wanted) {
-      const p = byId.get(w.productId);
-      if (!p) return NextResponse.json({ error: "Unknown product" }, { status: 400 });
-      const price = effectivePrice(p, discountFor(p.categoryId));
-      verified.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
-      total += price * w.quantity;
-    }
-    patch.items = JSON.stringify(verified);
-    patch.total = total.toFixed(2);
+    const priced = await repriceOrderItems(wanted);
+    if ("error" in priced) return NextResponse.json({ error: priced.error }, { status: 400 });
+    patch.items = JSON.stringify(priced.items);
+    patch.total = priced.total.toFixed(2);
   }
 
   if (Object.keys(patch).length === 0) {

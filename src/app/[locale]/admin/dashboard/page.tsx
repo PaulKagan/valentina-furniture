@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { orders, products } from "@/db/schema";
 import { eq, count, sum, desc } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
+import { Td } from "@/components/admin/Td";
 
 export const dynamic = "force-dynamic";
 
@@ -71,18 +72,18 @@ export default async function DashboardPage({
             )}
             {recentOrders.map((o) => (
               <tr key={o.id} className="border-t" style={{ borderColor: "var(--border)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--muted)" }}>#{o.id}</td>
-                <td className="px-4 py-3 font-medium" style={{ color: "var(--ink)" }}>{o.customerName}</td>
-                <td className="px-4 py-3" style={{ color: "var(--muted)" }} dir="ltr">{o.customerPhone}</td>
-                <td className="px-4 py-3" style={{ color: "var(--ink)" }}>₪{parseFloat(o.total).toLocaleString("he-IL")}</td>
-                <td className="px-4 py-3">
+                <Td muted>#{o.id}</Td>
+                <Td className="font-medium">{o.customerName}</Td>
+                <Td muted dir="ltr">{o.customerPhone}</Td>
+                <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
+                <Td>
                   <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: "oklch(0.974 0.004 32)", color: "var(--primary)" }}>
                     {tStatus(o.status)}
                   </span>
-                </td>
-                <td className="px-4 py-3" style={{ color: "var(--muted)" }}>
+                </Td>
+                <Td muted>
                   {new Date(o.createdAt).toLocaleDateString(locale === "he" ? "he-IL" : locale === "ru" ? "ru-RU" : "en-GB")}
-                </td>
+                </Td>
               </tr>
             ))}
           </tbody>

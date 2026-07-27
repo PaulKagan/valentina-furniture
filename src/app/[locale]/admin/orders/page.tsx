@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import OrderFilters from "@/components/admin/OrderFilters";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 import { ADMIN_PAGE_SIZE, visibleCount } from "@/lib/pagination";
+import { Td } from "@/components/admin/Td";
 
 export const dynamic = "force-dynamic";
 
@@ -83,23 +84,23 @@ export default async function AdminOrdersPage({
               const items = JSON.parse(o.items) as Array<{ name: string; quantity: number }>;
               return (
                 <tr key={o.id} className="border-t" style={{ borderColor: "var(--border)" }}>
-                  <td className="px-4 py-3" style={{ color: "var(--muted)" }}>#{o.id}</td>
-                  <td className="px-4 py-3 font-medium" style={{ color: "var(--ink)" }}>{o.customerName}</td>
-                  <td className="px-4 py-3" style={{ color: "var(--muted)" }} dir="ltr">{o.customerPhone}</td>
-                  <td className="px-4 py-3" style={{ color: "var(--muted)", maxWidth: "150px" }}>
+                  <Td muted>#{o.id}</Td>
+                  <Td className="font-medium">{o.customerName}</Td>
+                  <Td muted dir="ltr">{o.customerPhone}</Td>
+                  <Td muted style={{ maxWidth: "150px" }}>
                     <span className="truncate block">{o.customerAddress}</span>
-                  </td>
-                  <td className="px-4 py-3" style={{ color: "var(--ink)" }}>₪{parseFloat(o.total).toLocaleString("he-IL")}</td>
-                  <td className="px-4 py-3" style={{ color: "var(--muted)", maxWidth: "180px" }}>
+                  </Td>
+                  <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
+                  <Td muted style={{ maxWidth: "180px" }}>
                     <span className="truncate block">{items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}</span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td>
                     <OrderStatusSelect orderId={o.id} currentStatus={o.status} labels={statusLabels} />
-                  </td>
-                  <td className="px-4 py-3" style={{ color: "var(--muted)" }}>
+                  </Td>
+                  <Td muted>
                     {new Date(o.createdAt).toLocaleDateString(dateLocale)}
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td>
                     <Link
                       href={`/admin/orders/${o.id}`}
                       className="px-3 py-1 rounded text-xs font-medium border transition-colors hover:bg-[oklch(0.974_0_0)]"
@@ -107,7 +108,7 @@ export default async function AdminOrdersPage({
                     >
                       {t("open")}
                     </Link>
-                  </td>
+                  </Td>
                 </tr>
               );
             })}

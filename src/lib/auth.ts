@@ -16,7 +16,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { allow, clientIp } from "@/lib/rate-limit";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {

@@ -17,11 +17,9 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { orders, products } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { orders } from "@/db/schema";
 import { sendOrderToStore, sendOrderToCustomer } from "@/lib/email";
-import { effectivePrice } from "@/lib/pricing";
-import { getDiscountLookup } from "@/lib/catalog";
+import { parseOrderItemsInput, repriceOrderItems } from "@/lib/catalog";
 import { allow, clientIp } from "@/lib/rate-limit";
 
 // Input length caps — prevents absurdly long strings in the DB
@@ -77,48 +75,13 @@ export async function POST(req: NextRequest) {
   // Security: the client sends only {productId, quantity}. Names, prices,
   // and the total come from the DB — a tampered request can't set its own
   // prices or corrupt the revenue numbers in the dashboard.
-  const wanted: { productId: number; quantity: number }[] = [];
-  for (const item of items) {
-    const productId = (item as Record<string, unknown>)?.productId;
-    const quantity = (item as Record<string, unknown>)?.quantity;
-    if (
-      typeof productId !== "number" || !Number.isInteger(productId) ||
-      typeof quantity !== "number" || !Number.isInteger(quantity) ||
-      quantity < 1 || quantity > 99
-    ) {
-      return NextResponse.json({ error: "Invalid items" }, { status: 400 });
-    }
-    wanted.push({ productId, quantity });
-  }
+  const wanted = parseOrderItemsInput(items);
+  if (!wanted) return NextResponse.json({ error: "Invalid items" }, { status: 400 });
 
   try {
-    const dbProducts = await db
-      .select({
-        id: products.id,
-        name: products.name,
-        price: products.price,
-        salePrice: products.salePrice,
-        onSale: products.onSale,
-        categoryId: products.categoryId,
-        inStock: products.inStock,
-      })
-      .from(products)
-      .where(inArray(products.id, wanted.map((w) => w.productId)));
-    const byId = new Map(dbProducts.map((p) => [p.id, p]));
-    const discountFor = await getDiscountLookup();
-
-    const verifiedItems: { productId: number; name: string; price: number; quantity: number }[] = [];
-    let total = 0;
-    for (const w of wanted) {
-      const p = byId.get(w.productId);
-      if (!p) return NextResponse.json({ error: "Unknown product" }, { status: 400 });
-      // Charge the discounted price, including a discount inherited from a
-      // sale category — the customer is quoted that price on the card, so
-      // it must be the one that lands in the order.
-      const price = effectivePrice(p, discountFor(p.categoryId));
-      verifiedItems.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
-      total += price * w.quantity;
-    }
+    const priced = await repriceOrderItems(wanted);
+    if ("error" in priced) return NextResponse.json({ error: priced.error }, { status: 400 });
+    const { items: verifiedItems, total } = priced;
 
     const [order] = await db
       .insert(orders)

@@ -18,6 +18,7 @@ import { categories, products } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { wouldCreateCycle, descendantIds } from "@/lib/catalog";
 import { deleteImage } from "@/lib/cloudinary";
+import { focalPair } from "@/lib/validation";
 
 async function requireAdmin() {
   const session = await auth();
@@ -70,12 +71,7 @@ function parseCategoryBody(body: Record<string, unknown>) {
 
   // Focal point: 0-100 integers, or both null ("no preference" — falls
   // back to auto-detected crop gravity).
-  const focalRaw = (v: unknown): number | null => {
-    const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
-  };
-  const focalX = focalRaw(body.focalX);
-  const focalY = focalRaw(body.focalY);
+  const { focalX, focalY } = focalPair(body.focalX, body.focalY);
 
   return {
     data: {
@@ -95,10 +91,26 @@ function parseCategoryBody(body: Record<string, unknown>) {
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
-      focalX: focalX != null && focalY != null ? focalX : null,
-      focalY: focalX != null && focalY != null ? focalY : null,
+      focalX,
+      focalY,
     },
   };
+}
+
+/**
+ * Slug uniqueness + parent-exists checks shared by POST and PUT.
+ * `excludeId` skips the category being edited when checking slug conflicts.
+ */
+function validateCategoryRefs(
+  data: { slug: string; parentId: number | null },
+  all: { id: number; slug: string }[],
+  excludeId?: number
+): { error: string; status: number } | null {
+  if (all.some((c) => c.slug === data.slug && c.id !== excludeId))
+    return { error: "Slug already exists", status: 409 };
+  if (data.parentId != null && !all.some((c) => c.id === data.parentId))
+    return { error: "Parent category not found", status: 400 };
+  return null;
 }
 
 /**
@@ -142,10 +154,8 @@ export async function POST(req: NextRequest) {
     if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
     const all = await db.select().from(categories);
-    if (all.some((c) => c.slug === parsed.data.slug))
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
-    if (parsed.data.parentId != null && !all.some((c) => c.id === parsed.data.parentId))
-      return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+    const refError = validateCategoryRefs(parsed.data, all);
+    if (refError) return NextResponse.json({ error: refError.error }, { status: refError.status });
 
     const [created] = await db.insert(categories).values(parsed.data).returning();
     if (created.isSaleCategory && created.discountPercent > 0) await stampBranchOnSale(created.id);
@@ -170,10 +180,8 @@ export async function PUT(req: NextRequest) {
     const all = await db.select().from(categories);
     if (!all.some((c) => c.id === id))
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
-    if (all.some((c) => c.slug === parsed.data.slug && c.id !== id))
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
-    if (parsed.data.parentId != null && !all.some((c) => c.id === parsed.data.parentId))
-      return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+    const refError = validateCategoryRefs(parsed.data, all, id);
+    if (refError) return NextResponse.json({ error: refError.error }, { status: refError.status });
     if (wouldCreateCycle(id, parsed.data.parentId, all))
       return NextResponse.json({ error: "Invalid parent — would create a cycle" }, { status: 400 });
 
