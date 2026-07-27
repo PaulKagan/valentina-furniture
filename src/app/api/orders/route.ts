@@ -19,7 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { sendOrderToStore, sendOrderToCustomer } from "@/lib/email";
-import { parseOrderItemsInput, repriceOrderItems } from "@/lib/catalog";
+import { parseOrderItemsInput, repriceOrderItems } from "@/lib/orders";
 import { allow, clientIp } from "@/lib/rate-limit";
 
 // Input length caps — prevents absurdly long strings in the DB

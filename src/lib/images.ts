@@ -23,6 +23,26 @@
 
 export type Focal = { x: number; y: number } | null | undefined;
 
+/**
+ * A focal-point coordinate (0-100 integer), or null if unset/unparseable —
+ * used when parsing a focal point out of an admin request body, before it
+ * ever reaches imageUrl() above. Shared by the category and product routes.
+ */
+export function focalRaw(v: unknown): number | null {
+  const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : null;
+}
+
+/**
+ * Both-or-neither focal point: a partial pair (one set, one missing) is
+ * treated as unset rather than guessing at the other half.
+ */
+export function focalPair(xRaw: unknown, yRaw: unknown): { focalX: number | null; focalY: number | null } {
+  const focalX = focalRaw(xRaw);
+  const focalY = focalRaw(yRaw);
+  return focalX != null && focalY != null ? { focalX, focalY } : { focalX: null, focalY: null };
+}
+
 type Preset = "card" | "detail" | "tile" | "thumb" | "gallery";
 
 // width × aspect for each layout slot — one source of truth for uniform sizing

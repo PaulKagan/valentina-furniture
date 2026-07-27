@@ -14,7 +14,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { orders, orderStatusEnum } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { parseOrderItemsInput, repriceOrderItems } from "@/lib/catalog";
+import { parseOrderItemsInput, repriceOrderItems } from "@/lib/orders";
 
 async function requireAdmin() {
   const session = await auth();

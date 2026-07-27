@@ -19,7 +19,7 @@ import { eq } from "drizzle-orm";
 import { deleteImage } from "@/lib/cloudinary";
 import { colorByKey } from "@/lib/colors";
 import { categoryDiscount } from "@/lib/pricing";
-import { focalPair } from "@/lib/validation";
+import { focalPair } from "@/lib/images";
 
 const MAX_GALLERY = 8;
 

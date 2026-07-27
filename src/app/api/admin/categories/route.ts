@@ -18,7 +18,7 @@ import { categories, products } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { wouldCreateCycle, descendantIds } from "@/lib/catalog";
 import { deleteImage } from "@/lib/cloudinary";
-import { focalPair } from "@/lib/validation";
+import { focalPair } from "@/lib/images";
 
 async function requireAdmin() {
   const session = await auth();
