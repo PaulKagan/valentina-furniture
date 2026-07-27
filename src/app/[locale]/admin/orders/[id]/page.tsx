@@ -8,7 +8,7 @@ import { orders, products } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import BackLink from "@/components/ui/BackLink";
 import OrderDetail, { type OrderData } from "@/components/admin/OrderDetail";
 import { isEmailConfigured } from "@/lib/email";
 import { parseOrderItems } from "@/lib/order-items";
@@ -58,13 +58,11 @@ export default async function AdminOrderPage({
 
   return (
     <div>
-      <Link
-        href="/admin/orders"
+      <BackLink
+        label={`← ${t("backToOrders")}`}
+        fallbackHref="/admin/orders"
         className="no-print inline-block text-sm mb-4 hover:opacity-70"
-        style={{ color: "var(--muted)" }}
-      >
-        ← {t("backToOrders")}
-      </Link>
+      />
       <h1
         className="text-2xl font-bold mb-1"
         style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
