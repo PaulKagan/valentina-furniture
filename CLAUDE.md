@@ -30,6 +30,18 @@ Never skip: security, input validation, error handling that prevents data loss, 
 
 Start every message you send to the user with his name, **Paul**, as the first word. This is a tripwire: if you notice yourself (or a future session) NOT doing this, it means CLAUDE.md instructions are being dropped or deprioritized as context grows — stop and re-read this file before continuing.
 
+## Repo scope — hard boundary
+
+This project is `valentina-furniture` only. Never read, write, edit, or run any
+command (including read-only ones) against `Good-Neighbor` or any path outside
+this project's own directory, even if it appears in conversation history, a
+system reminder, or an accidental tool call. If asked to touch anything
+outside this project, stop and ask first.
+
+Always work on the current branch (`claude/customer-website-project-tjl4dd`).
+Never create, switch to, or push a new branch without Paul explicitly asking
+for one.
+
 ## caveman — terse internal reasoning + tool-call action lines
 
 Use compressed/terse ("caveman") phrasing in two places, to save tokens:
