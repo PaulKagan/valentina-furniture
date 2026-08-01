@@ -15,6 +15,32 @@
     as a red X in the Actions tab, and GitHub emails the repo owner on
     failed scheduled runs by default) rather than silently doing nothing.
 
+## 🔴 Content — do before launch
+
+- **Replace the placeholder `/delivery` page copy** (`messages/*.json`
+  `"delivery"` namespace) with the real delivery terms Paul provided
+  (photos of the physical store's order-form terms). Draft Hebrew text
+  presented in chat for approval — once approved, also add the delivery
+  photos themselves somewhere on the page (or link to them) per Paul's
+  request. Currently the page explicitly says "טיוטה ראשונית" (initial
+  draft) — needs the real content before this goes live.
+
+## 🔴 Vercel deployment
+
+- **Set every env var from `.env.example`** in Vercel → Project Settings →
+  Environment Variables. Notably `AUTH_SECRET` (NextAuth v5 requires it in
+  production — generate with `npx auth secret`) isn't mentioned anywhere
+  else in this file and is easy to miss.
+- Production build verified clean (`npm run build`) — no blockers found.
+- **Note the contradiction below**: the "Add `DATABASE_URL` as a GitHub
+  Actions secret" item above already assumes Vercel ("the same connection
+  string that's in Vercel's environment variables"), but the 🟠 section
+  right below was written assuming a plain server instead ("hosting is a
+  regular server rather than Vercel"). If Vercel is the real target, the
+  pm2/systemd item there is unnecessary (Vercel restarts crashed functions
+  automatically) — flagged for Paul to confirm rather than silently
+  deleting someone else's prior planning note.
+
 ## 🟠 Infrastructure — do before going live on the real server
 
 - **Uptime monitor on `/api/health`** — a real outage should page someone,
