@@ -14,22 +14,21 @@
  * All data flows through /api/admin/categories; after each mutation we
  * re-fetch the flat list and rebuild the tree client-side.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  ChevronDown,
-  Pencil,
-  Trash2,
-  Plus,
-  ArrowUp,
-  ArrowDown,
+  ChevronsDown,
+  ChevronsUp,
+  Move,
   EyeOff,
   Clock,
   Star,
   Flame,
 } from "lucide-react";
+import { DndContext, type DragEndEvent, type DragOverEvent, type DragStartEvent } from "@dnd-kit/core";
 import { imageUrl } from "@/lib/images";
 import FocalPointPicker from "./FocalPointPicker";
+import CategoryTreeRow, { type DropPosition } from "./CategoryTreeRow";
 
 type Category = {
   id: number;
@@ -107,6 +106,13 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState(false);
+  const [rearrangeMode, setRearrangeMode] = useState(false);
+  const [dropTarget, setDropTarget] = useState<{ id: number; position: DropPosition } | null>(null);
+  const [reorderError, setReorderError] = useState(false);
+  // A row currently being dragged (or one of its descendants) can never be a
+  // valid drop target — dropping a category "inside" its own child would
+  // create a cycle. Recomputed fresh per drag rather than kept in state.
+  const blockedDropIdsRef = useRef<Set<number>>(new Set());
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/admin/categories");
@@ -210,6 +216,97 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     await refresh();
   }
 
+  function expandAll() {
+    setCollapsed(new Set());
+  }
+
+  function collapseAll() {
+    setCollapsed(new Set(cats.filter((c) => (childrenOf.get(c.id)?.length ?? 0) > 0).map((c) => c.id)));
+  }
+
+  /** Persist a full list of (already reordered/reparented) categories. */
+  async function persistAll(updated: Category[]) {
+    setReorderError(false);
+    const results = await Promise.all(
+      updated.map((c) =>
+        fetch("/api/admin/categories", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(c),
+        })
+      )
+    );
+    if (results.some((r) => !r.ok)) setReorderError(true);
+    await refresh();
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const id = Number(event.active.id);
+    const blocked = new Set<number>([id]);
+    const walk = (parentId: number) => {
+      for (const c of cats) {
+        if (c.parentId === parentId) {
+          blocked.add(c.id);
+          walk(c.id);
+        }
+      }
+    };
+    walk(id);
+    blockedDropIdsRef.current = blocked;
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over || blockedDropIdsRef.current.has(Number(over.id))) {
+      setDropTarget(null);
+      return;
+    }
+    const overId = Number(over.id);
+    const overRect = over.rect;
+    const activeRect = active.rect.current.translated;
+    if (!overRect || !activeRect) {
+      setDropTarget(null);
+      return;
+    }
+    // Where the dragged row's current center sits within the target row's
+    // height decides the intent: top third = insert before, bottom third =
+    // insert after, middle third = nest as a child — the same "drag an app
+    // onto another app" behavior as a phone home screen.
+    const activeCenter = activeRect.top + activeRect.height / 2;
+    const fraction = (activeCenter - overRect.top) / overRect.height;
+    const position: DropPosition = fraction < 0.3 ? "before" : fraction > 0.7 ? "after" : "inside";
+    setDropTarget({ id: overId, position });
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const activeId = Number(event.active.id);
+    const target = dropTarget;
+    setDropTarget(null);
+    blockedDropIdsRef.current = new Set();
+    if (!target) return;
+
+    const dragged = cats.find((c) => c.id === activeId);
+    const overCat = cats.find((c) => c.id === target.id);
+    if (!dragged || !overCat) return;
+
+    if (target.position === "inside") {
+      const newSiblings = childrenOf.get(overCat.id) ?? [];
+      await persistAll([{ ...dragged, parentId: overCat.id, sortOrder: newSiblings.length }]);
+      return;
+    }
+
+    // before/after — same parent as the target, rebuild that sibling order
+    // with the dragged item inserted, then renumber everyone so sortOrder
+    // stays a clean 0..n sequence (same scheme move() already relies on).
+    const newParentId = overCat.parentId;
+    const currentSiblings = (childrenOf.get(newParentId) ?? []).filter((c) => c.id !== activeId);
+    const overIdx = currentSiblings.findIndex((c) => c.id === overCat.id);
+    const insertAt = target.position === "before" ? overIdx : overIdx + 1;
+    const reordered = [...currentSiblings];
+    reordered.splice(insertAt, 0, dragged);
+    await persistAll(reordered.map((c, i) => ({ ...c, parentId: newParentId, sortOrder: i })));
+  }
+
   async function uploadTile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !form) return;
@@ -251,6 +348,38 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     </span>
   );
 
+  const rowLabels = {
+    expand: t("expand"),
+    collapse: t("collapse"),
+    moveUp: t("moveUp"),
+    moveDown: t("moveDown"),
+    addChild: t("addChild"),
+    edit: t("edit"),
+    delete: t("delete"),
+    dragHandle: t("dragHandle"),
+  };
+
+  function openEditForm(cat: Category) {
+    setForm({
+      id: cat.id,
+      name: cat.name,
+      nameEn: cat.nameEn ?? "",
+      nameRu: cat.nameRu ?? "",
+      slug: cat.slug,
+      parentId: cat.parentId,
+      visible: cat.visible,
+      startsAt: toLocalInput(cat.startsAt),
+      endsAt: toLocalInput(cat.endsAt),
+      promoted: cat.promoted,
+      isSaleCategory: cat.isSaleCategory,
+      discountPercent: cat.discountPercent ? String(cat.discountPercent) : "",
+      imageUrl: cat.imageUrl,
+      imagePublicId: cat.imagePublicId,
+      focalX: cat.focalX,
+      focalY: cat.focalY,
+    });
+  }
+
   function renderNode(cat: Category, depth: number): React.ReactNode {
     const children = childrenOf.get(cat.id) ?? [];
     const isCollapsed = collapsed.has(cat.id);
@@ -260,108 +389,41 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
 
     return (
       <div key={cat.id}>
-        <div
-          className="flex items-center gap-2 py-2.5 px-3 rounded-lg border mb-1.5 group"
-          style={{
-            borderColor: "var(--border)",
-            backgroundColor: "var(--bg)",
-            marginInlineStart: depth * 24,
-            opacity: cat.visible ? 1 : 0.6,
-          }}
-        >
-          {/* expand/collapse */}
-          <button
-            type="button"
-            onClick={() =>
-              setCollapsed((s) => {
-                const next = new Set(s);
-                if (next.has(cat.id)) next.delete(cat.id);
-                else next.add(cat.id);
-                return next;
-              })
-            }
-            className="p-0.5 rounded"
-            style={{ color: "var(--muted)", visibility: children.length ? "visible" : "hidden" }}
-            aria-label={isCollapsed ? t("expand") : t("collapse")}
-            title={isCollapsed ? t("expand") : t("collapse")}
-          >
-            {isCollapsed ? <ChevronDown size={16} className="-rotate-90 rtl:rotate-90" /> : <ChevronDown size={16} />}
-          </button>
-
-          <span className="font-medium text-sm" style={{ color: "var(--ink)" }}>
-            {cat.name}
-          </span>
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
-            /{cat.slug}
-          </span>
-          {children.length > 0 && (
-            <span className="text-xs" style={{ color: "var(--muted)" }}>
-              ({children.length})
-            </span>
-          )}
-
-          <span className="flex items-center gap-1.5 ms-2">
-            {cat.isSaleCategory && cat.discountPercent > 0 &&
-              badge(t("badgeSale", { percent: cat.discountPercent }), <Flame size={11} />, "promo")}
-            {cat.promoted && badge(t("badgePromoted"), <Star size={11} />, "promo")}
-            {!cat.visible && badge(t("badgeHidden"), <EyeOff size={11} />, "muted")}
-            {sched === "future" && badge(t("badgeScheduled"), <Clock size={11} />, "warn")}
-            {sched === "expired" && badge(t("badgeExpired"), <Clock size={11} />, "warn")}
-            {sched === "activeWindow" && badge(t("badgeTemporary"), <Clock size={11} />, "muted")}
-          </span>
-
-          {/* actions */}
-          <span className="ms-auto flex items-center gap-1">
-            <button type="button" onClick={() => move(cat, -1)} disabled={idx <= 0} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveUp")} title={t("moveUp")}>
-              <ArrowUp size={14} />
-            </button>
-            <button type="button" onClick={() => move(cat, 1)} disabled={idx >= siblings.length - 1} className="p-1.5 rounded disabled:opacity-25 hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }} aria-label={t("moveDown")} title={t("moveDown")}>
-              <ArrowDown size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setForm({ ...EMPTY_FORM, parentId: cat.id })}
-              className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]"
-              style={{ color: "var(--muted)" }}
-              aria-label={t("addChild")}
-              title={t("addChild")}
-            >
-              <Plus size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setForm({
-                  id: cat.id,
-                  name: cat.name,
-                  nameEn: cat.nameEn ?? "",
-                  nameRu: cat.nameRu ?? "",
-                  slug: cat.slug,
-                  parentId: cat.parentId,
-                  visible: cat.visible,
-                  startsAt: toLocalInput(cat.startsAt),
-                  endsAt: toLocalInput(cat.endsAt),
-                  promoted: cat.promoted,
-                  isSaleCategory: cat.isSaleCategory,
-                  discountPercent: cat.discountPercent ? String(cat.discountPercent) : "",
-                  imageUrl: cat.imageUrl,
-                  imagePublicId: cat.imagePublicId,
-                  focalX: cat.focalX,
-                  focalY: cat.focalY,
-                })
-              }
-              className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]"
-              style={{ color: "var(--muted)" }}
-              aria-label={t("edit")}
-              title={t("edit")}
-            >
-              <Pencil size={14} />
-            </button>
-            <button type="button" onClick={() => remove(cat)} className="p-1.5 rounded hover:bg-[oklch(0.974_0_0)]" style={{ color: "oklch(0.5 0.15 25)" }} aria-label={t("delete")} title={t("delete")}>
-              <Trash2 size={14} />
-            </button>
-          </span>
-        </div>
+        <CategoryTreeRow
+          cat={cat}
+          depth={depth}
+          childrenCount={children.length}
+          isCollapsed={isCollapsed}
+          idx={idx}
+          siblingsLength={siblings.length}
+          rearrangeMode={rearrangeMode}
+          dropPosition={dropTarget?.id === cat.id ? dropTarget.position : null}
+          labels={rowLabels}
+          badges={
+            <>
+              {cat.isSaleCategory && cat.discountPercent > 0 &&
+                badge(t("badgeSale", { percent: cat.discountPercent }), <Flame size={11} />, "promo")}
+              {cat.promoted && badge(t("badgePromoted"), <Star size={11} />, "promo")}
+              {!cat.visible && badge(t("badgeHidden"), <EyeOff size={11} />, "muted")}
+              {sched === "future" && badge(t("badgeScheduled"), <Clock size={11} />, "warn")}
+              {sched === "expired" && badge(t("badgeExpired"), <Clock size={11} />, "warn")}
+              {sched === "activeWindow" && badge(t("badgeTemporary"), <Clock size={11} />, "muted")}
+            </>
+          }
+          onToggleCollapse={() =>
+            setCollapsed((s) => {
+              const next = new Set(s);
+              if (next.has(cat.id)) next.delete(cat.id);
+              else next.add(cat.id);
+              return next;
+            })
+          }
+          onMoveUp={() => move(cat, -1)}
+          onMoveDown={() => move(cat, 1)}
+          onAddChild={() => setForm({ ...EMPTY_FORM, parentId: cat.id })}
+          onEdit={() => openEditForm(cat)}
+          onDelete={() => remove(cat)}
+        />
         {!isCollapsed && children.map((c) => renderNode(c, depth + 1))}
       </div>
     );
@@ -389,17 +451,58 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       {/* ── Tree ── */}
       <div className="flex-1 min-w-0 w-full">
-        <button
-          type="button"
-          onClick={() => setForm({ ...EMPTY_FORM })}
-          className="mb-4 px-4 py-2.5 rounded-lg font-semibold text-sm transition-opacity hover:opacity-90 active:scale-[0.97]"
-          style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
-        >
-          + {t("new")}
-        </button>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setForm({ ...EMPTY_FORM })}
+            className="px-4 py-2.5 rounded-lg font-semibold text-sm transition-opacity hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
+          >
+            + {t("new")}
+          </button>
+          <button
+            type="button"
+            onClick={expandAll}
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm border transition-colors hover:bg-[oklch(0.974_0_0)]"
+            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+          >
+            <ChevronsDown size={15} /> {t("expandAll")}
+          </button>
+          <button
+            type="button"
+            onClick={collapseAll}
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm border transition-colors hover:bg-[oklch(0.974_0_0)]"
+            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+          >
+            <ChevronsUp size={15} /> {t("collapseAll")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setRearrangeMode((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm border transition-colors"
+            style={{
+              borderColor: rearrangeMode ? "var(--primary)" : "var(--border)",
+              color: rearrangeMode ? "var(--primary)" : "var(--ink)",
+              backgroundColor: rearrangeMode ? "oklch(0.95 0.03 32)" : undefined,
+            }}
+            aria-pressed={rearrangeMode}
+          >
+            <Move size={15} /> {rearrangeMode ? t("rearrangeModeOn") : t("rearrangeMode")}
+          </button>
+        </div>
+        {rearrangeMode && (
+          <p className="text-xs mb-4" style={{ color: "var(--muted)" }}>
+            {t("rearrangeHint")}
+          </p>
+        )}
         {deleteError && (
           <p role="status" className="text-sm mb-4" style={{ color: "oklch(0.45 0.15 25)" }}>
             {t("deleteError")}
+          </p>
+        )}
+        {reorderError && (
+          <p role="status" className="text-sm mb-4" style={{ color: "oklch(0.45 0.15 25)" }}>
+            {t("reorderError")}
           </p>
         )}
 
@@ -408,7 +511,9 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             {t("empty")}
           </p>
         ) : (
-          roots.map((c) => renderNode(c, 0))
+          <DndContext onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+            {roots.map((c) => renderNode(c, 0))}
+          </DndContext>
         )}
       </div>
 

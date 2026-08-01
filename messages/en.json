@@ -202,7 +202,14 @@
       "saleHint": "The discount applies to every product in this category and its subcategories, and marks them with a flame. To end it on a date, set \"Ends at\" below.",
       "badgeSale": "-{percent}% sale",
       "errorSaleDiscount": "A sale category needs a discount above 0%",
-      "deleteError": "Error deleting the category. Please try again."
+      "deleteError": "Error deleting the category. Please try again.",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "rearrangeMode": "Rearrange",
+      "rearrangeModeOn": "Done rearranging",
+      "rearrangeHint": "Drag a category up/down to reorder it, or onto another category to make it a subcategory of it.",
+      "dragHandle": "Drag to reorder",
+      "reorderError": "Error saving the new order. Please try again."
     },
     "dashboard": {
       "title": "Overview",
