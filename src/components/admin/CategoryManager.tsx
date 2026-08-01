@@ -28,6 +28,7 @@ import {
 import {
   DndContext,
   pointerWithin,
+  MeasuringStrategy,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -275,17 +276,27 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     blockedDropIdsRef.current = blocked;
   }
 
-  function handleDragOver(event: DragOverEvent) {
-    const { over } = event;
-    if (!over || blockedDropIdsRef.current.has(Number(over.id))) {
-      setDropTarget(null);
-      return;
-    }
-    const overId = Number(over.id);
+  /**
+   * Resolve an over-event into {id, position}, or null when there's no
+   * valid target. Shared by onDragOver (visual indicator) and onDragEnd
+   * (the actual mutation) so the drop can never act on a stale indicator —
+   * onDragEnd reads dnd-kit's own event.over directly instead of trusting
+   * React state, which can still be a render or two behind at the instant
+   * the pointer is released.
+   */
+  function resolveDropTarget(
+    over: DragOverEvent["over"],
+    fallbackToInside = false
+  ): { id: number; position: DropPosition } | null {
+    if (!over || blockedDropIdsRef.current.has(Number(over.id))) return null;
     const overRect = over.rect;
     if (!overRect) {
-      setDropTarget(null);
-      return;
+      // A continuous-remeasure race can leave the rect briefly unset right
+      // at drop time even though we know exactly which row the pointer is
+      // over — falling back to "inside" (rather than silently dropping the
+      // whole action) only matters for onDragEnd; onDragOver keeps the
+      // strict behavior since a flickering indicator is harmless.
+      return fallbackToInside ? { id: Number(over.id), position: "inside" } : null;
     }
     // Nesting is the primary gesture here (that's the whole point of this
     // feature), so it gets almost the entire row as its target — only a
@@ -297,12 +308,16 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     const y = pointerYRef.current;
     const position: DropPosition =
       y - overRect.top < EDGE_PX ? "before" : overRect.top + overRect.height - y < EDGE_PX ? "after" : "inside";
-    setDropTarget({ id: overId, position });
+    return { id: Number(over.id), position };
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    setDropTarget(resolveDropTarget(event.over));
   }
 
   async function handleDragEnd(event: DragEndEvent) {
     const activeId = Number(event.active.id);
-    const target = dropTarget;
+    const target = resolveDropTarget(event.over, true);
     setDropTarget(null);
     blockedDropIdsRef.current = new Set();
     if (!target) return;
@@ -535,6 +550,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
         ) : (
           <DndContext
             collisionDetection={pointerWithin}
+            measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
