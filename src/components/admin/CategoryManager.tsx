@@ -109,7 +109,11 @@ function toLocalInput(iso: string | null): string {
 export default function CategoryManager({ initial }: { initial: Category[] }) {
   const t = useTranslations("admin.categories");
   const [cats, setCats] = useState<Category[]>(initial);
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  // Every category with at least one child starts collapsed — a long tree
+  // fully expanded on load is a wall of rows before she's touched anything.
+  const [collapsed, setCollapsed] = useState<Set<number>>(
+    () => new Set(initial.filter((c) => initial.some((x) => x.parentId === c.id)).map((c) => c.id))
+  );
   const [form, setForm] = useState<FormState | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
