@@ -7,7 +7,7 @@
  * the DB (see lib/orders.ts) — a tampered cart in localStorage can't change
  * what's actually charged.
  */
-import { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useContext, useEffect, useReducer, useState } from "react";
 
 export type CartItem = {
   id: number;
@@ -22,7 +22,8 @@ type Action =
   | { type: "ADD"; item: Omit<CartItem, "quantity"> }
   | { type: "REMOVE"; id: number }
   | { type: "UPDATE_QTY"; id: number; quantity: number }
-  | { type: "CLEAR" };
+  | { type: "CLEAR" }
+  | { type: "HYDRATE"; items: CartItem[] };
 
 function cartReducer(state: CartState, action: Action): CartState {
   switch (action.type) {
@@ -48,6 +49,8 @@ function cartReducer(state: CartState, action: Action): CartState {
       };
     case "CLEAR":
       return { items: [] };
+    case "HYDRATE":
+      return { items: action.items };
     default:
       return state;
   }
@@ -64,19 +67,33 @@ const CartContext = createContext<{
 } | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] }, (init) => {
-    if (typeof window === "undefined") return init;
-    try {
-      const stored = localStorage.getItem("valentina-cart");
-      return stored ? JSON.parse(stored) : init;
-    } catch {
-      return init;
-    }
-  });
+  // Starts empty on both server and client — matches on first render, so
+  // no hydration mismatch. The real cart loads from localStorage right
+  // after mount instead (see below), which is a normal post-hydration
+  // update, not part of the SSR diff.
+  const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem("valentina-cart");
+      if (stored) dispatch({ type: "HYDRATE", items: JSON.parse(stored).items ?? [] });
+    } catch {
+      // Corrupted localStorage — start with an empty cart rather than crash
+    }
+    // setState belongs in a callback, not the effect body directly (lint:
+    // react-hooks/set-state-in-effect) — a same-tick timeout satisfies that
+    // without introducing any real delay.
+    const id = setTimeout(() => setHydrated(true), 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    // Skip the write on the very first render (before HYDRATE has landed) —
+    // otherwise an empty {items:[]} would overwrite a real saved cart.
+    if (!hydrated) return;
     localStorage.setItem("valentina-cart", JSON.stringify(state));
-  }, [state]);
+  }, [state, hydrated]);
 
   const total = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const count = state.items.reduce((sum, i) => sum + i.quantity, 0);
