@@ -67,10 +67,12 @@ function transformFor(preset: Preset, focal: Focal): string {
   // Cloudinary's custom-focus gravity (g_xy_center) takes x/y as fractions
   // (0.0-1.0) of the original image, not a pixel or percent value — the
   // stored focal point is 0-100 (easier to store/reason about), so it gets
-  // divided down here right before it hits the URL.
+  // divided down here right before it hits the URL. fl_region_relative is
+  // required for x/y to be read as fractions at all — without it Cloudinary
+  // treats them as absolute pixel offsets, which breaks the transform.
   const gravity =
     focal && Number.isFinite(focal.x) && Number.isFinite(focal.y)
-      ? `g_xy_center,x_${clampFraction(focal.x)},y_${clampFraction(focal.y)}`
+      ? `g_xy_center,x_${clampFraction(focal.x)},y_${clampFraction(focal.y)},fl_region_relative`
       : "g_auto";
   return `c_fill,${gravity},ar_${ar},w_${w},f_auto,q_auto`;
 }
