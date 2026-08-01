@@ -590,12 +590,14 @@ export default function ProductForm({
         {form.imageUrl ? (
           <>
             <FocalPointPicker
-              src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
+              src={imageUrl(form.imageUrl, "gallery") ?? form.imageUrl}
               value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
               onChange={(p) => setForm((f) => ({ ...f, focalX: p?.x ?? null, focalY: p?.y ?? null }))}
               label={t("focalPointLabel")}
               hint={t("focalPointHint")}
               resetLabel={t("focalPointReset")}
+              naturalWidth={form.imageWidth}
+              naturalHeight={form.imageHeight}
             />
             <ImageDropzone
               onFiles={handlePrimaryUpload}

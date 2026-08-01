@@ -24,6 +24,8 @@ export default function FocalPointPicker({
   label,
   hint,
   resetLabel,
+  naturalWidth,
+  naturalHeight,
 }: {
   src: string;
   value: FocalPoint | null;
@@ -31,8 +33,15 @@ export default function FocalPointPicker({
   label: string;
   hint: string;
   resetLabel: string;
+  /** The photo's real pixel size, so the preview box matches its actual
+   * shape exactly — a click then always lands on the same spot the stored
+   * percent will later be measured against. Falls back to a 4:3 guess
+   * (cropped preview) when unknown. */
+  naturalWidth?: number | null;
+  naturalHeight?: number | null;
 }) {
   const imgRef = useRef<HTMLDivElement>(null);
+  const aspectRatio = naturalWidth && naturalHeight ? naturalWidth / naturalHeight : 4 / 3;
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     const rect = imgRef.current?.getBoundingClientRect();
@@ -66,8 +75,8 @@ export default function FocalPointPicker({
       <div
         ref={imgRef}
         onClick={handleClick}
-        className="relative w-full max-w-xs aspect-[4/3] rounded-lg overflow-hidden cursor-crosshair border"
-        style={{ borderColor: "var(--border)" }}
+        className="relative w-full max-w-xs rounded-lg overflow-hidden cursor-crosshair border"
+        style={{ borderColor: "var(--border)", aspectRatio }}
       >
         <Image src={src} alt="" fill className="object-cover" sizes="320px" />
         {value && (

@@ -814,12 +814,14 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("tileImage")}</label>
             {form.imageUrl && (
               <FocalPointPicker
-                src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
+                src={imageUrl(form.imageUrl, "gallery") ?? form.imageUrl}
                 value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
                 onChange={(p) => setForm({ ...form, focalX: p?.x ?? null, focalY: p?.y ?? null })}
                 label={t("focalPointLabel")}
                 hint={t("focalPointHint")}
                 resetLabel={t("focalPointReset")}
+                naturalWidth={form.imageWidth}
+                naturalHeight={form.imageHeight}
               />
             )}
             <input type="file" accept="image/*" onChange={uploadTile} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
