@@ -25,7 +25,7 @@ export default function LocaleSwitcher({ locales }: { locales?: readonly string[
 
   return (
     <div
-      className="flex items-center rounded-lg border overflow-hidden"
+      className="inline-flex w-fit items-center rounded-lg border overflow-hidden"
       style={{ borderColor: "var(--border)" }}
       role="group"
       aria-label="Language"
