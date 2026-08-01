@@ -747,7 +747,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
               prices: the percentage is applied live, so ending the sale
               (or letting the schedule expire) restores full price by itself. */}
           <fieldset className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
-            <legend className="text-sm font-medium px-1" style={{ color: "var(--ink)" }}>{t("saleLegend")}</legend>
+            <p className="text-sm font-medium px-1" style={{ color: "var(--ink)" }}>{t("saleLegend")}</p>
             <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--ink)" }}>
               <input
                 type="checkbox"
@@ -779,7 +779,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
 
           {/* schedule window */}
           <fieldset className="flex flex-col gap-2 p-3 rounded-lg" style={{ backgroundColor: "var(--surface)" }}>
-            <legend className="text-sm font-medium px-1" style={{ color: "var(--ink)" }}>{t("scheduleLegend")}</legend>
+            <p className="text-sm font-medium px-1" style={{ color: "var(--ink)" }}>{t("scheduleLegend")}</p>
             <p className="text-xs" style={{ color: "var(--muted)" }}>{t("scheduleHint")}</p>
             <label className="text-xs font-medium" style={{ color: "var(--ink)" }}>
               {t("startsAt")}
