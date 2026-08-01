@@ -209,7 +209,9 @@
       "rearrangeModeOn": "Done rearranging",
       "rearrangeHint": "Drag a category up/down to reorder it, or onto another category to make it a subcategory of it.",
       "dragHandle": "Drag to reorder",
-      "reorderError": "Error saving the new order. Please try again."
+      "reorderError": "Error saving the new order. Please try again.",
+      "undo": "Undo",
+      "categoryMoved": "Category \"{name}\" moved"
     },
     "dashboard": {
       "title": "Overview",

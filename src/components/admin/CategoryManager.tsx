@@ -24,9 +24,12 @@ import {
   Clock,
   Star,
   Flame,
+  GripVertical,
+  Undo2,
 } from "lucide-react";
 import {
   DndContext,
+  DragOverlay,
   pointerWithin,
   MeasuringStrategy,
   type DragEndEvent,
@@ -116,6 +119,11 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   const [rearrangeMode, setRearrangeMode] = useState(false);
   const [dropTarget, setDropTarget] = useState<{ id: number; position: DropPosition } | null>(null);
   const [reorderError, setReorderError] = useState(false);
+  const [activeDragCat, setActiveDragCat] = useState<Category | null>(null);
+  // Snapshot of whatever a drag-drop just changed, so it can be reverted.
+  // Cleared automatically after UNDO_WINDOW_MS.
+  const [undo, setUndo] = useState<{ label: string; restore: Category[] } | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // A row currently being dragged (or one of its descendants) can never be a
   // valid drop target — dropping a category "inside" its own child would
   // create a cycle. Recomputed fresh per drag rather than kept in state.
@@ -134,6 +142,12 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
   }, [rearrangeMode]);
+
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/admin/categories");
@@ -245,8 +259,14 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     setCollapsed(new Set(cats.filter((c) => (childrenOf.get(c.id)?.length ?? 0) > 0).map((c) => c.id)));
   }
 
-  /** Persist a full list of (already reordered/reparented) categories. */
-  async function persistAll(updated: Category[]) {
+  const UNDO_WINDOW_MS = 60_000;
+
+  /**
+   * Persist a full list of (already reordered/reparented) categories.
+   * When `undoInfo` is given and the save succeeds, arms a 60s undo window
+   * that restores exactly those rows to their pre-drop values.
+   */
+  async function persistAll(updated: Category[], undoInfo?: { label: string; restore: Category[] }) {
     setReorderError(false);
     const results = await Promise.all(
       updated.map((c) =>
@@ -257,12 +277,27 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
         })
       )
     );
-    if (results.some((r) => !r.ok)) setReorderError(true);
+    if (results.some((r) => !r.ok)) {
+      setReorderError(true);
+    } else if (undoInfo) {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      setUndo(undoInfo);
+      undoTimerRef.current = setTimeout(() => setUndo(null), UNDO_WINDOW_MS);
+    }
     await refresh();
+  }
+
+  async function undoLastMove() {
+    if (!undo) return;
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    const restore = undo.restore;
+    setUndo(null);
+    await persistAll(restore);
   }
 
   function handleDragStart(event: DragStartEvent) {
     const id = Number(event.active.id);
+    setActiveDragCat(cats.find((c) => c.id === id) ?? null);
     const blocked = new Set<number>([id]);
     const walk = (parentId: number) => {
       for (const c of cats) {
@@ -319,6 +354,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     const activeId = Number(event.active.id);
     const target = resolveDropTarget(event.over, true);
     setDropTarget(null);
+    setActiveDragCat(null);
     blockedDropIdsRef.current = new Set();
     if (!target) return;
 
@@ -327,8 +363,15 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     if (!dragged || !overCat) return;
 
     if (target.position === "inside") {
+      // dragged into a different parent than it already had — a no-op drop
+      // (e.g. releasing over its own existing parent) shouldn't arm undo
+      // for nothing changing.
+      if (dragged.parentId === overCat.id) return;
       const newSiblings = childrenOf.get(overCat.id) ?? [];
-      await persistAll([{ ...dragged, parentId: overCat.id, sortOrder: newSiblings.length }]);
+      await persistAll(
+        [{ ...dragged, parentId: overCat.id, sortOrder: newSiblings.length }],
+        { label: t("categoryMoved", { name: dragged.name }), restore: [dragged] }
+      );
       return;
     }
 
@@ -341,7 +384,13 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     const insertAt = target.position === "before" ? overIdx : overIdx + 1;
     const reordered = [...currentSiblings];
     reordered.splice(insertAt, 0, dragged);
-    await persistAll(reordered.map((c, i) => ({ ...c, parentId: newParentId, sortOrder: i })));
+    // Snapshot of every affected row's pre-drop values, for undo — captured
+    // before the sortOrder/parentId overwrite below.
+    const originals = reordered;
+    await persistAll(
+      reordered.map((c, i) => ({ ...c, parentId: newParentId, sortOrder: i })),
+      { label: t("categoryMoved", { name: dragged.name }), restore: originals }
+    );
   }
 
   async function uploadTile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -549,6 +598,23 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             {t("reorderError")}
           </p>
         )}
+        {undo && (
+          <div
+            role="status"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm mb-4"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--ink)" }}
+          >
+            <span>{undo.label}</span>
+            <button
+              type="button"
+              onClick={undoLastMove}
+              className="inline-flex items-center gap-1 font-semibold hover:opacity-70 transition-opacity"
+              style={{ color: "var(--primary)" }}
+            >
+              <Undo2 size={14} /> {t("undo")}
+            </button>
+          </div>
+        )}
 
         {roots.length === 0 ? (
           <p className="text-sm py-8" style={{ color: "var(--muted)" }}>
@@ -561,8 +627,31 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
+            onDragCancel={() => {
+              setDropTarget(null);
+              setActiveDragCat(null);
+              blockedDropIdsRef.current = new Set();
+            }}
           >
             {roots.map((c) => renderNode(c, 0))}
+            <DragOverlay dropAnimation={null}>
+              {activeDragCat && (
+                <div
+                  className="flex items-center gap-2 py-2.5 px-3 rounded-lg border-2 shadow-lg"
+                  style={{
+                    borderColor: "var(--primary)",
+                    backgroundColor: "var(--bg)",
+                    opacity: 0.85,
+                    cursor: "grabbing",
+                  }}
+                >
+                  <GripVertical size={16} style={{ color: "var(--muted)" }} />
+                  <span className="font-medium text-sm" style={{ color: "var(--ink)" }}>
+                    {activeDragCat.name}
+                  </span>
+                </div>
+              )}
+            </DragOverlay>
           </DndContext>
         )}
       </div>
