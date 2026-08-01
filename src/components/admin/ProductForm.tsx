@@ -10,11 +10,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Star, X, ArrowLeft, ArrowRight } from "lucide-react";
+import { Star, X, ArrowLeft, ArrowRight, ImagePlus, Upload, Plus } from "lucide-react";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
 import { applyDiscount, categoryDiscount, saleSource, isApproximatePercent } from "@/lib/pricing";
 import FocalPointPicker from "./FocalPointPicker";
+import ImageDropzone from "./ImageDropzone";
 
 const MAX_GALLERY = 8;
 
@@ -155,9 +156,8 @@ export default function ProductForm({
     return res.json();
   }
 
-  async function handlePrimaryUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
+  async function handlePrimaryUpload(files: File[]) {
+    const file = files[0];
     if (!file) return;
     setUploading(true);
     const uploaded = await uploadOne(file);
@@ -172,9 +172,7 @@ export default function ProductForm({
     setUploading(false);
   }
 
-  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = "";
+  async function handleGalleryUpload(files: File[]) {
     if (files.length === 0) return;
     const room = MAX_GALLERY - form.galleryUrls.length;
     if (room <= 0) {
@@ -574,21 +572,41 @@ export default function ProductForm({
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>{t("imageLabel")}</label>
         {form.imageUrl ? (
-          <FocalPointPicker
-            src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
-            value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
-            onChange={(p) => setForm((f) => ({ ...f, focalX: p?.x ?? null, focalY: p?.y ?? null }))}
-            label={t("focalPointLabel")}
-            hint={t("focalPointHint")}
-            resetLabel={t("focalPointReset")}
-          />
+          <>
+            <FocalPointPicker
+              src={imageUrl(form.imageUrl, "card") ?? form.imageUrl}
+              value={form.focalX != null && form.focalY != null ? { x: form.focalX, y: form.focalY } : null}
+              onChange={(p) => setForm((f) => ({ ...f, focalX: p?.x ?? null, focalY: p?.y ?? null }))}
+              label={t("focalPointLabel")}
+              hint={t("focalPointHint")}
+              resetLabel={t("focalPointReset")}
+            />
+            <ImageDropzone
+              onFiles={handlePrimaryUpload}
+              disabled={uploading}
+              className="w-full max-w-xs flex items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-2"
+            >
+              <Upload size={14} style={{ color: "var(--muted)" }} />
+              <span className="text-xs" style={{ color: "var(--muted)" }}>{uploading ? t("uploading") : t("replaceImage")}</span>
+            </ImageDropzone>
+          </>
         ) : (
-          <div className="w-full max-w-xs aspect-[4/3] rounded-lg flex items-center justify-center text-xs" style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}>
-            {t("noImageYet")}
-          </div>
+          <ImageDropzone
+            onFiles={handlePrimaryUpload}
+            disabled={uploading}
+            className="w-full max-w-xs aspect-[4/3] rounded-lg border border-dashed flex flex-col items-center justify-center gap-2 text-center px-4"
+          >
+            <ImagePlus size={28} style={{ color: "var(--muted)" }} />
+            <span className="text-xs font-medium" style={{ color: "var(--ink)" }}>
+              {uploading ? t("uploading") : t("dropImageHint")}
+            </span>
+            {!uploading && (
+              <span className="text-xs px-3 py-1.5 rounded-md border" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                {t("chooseFile")}
+              </span>
+            )}
+          </ImageDropzone>
         )}
-        <input type="file" accept="image/*" onChange={handlePrimaryUpload} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
-        {uploading && <p className="text-xs" style={{ color: "var(--muted)" }}>{t("uploading")}</p>}
       </div>
 
       {/* Gallery — additional photos shown as a thumbnail strip on the
@@ -598,36 +616,44 @@ export default function ProductForm({
         <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
           {t("galleryLabel")} ({form.galleryUrls.length}/{MAX_GALLERY})
         </label>
-        {form.galleryUrls.length > 0 && (
-          <div className="flex flex-wrap gap-3">
-            {form.galleryUrls.map((url, i) => (
-              <div key={form.galleryPublicIds[i] ?? url} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border)" }}>
-                <Image src={imageUrl(url, "thumb") ?? url} alt="" fill className="object-cover" sizes="96px" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                  <button type="button" onClick={() => makeGalleryPrimary(i)} title={t("makePrimary")} className="p-1 rounded bg-white/90 hover:bg-white">
-                    <Star size={14} />
+        <div className="flex flex-wrap gap-3">
+          {form.galleryUrls.map((url, i) => (
+            <div key={form.galleryPublicIds[i] ?? url} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border)" }}>
+              <Image src={imageUrl(url, "thumb") ?? url} alt="" fill className="object-cover" sizes="96px" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                <button type="button" onClick={() => makeGalleryPrimary(i)} title={t("makePrimary")} className="p-1 rounded bg-white/90 hover:bg-white">
+                  <Star size={14} />
+                </button>
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => moveGalleryImage(i, -1)} disabled={i === 0} title={t("moveEarlier")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
+                    <ArrowRight size={12} className="rtl:hidden" />
+                    <ArrowLeft size={12} className="hidden rtl:block" />
                   </button>
-                  <div className="flex gap-1">
-                    <button type="button" onClick={() => moveGalleryImage(i, -1)} disabled={i === 0} title={t("moveEarlier")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
-                      <ArrowRight size={12} className="rtl:hidden" />
-                      <ArrowLeft size={12} className="hidden rtl:block" />
-                    </button>
-                    <button type="button" onClick={() => moveGalleryImage(i, 1)} disabled={i === form.galleryUrls.length - 1} title={t("moveLater")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
-                      <ArrowLeft size={12} className="rtl:hidden" />
-                      <ArrowRight size={12} className="hidden rtl:block" />
-                    </button>
-                  </div>
-                  <button type="button" onClick={() => removeGalleryImage(i)} title={t("removePhoto")} className="p-1 rounded bg-white/90 hover:bg-white">
-                    <X size={14} />
+                  <button type="button" onClick={() => moveGalleryImage(i, 1)} disabled={i === form.galleryUrls.length - 1} title={t("moveLater")} className="p-1 rounded bg-white/90 hover:bg-white disabled:opacity-40">
+                    <ArrowLeft size={12} className="rtl:hidden" />
+                    <ArrowRight size={12} className="hidden rtl:block" />
                   </button>
                 </div>
+                <button type="button" onClick={() => removeGalleryImage(i)} title={t("removePhoto")} className="p-1 rounded bg-white/90 hover:bg-white">
+                  <X size={14} />
+                </button>
               </div>
-            ))}
-          </div>
-        )}
-        {form.galleryUrls.length < MAX_GALLERY && (
-          <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
-        )}
+            </div>
+          ))}
+          {form.galleryUrls.length < MAX_GALLERY && (
+            <ImageDropzone
+              multiple
+              onFiles={handleGalleryUpload}
+              disabled={uploading}
+              className="w-24 h-24 rounded-lg border border-dashed flex flex-col items-center justify-center gap-1 text-center"
+            >
+              <Plus size={18} style={{ color: "var(--muted)" }} />
+              <span className="text-[10px] leading-tight px-1" style={{ color: "var(--muted)" }}>
+                {uploading ? t("uploading") : t("dropGalleryHint")}
+              </span>
+            </ImageDropzone>
+          )}
+        </div>
       </div>
 
       {error && <p className="text-sm" style={{ color: "oklch(0.45 0.15 25)" }}>{error}</p>}
