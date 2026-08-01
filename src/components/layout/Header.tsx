@@ -189,10 +189,13 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          {/* useSearchParams inside these needs a Suspense boundary */}
-          <Suspense fallback={<div className="w-9 h-9" />}>
-            <HeaderSearch variant="desktop" />
-          </Suspense>
+          {/* Desktop only — mobile gets its own always-visible search inside the burger menu */}
+          <div className="hidden md:block">
+            {/* useSearchParams inside this needs a Suspense boundary */}
+            <Suspense fallback={<div className="w-9 h-9" />}>
+              <HeaderSearch variant="desktop" />
+            </Suspense>
+          </div>
           <Suspense fallback={null}>
             <LocaleSwitcher />
           </Suspense>
