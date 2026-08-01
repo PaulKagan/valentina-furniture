@@ -26,6 +26,7 @@ import {
   Flame,
   GripVertical,
   Undo2,
+  Upload,
 } from "lucide-react";
 import {
   DndContext,
@@ -37,6 +38,7 @@ import {
 } from "@dnd-kit/core";
 import { imageUrl } from "@/lib/images";
 import FocalPointPicker from "./FocalPointPicker";
+import ImageDropzone from "./ImageDropzone";
 import CategoryTreeRow, { type DropPosition } from "./CategoryTreeRow";
 
 type Category = {
@@ -427,8 +429,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     );
   }
 
-  async function uploadTile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function uploadTile(files: File[]) {
+    const file = files[0];
     if (!file || !form) return;
     setUploading(true);
     const fd = new FormData();
@@ -824,8 +826,16 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
                 naturalHeight={form.imageHeight}
               />
             )}
-            <input type="file" accept="image/*" onChange={uploadTile} disabled={uploading} className="text-sm" style={{ color: "var(--muted)" }} />
-            {uploading && <p className="text-xs" style={{ color: "var(--muted)" }}>{t("uploading")}</p>}
+            <ImageDropzone
+              onFiles={uploadTile}
+              disabled={uploading}
+              className="w-full max-w-xs flex items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-2"
+            >
+              <Upload size={14} style={{ color: "var(--muted)" }} />
+              <span className="text-xs" style={{ color: "var(--muted)" }}>
+                {uploading ? t("uploading") : form.imageUrl ? t("replaceImage") : `${t("dropImageHint")} / ${t("chooseFile")}`}
+              </span>
+            </ImageDropzone>
           </div>
 
           {error && <p className="text-sm" style={{ color: "oklch(0.45 0.15 25)" }}>{error}</p>}
