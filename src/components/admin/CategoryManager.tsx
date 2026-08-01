@@ -461,7 +461,14 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           onEdit={() => openEditForm(cat)}
           onDelete={() => remove(cat)}
         />
-        {!isCollapsed && children.map((c) => renderNode(c, depth + 1))}
+        {children.length > 0 && (
+          // Pure-CSS collapse animation (grid-rows 0fr↔1fr) — children stay
+          // mounted so it can actually animate, rather than popping in/out
+          // instantly the way a plain conditional render would.
+          <div style={{ display: "grid", gridTemplateRows: isCollapsed ? "0fr" : "1fr", transition: "grid-template-rows 200ms ease" }}>
+            <div style={{ overflow: "hidden", minHeight: 0 }}>{children.map((c) => renderNode(c, depth + 1))}</div>
+          </div>
+        )}
       </div>
     );
   }
@@ -499,19 +506,19 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           </button>
           <button
             type="button"
-            onClick={expandAll}
+            onClick={collapsed.size > 0 ? expandAll : collapseAll}
             className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm border transition-colors hover:bg-[oklch(0.974_0_0)]"
             style={{ borderColor: "var(--border)", color: "var(--ink)" }}
           >
-            <ChevronsDown size={15} /> {t("expandAll")}
-          </button>
-          <button
-            type="button"
-            onClick={collapseAll}
-            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-medium text-sm border transition-colors hover:bg-[oklch(0.974_0_0)]"
-            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
-          >
-            <ChevronsUp size={15} /> {t("collapseAll")}
+            {collapsed.size > 0 ? (
+              <>
+                <ChevronsDown size={15} /> {t("expandAll")}
+              </>
+            ) : (
+              <>
+                <ChevronsUp size={15} /> {t("collapseAll")}
+              </>
+            )}
           </button>
           <button
             type="button"

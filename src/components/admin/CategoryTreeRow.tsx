@@ -80,13 +80,14 @@ export default function CategoryTreeRow({
       )}
       <div
         ref={setDragRef}
-        className="flex items-center gap-2 py-2.5 px-3 rounded-lg border-2 mb-1.5 group transition-colors"
+        className="flex items-center gap-2 py-2.5 px-3 rounded-lg border-2 mb-1.5 group transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-150"
         style={{
           borderColor: dropPosition === "inside" ? "var(--primary)" : "transparent",
           backgroundColor: dropPosition === "inside" ? "oklch(0.95 0.03 32)" : "var(--bg)",
           boxShadow: dropPosition !== "inside" ? "0 0 0 1px var(--border)" : undefined,
           marginInlineStart: depth * 24,
           opacity: isDragging ? 0.4 : cat.visible ? 1 : 0.6,
+          transform: dropPosition === "inside" ? "scale(1.01)" : undefined,
         }}
       >
         {rearrangeMode && (
@@ -112,7 +113,7 @@ export default function CategoryTreeRow({
           aria-label={isCollapsed ? labels.expand : labels.collapse}
           title={isCollapsed ? labels.expand : labels.collapse}
         >
-          {isCollapsed ? <ChevronDown size={16} className="-rotate-90 rtl:rotate-90" /> : <ChevronDown size={16} />}
+          <ChevronDown size={16} className={`transition-transform duration-200 ${isCollapsed ? "-rotate-90 rtl:rotate-90" : ""}`} />
         </button>
 
         <span className="font-medium text-sm" style={{ color: "var(--ink)" }}>
