@@ -287,12 +287,16 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       setDropTarget(null);
       return;
     }
-    // Where the actual cursor sits within the target row's height decides
-    // the intent: top third = insert before, bottom third = insert after,
-    // middle third = nest as a child — the same "drag an app onto another
-    // app" behavior as a phone home screen.
-    const fraction = (pointerYRef.current - overRect.top) / overRect.height;
-    const position: DropPosition = fraction < 0.3 ? "before" : fraction > 0.7 ? "after" : "inside";
+    // Nesting is the primary gesture here (that's the whole point of this
+    // feature), so it gets almost the entire row as its target — only a
+    // thin strip at the very top/bottom edge means "insert here instead".
+    // A percentage-based split (e.g. top/bottom 30%) turns out too small to
+    // reliably land on for a ~40px row; fixed pixel edges don't shrink with
+    // row height.
+    const EDGE_PX = 10;
+    const y = pointerYRef.current;
+    const position: DropPosition =
+      y - overRect.top < EDGE_PX ? "before" : overRect.top + overRect.height - y < EDGE_PX ? "after" : "inside";
     setDropTarget({ id: overId, position });
   }
 
