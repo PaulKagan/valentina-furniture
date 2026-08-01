@@ -55,6 +55,8 @@ type Category = {
   sortOrder: number;
   imageUrl: string | null;
   imagePublicId: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
   focalX: number | null;
   focalY: number | null;
 };
@@ -74,6 +76,8 @@ type FormState = {
   discountPercent: string; // "" is allowed while typing; sent as 0
   imageUrl: string | null;
   imagePublicId: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
   focalX: number | null;
   focalY: number | null;
 };
@@ -93,6 +97,8 @@ const EMPTY_FORM: FormState = {
   discountPercent: "",
   imageUrl: null,
   imagePublicId: null,
+  imageWidth: null,
+  imageHeight: null,
   focalX: null,
   focalY: null,
 };
@@ -223,6 +229,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       sortOrder: form.id != null ? cats.find((c) => c.id === form.id)?.sortOrder ?? 0 : (childrenOf.get(form.parentId)?.length ?? 0),
       imageUrl: form.imageUrl,
       imagePublicId: form.imagePublicId,
+      imageWidth: form.imageWidth,
+      imageHeight: form.imageHeight,
       focalX: form.focalX,
       focalY: form.focalY,
     };
@@ -430,7 +438,15 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       const data = await res.json();
       // A new photo has no focal point of its own — an old one wouldn't
       // point at anything meaningful on a different image.
-      setForm({ ...form, imageUrl: data.url, imagePublicId: data.publicId, focalX: null, focalY: null });
+      setForm({
+        ...form,
+        imageUrl: data.url,
+        imagePublicId: data.publicId,
+        imageWidth: data.width,
+        imageHeight: data.height,
+        focalX: null,
+        focalY: null,
+      });
     }
     setUploading(false);
   }
@@ -487,6 +503,8 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
       discountPercent: cat.discountPercent ? String(cat.discountPercent) : "",
       imageUrl: cat.imageUrl,
       imagePublicId: cat.imagePublicId,
+      imageWidth: cat.imageWidth,
+      imageHeight: cat.imageHeight,
       focalX: cat.focalX,
       focalY: cat.focalY,
     });

@@ -59,7 +59,8 @@ export default async function CategoriesPage({
             const img = imageUrl(
               cat.imageUrl,
               "card",
-              cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null
+              cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null,
+              cat.imageWidth != null && cat.imageHeight != null ? { width: cat.imageWidth, height: cat.imageHeight } : null
             );
             return (
               <div

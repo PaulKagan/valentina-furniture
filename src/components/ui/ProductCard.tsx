@@ -47,7 +47,8 @@ export default function ProductCard({
   const img = imageUrl(
     product.imageUrl,
     "card",
-    product.focalX != null && product.focalY != null ? { x: product.focalX, y: product.focalY } : null
+    product.focalX != null && product.focalY != null ? { x: product.focalX, y: product.focalY } : null,
+    product.imageWidth != null && product.imageHeight != null ? { width: product.imageWidth, height: product.imageHeight } : null
   );
 
   return (

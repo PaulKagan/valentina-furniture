@@ -12,11 +12,11 @@ cloudinary.config({
 });
 
 export async function uploadImage(file: Buffer, folder = "valentina-furniture") {
-  return new Promise<{ url: string; publicId: string }>((resolve, reject) => {
+  return new Promise<{ url: string; publicId: string; width: number; height: number }>((resolve, reject) => {
     cloudinary.uploader
       .upload_stream({ folder, resource_type: "image" }, (err, result) => {
         if (err || !result) return reject(err);
-        resolve({ url: result.secure_url, publicId: result.public_id });
+        resolve({ url: result.secure_url, publicId: result.public_id, width: result.width, height: result.height });
       })
       .end(file);
   });

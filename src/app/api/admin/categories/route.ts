@@ -26,6 +26,12 @@ async function requireAdmin() {
   return null;
 }
 
+/** Positive whole number or null — used for the uploaded photo's pixel size. */
+function posInt(v: unknown): number | null {
+  const n = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
 /** Normalize a slug: lowercase, spaces→dashes, strip anything not url-safe. */
 function normalizeSlug(raw: string): string {
   return raw
@@ -91,6 +97,8 @@ function parseCategoryBody(body: Record<string, unknown>) {
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
+      imageWidth: posInt(body.imageWidth),
+      imageHeight: posInt(body.imageHeight),
       focalX,
       focalY,
     },

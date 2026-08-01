@@ -49,6 +49,8 @@ type ProductData = {
   featured: boolean;
   imageUrl: string | null;
   imagePublicId: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
   focalX: number | null;
   focalY: number | null;
   galleryUrls: string[];
@@ -85,6 +87,8 @@ export default function ProductForm({
     featured: false,
     imageUrl: null,
     imagePublicId: null,
+    imageWidth: null,
+    imageHeight: null,
     focalX: null,
     focalY: null,
     galleryUrls: [],
@@ -148,7 +152,7 @@ export default function ProductForm({
     return out;
   }, [categories]);
 
-  async function uploadOne(file: File): Promise<{ url: string; publicId: string } | null> {
+  async function uploadOne(file: File): Promise<{ url: string; publicId: string; width: number; height: number } | null> {
     const fd = new FormData();
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });
@@ -165,7 +169,15 @@ export default function ProductForm({
       // A brand new primary photo has no focal point of its own yet —
       // clearing it beats silently reusing a point that made sense on a
       // completely different picture.
-      setForm((f) => ({ ...f, imageUrl: uploaded.url, imagePublicId: uploaded.publicId, focalX: null, focalY: null }));
+      setForm((f) => ({
+        ...f,
+        imageUrl: uploaded.url,
+        imagePublicId: uploaded.publicId,
+        imageWidth: uploaded.width,
+        imageHeight: uploaded.height,
+        focalX: null,
+        focalY: null,
+      }));
     } else {
       setError(t("uploadError"));
     }
@@ -181,7 +193,7 @@ export default function ProductForm({
     }
     setUploading(true);
     const results = await Promise.all(files.slice(0, room).map(uploadOne));
-    const ok = results.filter((r): r is { url: string; publicId: string } => r !== null);
+    const ok = results.filter((r): r is { url: string; publicId: string; width: number; height: number } => r !== null);
     if (ok.length < results.length) setError(t("uploadError"));
     setForm((f) => ({
       ...f,
@@ -209,8 +221,12 @@ export default function ProductForm({
         ...f,
         imageUrl: newPrimaryUrl,
         imagePublicId: newPrimaryPublicId,
-        // The previous focal point was chosen for the old photo — doesn't
-        // transfer to a different one.
+        // The previous focal point (and the dimensions it was measured
+        // against) was chosen for the old photo — doesn't transfer to a
+        // different one. Gallery uploads never captured their own pixel
+        // size, so this can't be recovered until the photo is re-uploaded.
+        imageWidth: null,
+        imageHeight: null,
         focalX: null,
         focalY: null,
         galleryUrls: nextGalleryUrls,

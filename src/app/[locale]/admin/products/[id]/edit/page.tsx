@@ -47,6 +47,8 @@ export default async function EditProductPage({
           featured: product.featured,
           imageUrl: product.imageUrl,
           imagePublicId: product.imagePublicId,
+          imageWidth: product.imageWidth,
+          imageHeight: product.imageHeight,
           focalX: product.focalX,
           focalY: product.focalY,
           galleryUrls: product.galleryUrls,

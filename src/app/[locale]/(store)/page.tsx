@@ -93,7 +93,12 @@ export default async function HomePage({
       id: cat.id,
       href: `/products?category=${cat.slug}`,
       name: localizedName(cat, locale),
-      img: imageUrl(cat.imageUrl, "tile", cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null),
+      img: imageUrl(
+        cat.imageUrl,
+        "tile",
+        cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null,
+        cat.imageWidth != null && cat.imageHeight != null ? { width: cat.imageWidth, height: cat.imageHeight } : null
+      ),
       percent: pct,
       endsAt: src?.endsAt ? src.endsAt.toISOString() : null,
     };
@@ -247,7 +252,12 @@ export default async function HomePage({
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {regular.map((cat) => {
-              const img = imageUrl(cat.imageUrl, "card", cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null);
+              const img = imageUrl(
+                cat.imageUrl,
+                "card",
+                cat.focalX != null && cat.focalY != null ? { x: cat.focalX, y: cat.focalY } : null,
+                cat.imageWidth != null && cat.imageHeight != null ? { width: cat.imageWidth, height: cat.imageHeight } : null
+              );
               return (
                 <Link
                   key={cat.id}

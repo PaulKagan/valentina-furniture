@@ -13,6 +13,7 @@
  */
 import { useRef } from "react";
 import Image from "next/image";
+import { X } from "lucide-react";
 
 export type FocalPoint = { x: number; y: number };
 
@@ -51,9 +52,10 @@ export default function FocalPointPicker({
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="text-xs underline"
-            style={{ color: "var(--muted)" }}
+            className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md border hover:opacity-80"
+            style={{ borderColor: "var(--border)", color: "var(--ink)" }}
           >
+            <X size={12} />
             {resetLabel}
           </button>
         )}

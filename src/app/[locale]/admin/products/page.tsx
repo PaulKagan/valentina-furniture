@@ -120,7 +120,14 @@ export default async function AdminProductsPage({
                   <div className="w-12 h-12 rounded-lg overflow-hidden" style={{ backgroundColor: "var(--surface)" }}>
                     {p.imageUrl ? (
                       <Image
-                        src={imageUrl(p.imageUrl, "thumb", p.focalX != null && p.focalY != null ? { x: p.focalX, y: p.focalY } : null) ?? p.imageUrl}
+                        src={
+                          imageUrl(
+                            p.imageUrl,
+                            "thumb",
+                            p.focalX != null && p.focalY != null ? { x: p.focalX, y: p.focalY } : null,
+                            p.imageWidth != null && p.imageHeight != null ? { width: p.imageWidth, height: p.imageHeight } : null
+                          ) ?? p.imageUrl
+                        }
                         alt={p.name}
                         width={48}
                         height={48}

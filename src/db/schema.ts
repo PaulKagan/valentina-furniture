@@ -57,6 +57,12 @@ export const categories = pgTable("categories", {
   // Optional tile image (Cloudinary) shown on the homepage category tile
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
+  // The uploaded photo's own pixel size — Cloudinary's g_xy_center gravity
+  // needs the focal point converted to absolute pixels, not a fraction, so
+  // this is what that conversion is done against. Null for rows saved
+  // before this existed; those just fall back to g_auto until re-uploaded.
+  imageWidth: integer("image_width"),
+  imageHeight: integer("image_height"),
   // Where the important part of the tile image is (0-100, percent from the
   // top-left) — she clicks the photo once in admin to set it. Null means
   // "no preference", and every crop falls back to Cloudinary's automatic
@@ -85,6 +91,10 @@ export const products = pgTable("products", {
   salePrice: decimal("sale_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url"),
   imagePublicId: text("image_public_id"),
+  // Same idea as categories.imageWidth/Height — needed to convert the focal
+  // point below into the absolute pixels Cloudinary's gravity actually wants.
+  imageWidth: integer("image_width"),
+  imageHeight: integer("image_height"),
   // Same idea as categories.focalX/Y — click-to-set focal point for the
   // primary photo, used by every fixed-ratio crop (card, tile, thumb).
   focalX: integer("focal_x"),

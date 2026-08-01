@@ -92,6 +92,8 @@ function parseProductBody(body: Record<string, unknown>) {
       salePrice,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : null,
       imagePublicId: typeof body.imagePublicId === "string" ? body.imagePublicId : null,
+      imageWidth: posInt(body.imageWidth),
+      imageHeight: posInt(body.imageHeight),
       focalX,
       focalY,
       galleryUrls,

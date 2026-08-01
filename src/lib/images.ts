@@ -23,6 +23,12 @@
 
 export type Focal = { x: number; y: number } | null | undefined;
 
+/** The uploaded photo's own pixel size — needed to turn a 0-100 focal
+ * percent into the absolute pixels Cloudinary's g_xy_center gravity
+ * actually wants. Missing (legacy rows saved before this existed) falls
+ * back to g_auto rather than guessing. */
+export type Dimensions = { width: number; height: number } | null | undefined;
+
 /**
  * A focal-point coordinate (0-100 integer), or null if unset/unparseable —
  * used when parsing a focal point out of an admin request body, before it
@@ -54,7 +60,7 @@ const PRESETS: Record<Preset, { w: number; ar: string }> = {
   gallery: { w: 1200, ar: "" }, // product gallery main viewer — no forced ratio
 };
 
-function transformFor(preset: Preset, focal: Focal): string {
+function transformFor(preset: Preset, focal: Focal, dimensions: Dimensions): string {
   const { w, ar } = PRESETS[preset];
 
   if (preset === "gallery") {
@@ -64,30 +70,30 @@ function transformFor(preset: Preset, focal: Focal): string {
     return `c_limit,w_${w},h_${w},f_auto,q_auto`;
   }
 
-  // Cloudinary's custom-focus gravity (g_xy_center) takes x/y as fractions
-  // (0.0-1.0) of the original image, not a pixel or percent value — the
-  // stored focal point is 0-100 (easier to store/reason about), so it gets
-  // divided down here right before it hits the URL. fl_region_relative is
-  // required for x/y to be read as fractions at all — without it Cloudinary
-  // treats them as absolute pixel offsets, which breaks the transform.
+  // Cloudinary's custom-focus gravity (g_xy_center) takes x/y as absolute
+  // pixels of the ORIGINAL image — not a fraction, not a percent (confirmed
+  // the hard way: a fraction like x_0.71 doesn't error, it silently produces
+  // a nonsensical crop request). So the stored 0-100 percent only converts
+  // correctly if we know the photo's real pixel size — without that, fall
+  // back to g_auto instead of sending Cloudinary a broken transform.
   const gravity =
-    focal && Number.isFinite(focal.x) && Number.isFinite(focal.y)
-      ? `g_xy_center,x_${clampFraction(focal.x)},y_${clampFraction(focal.y)},fl_region_relative`
+    focal && dimensions && Number.isFinite(focal.x) && Number.isFinite(focal.y)
+      ? `g_xy_center,x_${toPixel(focal.x, dimensions.width)},y_${toPixel(focal.y, dimensions.height)}`
       : "g_auto";
   return `c_fill,${gravity},ar_${ar},w_${w},f_auto,q_auto`;
 }
 
-function clampFraction(percent: number): number {
-  return Math.round(Math.max(0, Math.min(100, percent))) / 100;
+function toPixel(percent: number, size: number): number {
+  return Math.round((Math.max(0, Math.min(100, percent)) / 100) * size);
 }
 
-export function imageUrl(url: string | null | undefined, preset: Preset, focal?: Focal): string | null {
+export function imageUrl(url: string | null | undefined, preset: Preset, focal?: Focal, dimensions?: Dimensions): string | null {
   if (!url) return null;
   // Only transform Cloudinary delivery URLs: .../upload/<rest>
   const marker = "/upload/";
   const idx = url.indexOf(marker);
   if (!url.includes("res.cloudinary.com") || idx === -1) return url;
 
-  const transform = transformFor(preset, focal);
+  const transform = transformFor(preset, focal, dimensions);
   return url.slice(0, idx + marker.length) + transform + "/" + url.slice(idx + marker.length);
 }
