@@ -636,7 +636,7 @@ export default function ProductForm({
           through a long multi-language form, especially on mobile. */}
       <div
         className="sticky bottom-0 py-3 flex gap-3 border-t backdrop-blur-sm"
-        style={{ borderColor: "var(--border)", backgroundColor: "color-mix(in oklch, var(--bg) 92%, transparent)" }}
+        style={{ borderColor: "var(--border)", backgroundColor: "color-mix(in oklch, var(--surface) 92%, transparent)" }}
       >
         <button
           type="submit"
