@@ -57,6 +57,8 @@ Spinning up the dev server, driving Playwright, and taking screenshots costs rea
 
 **Before using any of: dev server, Playwright/browser automation, screenshots** — ask the user first and wait for their answer. Default to the cheap checks instead: `tsc`/typecheck, reading the diff, reasoning about the code, a targeted `getComputedStyle`/`evaluate()` check only when a specific number is needed (still ask first if it requires spinning up the dev server).
 
+**Playwright specifically: never use it without approval, every single time.** A one-time "you may use it this once" is not a standing green light — ask again the next time it seems useful, no exceptions.
+
 The user runs the app locally themselves and can verify visual/layout changes faster than a screenshot round-trip. Trust their eyes over a screenshot unless they ask you to check.
 
 If a fix doesn't actually work, that's on the fix being wrong, not on skipping verification — don't use this policy as an excuse to under-verify logic; it's about _how_ you verify (ask before the expensive way), not _whether_ you verify at all.
