@@ -39,6 +39,7 @@ type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
     category?: string;
+    q?: string;
     colors?: string;
     min?: string;
     max?: string;
@@ -97,7 +98,7 @@ function Chip({ href, label, active }: { href: string; label: string; active: bo
 
 export default async function ProductsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { category, colors, min, max, w, stock, sort, show } = await searchParams;
+  const { category, q, colors, min, max, w, stock, sort, show } = await searchParams;
   const t = await getTranslations({ locale, namespace: "products" });
 
   const active = await getActiveCategories();
@@ -140,11 +141,22 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const minPrice = min ? parseFloat(min) : null;
   const maxPrice = max ? parseFloat(max) : null;
   const maxWidth = w ? parseInt(w, 10) : null;
+  // Matched against all three name fields, not just the current locale's —
+  // a customer might remember a product's name in a different language
+  // than the one they're currently browsing in.
+  const needle = q?.trim().toLowerCase() || null;
 
   const unfiltered = productList; // kept for the "you might also like" fallback strip
   productList = productList.filter((p) => {
     // Filter on what the customer actually pays, not the crossed-out price
     const price = effectivePrice(p, discountFor(p.categoryId));
+    if (
+      needle &&
+      !p.name.toLowerCase().includes(needle) &&
+      !(p.nameEn ?? "").toLowerCase().includes(needle) &&
+      !(p.nameRu ?? "").toLowerCase().includes(needle)
+    )
+      return false;
     if (wantedColors.length > 0 && !wantedColors.some((c) => p.colors.includes(c))) return false;
     if (minPrice != null && !isNaN(minPrice) && price < minPrice) return false;
     if (maxPrice != null && !isNaN(maxPrice) && price > maxPrice) return false;
@@ -185,7 +197,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const visible = productList.slice(0, shown);
 
   // ── Near-miss suggestions under a filtered/thin result set ──
-  const hasFilters = wantedColors.length > 0 || !!min || !!max || !!w || stock === "1";
+  const hasFilters = !!needle || wantedColors.length > 0 || !!min || !!max || !!w || stock === "1";
   const shownIds = new Set(productList.map((p) => p.id));
   const nearMisses =
     hasFilters && productList.length < 8

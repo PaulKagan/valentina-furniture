@@ -11,6 +11,9 @@
     "logoSub": "ולנטינה בן עמי ריהוט",
     "cartLabel": "עגלת קניות — {count} פריטים",
     "menuLabel": "תפריט",
+    "searchLabel": "חיפוש מוצרים",
+    "searchPlaceholder": "חיפוש מוצרים...",
+    "closeSearch": "סגירת חיפוש",
     "nav": {
       "allProducts": "כל המוצרים",
       "allCategories": "כל הקטגוריות"
@@ -427,7 +430,9 @@
       "endCategoryConfirm": "לסיים את המבצע בקטגוריה \"{name}\"? כל המוצרים בה יחזרו למחיר המלא.",
       "endProductConfirm": "לסיים את המבצע על \"{name}\"?",
       "noSaleCategories": "אין כרגע קטגוריות במבצע.",
-      "noDiscounted": "אין כרגע מוצרים בהנחה."
+      "noDiscounted": "אין כרגע מוצרים בהנחה.",
+      "searchPlaceholder": "חיפוש לפי שם מוצר או קטגוריה",
+      "noResults": "לא נמצאו תוצאות."
     },
     "backup": {
       "title": "גיבוי ושחזור",
@@ -474,6 +479,7 @@
     }
   },
   "filters": {
+    "searchPlaceholder": "חיפוש מוצר לפי שם",
     "color": "צבע",
     "price": "מחיר",
     "min": "ממחיר",

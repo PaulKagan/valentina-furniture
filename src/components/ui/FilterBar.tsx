@@ -7,11 +7,13 @@
  * re-renders the filtered list. Shareable links, working back button,
  * zero client-side data fetching.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { COLORS, colorLabel } from "@/lib/colors";
+
+const SEARCH_DEBOUNCE_MS = 500;
 
 export default function FilterBar({ resultCount }: { resultCount: number }) {
   const t = useTranslations("filters");
@@ -30,15 +32,18 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
   const urlMin = searchParams.get("min") ?? "";
   const urlMax = searchParams.get("max") ?? "";
   const urlW = searchParams.get("w") ?? "";
+  const urlQ = searchParams.get("q") ?? "";
   const [minPrice, setMinPrice] = useState(urlMin);
   const [maxPrice, setMaxPrice] = useState(urlMax);
   const [maxWidth, setMaxWidth] = useState(urlW);
-  const [prevUrl, setPrevUrl] = useState({ min: urlMin, max: urlMax, w: urlW });
-  if (prevUrl.min !== urlMin || prevUrl.max !== urlMax || prevUrl.w !== urlW) {
-    setPrevUrl({ min: urlMin, max: urlMax, w: urlW });
+  const [q, setQ] = useState(urlQ);
+  const [prevUrl, setPrevUrl] = useState({ min: urlMin, max: urlMax, w: urlW, q: urlQ });
+  if (prevUrl.min !== urlMin || prevUrl.max !== urlMax || prevUrl.w !== urlW || prevUrl.q !== urlQ) {
+    setPrevUrl({ min: urlMin, max: urlMax, w: urlW, q: urlQ });
     setMinPrice(urlMin);
     setMaxPrice(urlMax);
     setMaxWidth(urlW);
+    setQ(urlQ);
   }
 
   function setParams(patch: Record<string, string | null>) {
@@ -51,6 +56,15 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
     router.replace((qs ? `${pathname}?${qs}` : pathname) as never, { scroll: false });
   }
 
+  // Search is debounced live — filters as she types, without a navigation
+  // (and the loading flash that comes with it) on every keystroke.
+  useEffect(() => {
+    if (q === urlQ) return;
+    const timer = setTimeout(() => setParams({ q: q || null }), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
   function toggleColor(key: string) {
     const next = selectedColors.includes(key)
       ? selectedColors.filter((k) => k !== key)
@@ -59,7 +73,7 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
   }
 
   const hasFilters =
-    selectedColors.length > 0 || inStockOnly || !!urlMin || !!urlMax || !!urlW || sort !== "newest";
+    !!urlQ || selectedColors.length > 0 || inStockOnly || !!urlMin || !!urlMax || !!urlW || sort !== "newest";
 
   const inputClass = "h-9 w-24 px-3 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm";
   const inputStyle = { borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--bg)" };
@@ -69,6 +83,17 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
       className="flex flex-col gap-3 p-4 rounded-xl border mb-8"
       style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
     >
+      {/* Search */}
+      <input
+        type="search"
+        placeholder={t("searchPlaceholder")}
+        aria-label={t("searchPlaceholder")}
+        className="h-10 px-3 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm w-full sm:w-64"
+        style={inputStyle}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
+
       {/* Colors */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium me-1" style={{ color: "var(--ink)" }}>
@@ -184,7 +209,7 @@ export default function FilterBar({ resultCount }: { resultCount: number }) {
         {hasFilters && (
           <button
             type="button"
-            onClick={() => setParams({ colors: null, min: null, max: null, w: null, stock: null, sort: null })}
+            onClick={() => setParams({ q: null, colors: null, min: null, max: null, w: null, stock: null, sort: null })}
             className="underline"
             style={{ color: "var(--primary)" }}
           >

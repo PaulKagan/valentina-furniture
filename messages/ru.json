@@ -11,6 +11,9 @@
     "logoSub": "Валентина Бен Ами Мебель",
     "cartLabel": "Корзина — {count} товаров",
     "menuLabel": "Меню",
+    "searchLabel": "Поиск товаров",
+    "searchPlaceholder": "Поиск товаров...",
+    "closeSearch": "Закрыть поиск",
     "nav": {
       "allProducts": "Все товары",
       "allCategories": "Все категории"
@@ -427,7 +430,9 @@
       "endCategoryConfirm": "Завершить акцию в категории «{name}»? Все её товары вернутся к полной цене.",
       "endProductConfirm": "Завершить акцию на «{name}»?",
       "noSaleCategories": "Сейчас нет акционных категорий.",
-      "noDiscounted": "Сейчас нет товаров со скидкой."
+      "noDiscounted": "Сейчас нет товаров со скидкой.",
+      "searchPlaceholder": "Поиск по названию товара или категории",
+      "noResults": "Результатов не найдено."
     },
     "backup": {
       "title": "Резервная копия и восстановление",
@@ -474,6 +479,7 @@
     }
   },
   "filters": {
+    "searchPlaceholder": "Поиск товаров по названию",
     "color": "Цвет",
     "price": "Цена",
     "min": "От",

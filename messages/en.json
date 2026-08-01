@@ -11,6 +11,9 @@
     "logoSub": "Valentina Ben Ami Furniture",
     "cartLabel": "Shopping cart — {count} items",
     "menuLabel": "Menu",
+    "searchLabel": "Search products",
+    "searchPlaceholder": "Search products...",
+    "closeSearch": "Close search",
     "nav": {
       "allProducts": "All Products",
       "allCategories": "All Categories"
@@ -427,7 +430,9 @@
       "endCategoryConfirm": "End the sale on \"{name}\"? Every product in it goes back to full price.",
       "endProductConfirm": "End the sale on \"{name}\"?",
       "noSaleCategories": "No sale categories right now.",
-      "noDiscounted": "No discounted products right now."
+      "noDiscounted": "No discounted products right now.",
+      "searchPlaceholder": "Search by product or category name",
+      "noResults": "No results found."
     },
     "backup": {
       "title": "Backup & Restore",
@@ -474,6 +479,7 @@
     }
   },
   "filters": {
+    "searchPlaceholder": "Search products by name",
     "color": "Color",
     "price": "Price",
     "min": "From",

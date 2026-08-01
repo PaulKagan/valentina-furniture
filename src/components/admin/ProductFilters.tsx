@@ -5,9 +5,11 @@
  * products list. URL-driven (same pattern as OrderFilters) so a filtered
  * view can be bookmarked or refreshed.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+
+const SEARCH_DEBOUNCE_MS = 500;
 
 export type SortOption = "name" | "priceAsc" | "priceDesc" | "outOfStockFirst";
 
@@ -27,6 +29,15 @@ export default function ProductFilters({ categories }: { categories: { id: numbe
     setPrevQ(urlQ);
     setQ(urlQ);
   }
+
+  // Debounced live search — filters as she types without hammering the
+  // server on every keystroke.
+  useEffect(() => {
+    if (q === urlQ) return;
+    const timer = setTimeout(() => setParams({ q: q || null }), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   function setParams(patch: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams.toString());

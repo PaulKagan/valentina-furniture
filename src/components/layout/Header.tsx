@@ -18,6 +18,7 @@ import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
 import { useState, useRef, Suspense } from "react";
 import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
+import HeaderSearch from "@/components/layout/HeaderSearch";
 
 /** A nav entry. `sale` is the discount percent it grants (0 = not a sale). */
 export type NavItem = { href: string; label: string; sale: number };
@@ -188,7 +189,10 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          {/* useSearchParams inside the switcher needs a Suspense boundary */}
+          {/* useSearchParams inside these needs a Suspense boundary */}
+          <Suspense fallback={<div className="w-9 h-9" />}>
+            <HeaderSearch variant="desktop" />
+          </Suspense>
           <Suspense fallback={null}>
             <LocaleSwitcher />
           </Suspense>
@@ -227,6 +231,11 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
           className="md:hidden border-t px-4 py-3 flex flex-col"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
         >
+          <div className="pb-3 mb-1 border-b" style={{ borderColor: "var(--border)" }}>
+            <Suspense fallback={<div className="h-9" />}>
+              <HeaderSearch variant="mobile" onNavigate={() => setMenuOpen(false)} />
+            </Suspense>
+          </div>
           {navLinks.map((l) => {
             const hasChildren = l.children.length > 0;
             const isExpanded = expandedMobile === l.href;
