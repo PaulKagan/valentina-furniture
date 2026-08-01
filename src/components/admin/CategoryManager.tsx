@@ -31,7 +31,6 @@ import {
   DndContext,
   DragOverlay,
   pointerWithin,
-  MeasuringStrategy,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -133,11 +132,37 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   // wherever on the row the grip handle happens to sit, so it's not accurate
   // enough for the before/inside/after zone math below.
   const pointerYRef = useRef(0);
+  // id of whatever's currently being dragged, or null — lets the pointermove
+  // handler below know when to actually recompute the hover indicator.
+  const draggingIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!rearrangeMode) return;
     const onMove = (e: PointerEvent) => {
       pointerYRef.current = e.clientY;
+      if (draggingIdRef.current == null) return;
+      // The visual "before/inside/after" indicator is computed straight from
+      // the live pointer position via elementFromPoint, not from dnd-kit's
+      // own onDragOver — dnd-kit throttles/coalesces that event during fast
+      // continuous movement, which was leaving the indicator a step behind
+      // (flickering or never catching up to "inside") even though the drop
+      // itself always resolved correctly at release. This has zero lag since
+      // it runs on every real pointermove.
+      const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-cat-id]");
+      if (!hit) {
+        setDropTarget(null);
+        return;
+      }
+      const overId = Number(hit.dataset.catId);
+      if (blockedDropIdsRef.current.has(overId)) {
+        setDropTarget(null);
+        return;
+      }
+      const rect = hit.getBoundingClientRect();
+      const EDGE_PX = 10;
+      const position: DropPosition =
+        e.clientY - rect.top < EDGE_PX ? "before" : rect.bottom - e.clientY < EDGE_PX ? "after" : "inside";
+      setDropTarget({ id: overId, position });
     };
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
@@ -297,6 +322,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
 
   function handleDragStart(event: DragStartEvent) {
     const id = Number(event.active.id);
+    draggingIdRef.current = id;
     setActiveDragCat(cats.find((c) => c.id === id) ?? null);
     const blocked = new Set<number>([id]);
     const walk = (parentId: number) => {
@@ -312,12 +338,13 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   }
 
   /**
-   * Resolve an over-event into {id, position}, or null when there's no
-   * valid target. Shared by onDragOver (visual indicator) and onDragEnd
-   * (the actual mutation) so the drop can never act on a stale indicator —
-   * onDragEnd reads dnd-kit's own event.over directly instead of trusting
-   * React state, which can still be a render or two behind at the instant
-   * the pointer is released.
+   * Resolve dnd-kit's drag-end event into {id, position}, or null when
+   * there's no valid target. Used only for the actual mutation — reads
+   * dnd-kit's own event.over directly instead of trusting React state,
+   * which can still be a render or two behind at the instant the pointer
+   * is released. (The visual hover indicator is computed separately, see
+   * the pointermove handler above — driving it from this same dnd-kit event
+   * left it a step behind during fast continuous movement.)
    */
   function resolveDropTarget(
     over: DragOverEvent["over"],
@@ -326,11 +353,9 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     if (!over || blockedDropIdsRef.current.has(Number(over.id))) return null;
     const overRect = over.rect;
     if (!overRect) {
-      // A continuous-remeasure race can leave the rect briefly unset right
-      // at drop time even though we know exactly which row the pointer is
-      // over — falling back to "inside" (rather than silently dropping the
-      // whole action) only matters for onDragEnd; onDragOver keeps the
-      // strict behavior since a flickering indicator is harmless.
+      // A remeasure race can leave the rect briefly unset right at drop
+      // time even though we know exactly which row the pointer is over —
+      // fall back to "inside" rather than silently dropping the action.
       return fallbackToInside ? { id: Number(over.id), position: "inside" } : null;
     }
     // Nesting is the primary gesture here (that's the whole point of this
@@ -346,13 +371,10 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     return { id: Number(over.id), position };
   }
 
-  function handleDragOver(event: DragOverEvent) {
-    setDropTarget(resolveDropTarget(event.over));
-  }
-
   async function handleDragEnd(event: DragEndEvent) {
     const activeId = Number(event.active.id);
     const target = resolveDropTarget(event.over, true);
+    draggingIdRef.current = null;
     setDropTarget(null);
     setActiveDragCat(null);
     blockedDropIdsRef.current = new Set();
@@ -623,18 +645,17 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
         ) : (
           <DndContext
             collisionDetection={pointerWithin}
-            measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
             onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             onDragCancel={() => {
+              draggingIdRef.current = null;
               setDropTarget(null);
               setActiveDragCat(null);
               blockedDropIdsRef.current = new Set();
             }}
           >
             {roots.map((c) => renderNode(c, 0))}
-            <DragOverlay dropAnimation={null}>
+            <DragOverlay dropAnimation={null} style={{ pointerEvents: "none" }}>
               {activeDragCat && (
                 <div
                   className="flex items-center gap-2 py-2.5 px-3 rounded-lg border-2 shadow-lg"
@@ -643,6 +664,11 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
                     backgroundColor: "var(--bg)",
                     opacity: 0.85,
                     cursor: "grabbing",
+                    // Must not intercept hit-testing — the hover indicator
+                    // (elementFromPoint, see the pointermove handler above)
+                    // needs to see straight through to the row underneath,
+                    // not hit this floating clone.
+                    pointerEvents: "none",
                   }}
                 >
                   <GripVertical size={16} style={{ color: "var(--muted)" }} />

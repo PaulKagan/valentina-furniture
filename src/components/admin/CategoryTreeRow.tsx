@@ -71,7 +71,7 @@ export default function CategoryTreeRow({
   const { setNodeRef: setDropRef } = useDroppable({ id: cat.id, disabled: !rearrangeMode });
 
   return (
-    <div ref={setDropRef} className="relative">
+    <div ref={setDropRef} data-cat-id={cat.id} className="relative">
       {dropPosition === "before" && (
         <div
           className="absolute top-0 h-1 rounded-full -mt-2 z-10"
