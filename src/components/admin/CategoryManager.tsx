@@ -14,7 +14,7 @@
  * All data flows through /api/admin/categories; after each mutation we
  * re-fetch the flat list and rebuild the tree client-side.
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ChevronsDown,
@@ -25,7 +25,13 @@ import {
   Star,
   Flame,
 } from "lucide-react";
-import { DndContext, type DragEndEvent, type DragOverEvent, type DragStartEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  pointerWithin,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { imageUrl } from "@/lib/images";
 import FocalPointPicker from "./FocalPointPicker";
 import CategoryTreeRow, { type DropPosition } from "./CategoryTreeRow";
@@ -113,6 +119,20 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   // valid drop target — dropping a category "inside" its own child would
   // create a cycle. Recomputed fresh per drag rather than kept in state.
   const blockedDropIdsRef = useRef<Set<number>>(new Set());
+  // Real cursor Y during a drag — dnd-kit's active.rect.translated tracks the
+  // whole dragged row's box, which is offset from the actual pointer by
+  // wherever on the row the grip handle happens to sit, so it's not accurate
+  // enough for the before/inside/after zone math below.
+  const pointerYRef = useRef(0);
+
+  useEffect(() => {
+    if (!rearrangeMode) return;
+    const onMove = (e: PointerEvent) => {
+      pointerYRef.current = e.clientY;
+    };
+    window.addEventListener("pointermove", onMove);
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [rearrangeMode]);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/admin/categories");
@@ -256,24 +276,22 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   }
 
   function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
+    const { over } = event;
     if (!over || blockedDropIdsRef.current.has(Number(over.id))) {
       setDropTarget(null);
       return;
     }
     const overId = Number(over.id);
     const overRect = over.rect;
-    const activeRect = active.rect.current.translated;
-    if (!overRect || !activeRect) {
+    if (!overRect) {
       setDropTarget(null);
       return;
     }
-    // Where the dragged row's current center sits within the target row's
-    // height decides the intent: top third = insert before, bottom third =
-    // insert after, middle third = nest as a child — the same "drag an app
-    // onto another app" behavior as a phone home screen.
-    const activeCenter = activeRect.top + activeRect.height / 2;
-    const fraction = (activeCenter - overRect.top) / overRect.height;
+    // Where the actual cursor sits within the target row's height decides
+    // the intent: top third = insert before, bottom third = insert after,
+    // middle third = nest as a child — the same "drag an app onto another
+    // app" behavior as a phone home screen.
+    const fraction = (pointerYRef.current - overRect.top) / overRect.height;
     const position: DropPosition = fraction < 0.3 ? "before" : fraction > 0.7 ? "after" : "inside";
     setDropTarget({ id: overId, position });
   }
@@ -511,7 +529,12 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             {t("empty")}
           </p>
         ) : (
-          <DndContext onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+          <DndContext
+            collisionDetection={pointerWithin}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
             {roots.map((c) => renderNode(c, 0))}
           </DndContext>
         )}

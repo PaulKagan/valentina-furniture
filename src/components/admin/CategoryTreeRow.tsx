@@ -73,15 +73,18 @@ export default function CategoryTreeRow({
   return (
     <div ref={setDropRef} className="relative">
       {dropPosition === "before" && (
-        <div className="absolute top-0 inset-x-0 h-0.5 rounded-full -mt-1" style={{ backgroundColor: "var(--primary)" }} />
+        <div
+          className="absolute top-0 h-1 rounded-full -mt-2 z-10"
+          style={{ insetInlineStart: depth * 24, insetInlineEnd: 0, backgroundColor: "var(--primary)" }}
+        />
       )}
       <div
         ref={setDragRef}
-        className="flex items-center gap-2 py-2.5 px-3 rounded-lg border mb-1.5 group"
+        className="flex items-center gap-2 py-2.5 px-3 rounded-lg border-2 mb-1.5 group transition-colors"
         style={{
-          borderColor: dropPosition === "inside" ? "var(--primary)" : "var(--border)",
-          borderWidth: dropPosition === "inside" ? 2 : 1,
-          backgroundColor: "var(--bg)",
+          borderColor: dropPosition === "inside" ? "var(--primary)" : "transparent",
+          backgroundColor: dropPosition === "inside" ? "oklch(0.95 0.03 32)" : "var(--bg)",
+          boxShadow: dropPosition !== "inside" ? "0 0 0 1px var(--border)" : undefined,
           marginInlineStart: depth * 24,
           opacity: isDragging ? 0.4 : cat.visible ? 1 : 0.6,
         }}
@@ -150,7 +153,10 @@ export default function CategoryTreeRow({
         </span>
       </div>
       {dropPosition === "after" && (
-        <div className="absolute bottom-0 inset-x-0 h-0.5 rounded-full -mb-1" style={{ backgroundColor: "var(--primary)" }} />
+        <div
+          className="absolute bottom-0 h-1 rounded-full -mb-2 z-10"
+          style={{ insetInlineStart: depth * 24, insetInlineEnd: 0, backgroundColor: "var(--primary)" }}
+        />
       )}
     </div>
   );
