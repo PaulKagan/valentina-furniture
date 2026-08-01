@@ -48,6 +48,7 @@ export default async function AdminOrderPage({
     customerPhone: order.customerPhone,
     customerEmail: order.customerEmail,
     customerAddress: order.customerAddress,
+    customerFloor: order.customerFloor,
     items,
     total: order.total,
     status: order.status,

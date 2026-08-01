@@ -114,6 +114,10 @@ export const orders = pgTable("orders", {
   // Optional — when given, the customer gets an order confirmation email
   customerEmail: text("customer_email"),
   customerAddress: text("customer_address").notNull(),
+  // Nullable in the DB (existing orders predate this field) but required by
+  // checkout/API validation for every new order — floor/access conditions
+  // directly affect delivery cost and feasibility (see /delivery).
+  customerFloor: text("customer_floor"),
   // JSON string: [{productId, name, price, quantity}]. Ceiling: fine while
   // "what did this order contain" is the only question asked of it. If a
   // "top-selling product" or per-item report is ever needed, this needs to

@@ -41,6 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       customerPhone: order.customerPhone,
       customerEmail: order.customerEmail,
       customerAddress: order.customerAddress,
+      customerFloor: order.customerFloor,
       items: parseOrderItems(order.items),
       total: order.total,
       notes: order.notes,

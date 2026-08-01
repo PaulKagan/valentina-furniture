@@ -8,14 +8,14 @@
   },
   "header": {
     "whatsappCta": "Free consultation — message us on WhatsApp",
-    "logoSub": "Ben Ami Furniture",
+    "logoSub": "Valentina Ben Ami Furniture",
     "cartLabel": "Shopping cart — {count} items",
     "menuLabel": "Menu",
     "nav": {
       "allProducts": "All Products",
       "allCategories": "All Categories"
     },
-    "brandShort": "Valentina"
+    "brandShort": "Baron Hirsh 21"
   },
   "footer": {
     "tagline": "Quality home furniture — we sell not just furniture, but the feeling of home.",
@@ -26,7 +26,9 @@
     "nav": {
       "products": "Products",
       "cart": "Cart",
-      "accessibility": "Accessibility statement"
+      "accessibility": "Accessibility statement",
+      "terms": "Terms of Service",
+      "delivery": "Delivery Terms"
     }
   },
   "home": {
@@ -117,14 +119,16 @@
     "addressLabel": "Delivery address",
     "addressPlaceholder": "Street, city",
     "notesLabel": "Notes (optional)",
-    "notesPlaceholder": "Floor, entrance, preferred hours...",
+    "notesPlaceholder": "Entrance, preferred hours...",
     "submit": "Place order",
     "submitting": "Sending order...",
     "disclaimer": "No charge now. A store representative will contact you to confirm details.",
     "error": "An error occurred. Please try again or contact us directly.",
     "sendError": "Error sending order",
     "emailLabel": "Email (optional)",
-    "emailPlaceholder": "To receive an order confirmation"
+    "emailPlaceholder": "To receive an order confirmation",
+    "floorLabel": "Floor",
+    "floorPlaceholder": "e.g. 2nd floor, has elevator"
   },
   "orderConfirmed": {
     "title": "Order received!",
@@ -261,7 +265,7 @@
         "pending": "Pending",
         "confirmed": "Confirmed",
         "cancelled": "Cancelled",
-        "delivered": "Delivered"
+        "delivered": "Fulfilled"
       },
       "items": "Items",
       "noOrders": "No orders yet",
@@ -377,7 +381,8 @@
       "saved": "Changes saved",
       "errorSave": "Error saving",
       "emailSent": "Email sent",
-      "emailFailed": "Sending the email failed"
+      "emailFailed": "Sending the email failed",
+      "customerFloor": "Floor"
     },
     "sales": {
       "title": "Sales",
@@ -489,5 +494,51 @@
   "categories": {
     "title": "All Categories",
     "empty": "No categories to show right now."
+  },
+  "terms": {
+    "title": "Terms of Service & Policy",
+    "updated": "Last updated: draft",
+    "intro": "These terms are an initial draft and will be filled in with the store's official content soon. Until then they serve as a general framework only.",
+    "sections": [
+      {
+        "title": "Orders & Payment",
+        "body": "Prices shown on the site are a price quote and not a final charge. After an order is submitted, a store representative will contact you to confirm details, availability, and timing before any payment is taken."
+      },
+      {
+        "title": "Cancellation & Returns",
+        "body": "Orders may be cancelled in accordance with Israel's Consumer Protection Law, 1981. Delivered products may be returned in their original condition within 14 days, subject to prior coordination with the store."
+      },
+      {
+        "title": "Warranty",
+        "body": "Store products carry a manufacturer's warranty as detailed on the warranty card included with the product (where applicable). Contact us by phone for details."
+      },
+      {
+        "title": "Privacy",
+        "body": "Customer details collected when placing an order are used only to coordinate the order and are not shared with third parties except as needed to fulfill delivery."
+      }
+    ]
+  },
+  "delivery": {
+    "title": "Delivery Terms",
+    "updated": "Last updated: draft",
+    "intro": "These terms are an initial draft and will be filled in with the store's official content soon.",
+    "sections": [
+      {
+        "title": "Delivery Areas",
+        "body": "Delivery is available nationwide. Cost and availability for remote areas will be confirmed with a store representative when the order is confirmed."
+      },
+      {
+        "title": "Delivery Time",
+        "body": "Estimated delivery time ranges from a few days to a few weeks, depending on product availability. An exact date is coordinated by phone before delivery."
+      },
+      {
+        "title": "Delivery Cost",
+        "body": "Delivery cost varies by order size, destination distance, and building access conditions (e.g. a floor with no elevator). Cost is detailed and confirmed in advance."
+      },
+      {
+        "title": "Access & Floor",
+        "body": "Please specify the floor and access conditions (elevator, stairs, truck access) when ordering — this directly affects delivery cost and feasibility."
+      }
+    ]
   }
 }

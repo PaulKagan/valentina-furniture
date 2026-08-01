@@ -9,7 +9,7 @@ export default function CheckoutPage() {
   const { items, total, count, clear } = useCart();
   const router = useRouter();
   const t = useTranslations("checkout");
-  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", floor: "", notes: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -52,6 +52,9 @@ export default function CheckoutPage() {
     // Optional — when given, the customer gets an order confirmation email
     { name: "email", label: t("emailLabel"), type: "email", placeholder: t("emailPlaceholder"), required: false },
     { name: "address", label: t("addressLabel"), type: "text", placeholder: t("addressPlaceholder"), required: true },
+    // Delivery cost/feasibility depends on floor + elevator access (see
+    // /delivery) — required so the store never has to chase this down later.
+    { name: "floor", label: t("floorLabel"), type: "text", placeholder: t("floorPlaceholder"), required: true },
   ] as const;
 
   return (

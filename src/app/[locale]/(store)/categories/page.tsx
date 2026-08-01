@@ -82,13 +82,20 @@ export default async function CategoriesPage({
                     {localizedName(cat, locale)}
                   </Link>
                   {cat.children.length > 0 && (
-                    <ul className="flex flex-wrap gap-x-2 gap-y-1">
+                    <ul className="flex flex-wrap gap-1.5">
                       {cat.children.map((child) => (
                         <li key={child.id}>
+                          {/* Styled as a clickable pill (not plain text) — a
+                              flat text list here read as unclickable labels
+                              rather than links. */}
                           <Link
                             href={`/products?category=${child.slug}`}
-                            className="text-xs hover:opacity-70 transition-opacity"
-                            style={{ color: "var(--muted)" }}
+                            className="inline-block text-xs font-medium px-2.5 py-1 rounded-full border transition-colors hover:bg-[var(--primary)] hover:text-[var(--primary-fg)]"
+                            style={{
+                              color: "var(--primary)",
+                              borderColor: "var(--primary)",
+                              backgroundColor: "color-mix(in oklch, var(--primary) 8%, transparent)",
+                            }}
                           >
                             {localizedName(child, locale)}
                           </Link>

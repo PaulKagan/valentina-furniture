@@ -12,7 +12,7 @@ import { routing } from "@/i18n/routing";
 
 const LABELS: Record<string, string> = { he: "עב", en: "EN", ru: "RU" };
 
-export default function LocaleSwitcher() {
+export default function LocaleSwitcher({ locales }: { locales?: readonly string[] }) {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function LocaleSwitcher() {
       role="group"
       aria-label="Language"
     >
-      {routing.locales.map((l) => (
+      {(locales ?? routing.locales).map((l) => (
         <button
           key={l}
           onClick={() => switchTo(l)}

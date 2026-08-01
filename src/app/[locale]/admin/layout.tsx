@@ -9,6 +9,12 @@ import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import AdminSignOut from "@/components/admin/AdminSignOut";
 import AdminNav from "@/components/admin/AdminNav";
+import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
+import { Suspense } from "react";
+
+// Admin only ships Hebrew + Russian copy (see middleware.ts) — English is
+// intentionally not offered here even though the storefront has it.
+const ADMIN_LOCALES = ["he", "ru"] as const;
 
 export default async function AdminLayout({
   children,
@@ -32,9 +38,14 @@ export default async function AdminLayout({
     <div className="min-h-screen flex" style={{ backgroundColor: "var(--surface)" }}>
       {/* Sidebar */}
       <aside className="w-52 flex-shrink-0 border-e flex flex-col py-6 px-4 gap-1" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
-        <p className="font-bold text-sm mb-6 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
+        <p className="font-bold text-sm mb-3 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
           {tBrand("adminBrand")}
         </p>
+        <div className="mb-4 px-2">
+          <Suspense fallback={null}>
+            <LocaleSwitcher locales={ADMIN_LOCALES} />
+          </Suspense>
+        </div>
         <AdminNav
           links={[
             { href: "/admin/dashboard", label: t("dashboard") },

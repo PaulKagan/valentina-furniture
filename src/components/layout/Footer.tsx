@@ -64,6 +64,8 @@ export default async function Footer() {
             {[
               { href: "/products", label: t("nav.products") },
               { href: "/cart", label: t("nav.cart") },
+              { href: "/terms", label: t("nav.terms") },
+              { href: "/delivery", label: t("nav.delivery") },
               { href: "/accessibility", label: t("nav.accessibility") },
             ].map((l) => (
               <li key={l.href}>

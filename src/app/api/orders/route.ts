@@ -27,6 +27,7 @@ const LIMITS = {
   name: 120,
   phone: 30,
   address: 300,
+  floor: 60,
   notes: 1000,
 };
 
@@ -44,20 +45,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, email, address, notes, items } = body as Record<string, unknown>;
+  const { name, phone, email, address, floor, notes, items } = body as Record<string, unknown>;
 
-  // Required field presence check
+  // Required field presence check — floor is required so delivery
+  // cost/feasibility (elevator, stairs) is never a surprise after the sale
   if (
     typeof name !== "string" || !name.trim() ||
     typeof phone !== "string" || !phone.trim() ||
     typeof address !== "string" || !address.trim() ||
+    typeof floor !== "string" || !floor.trim() ||
     !Array.isArray(items) || items.length === 0
   ) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   // Length caps
-  if (name.length > LIMITS.name || phone.length > LIMITS.phone || address.length > LIMITS.address) {
+  if (
+    name.length > LIMITS.name ||
+    phone.length > LIMITS.phone ||
+    address.length > LIMITS.address ||
+    floor.length > LIMITS.floor
+  ) {
     return NextResponse.json({ error: "Input too long" }, { status: 400 });
   }
 
@@ -90,6 +98,7 @@ export async function POST(req: NextRequest) {
         customerPhone: phone.trim(),
         customerEmail: customerEmail,
         customerAddress: address.trim(),
+        customerFloor: floor.trim(),
         notes: typeof notes === "string" ? notes.trim().slice(0, LIMITS.notes) : null,
         items: JSON.stringify(verifiedItems),
         total: total.toFixed(2),
@@ -106,6 +115,7 @@ export async function POST(req: NextRequest) {
       customerPhone: phone.trim(),
       customerEmail,
       customerAddress: address.trim(),
+      customerFloor: floor.trim(),
       items: verifiedItems,
       total: total.toFixed(2),
       notes: typeof notes === "string" ? notes.trim() : null,

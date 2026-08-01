@@ -22,6 +22,7 @@ export type OrderEmailData = {
   customerPhone: string;
   customerEmail: string | null;
   customerAddress: string;
+  customerFloor: string | null;
   items: OrderItem[];
   total: string;
   notes: string | null;
@@ -101,6 +102,7 @@ function shell(title: string, intro: string, order: OrderEmailData, footer: stri
         <tr><td style="padding-left:12px;color:#6b615c;">טלפון:</td><td dir="ltr">${escapeHtml(order.customerPhone)}</td></tr>
         ${order.customerEmail ? `<tr><td style="padding-left:12px;color:#6b615c;">אימייל:</td><td dir="ltr">${escapeHtml(order.customerEmail)}</td></tr>` : ""}
         <tr><td style="padding-left:12px;color:#6b615c;">כתובת:</td><td>${escapeHtml(order.customerAddress)}</td></tr>
+        ${order.customerFloor ? `<tr><td style="padding-left:12px;color:#6b615c;">קומה:</td><td>${escapeHtml(order.customerFloor)}</td></tr>` : ""}
         ${order.notes ? `<tr><td style="padding-left:12px;color:#6b615c;">הערות:</td><td>${escapeHtml(order.notes)}</td></tr>` : ""}
       </table>
 

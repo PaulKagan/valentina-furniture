@@ -61,6 +61,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!address) return NextResponse.json({ error: "Address required" }, { status: 400 });
     patch.customerAddress = address;
   }
+  const floor = text(body.customerFloor, 60);
+  if (floor !== undefined) {
+    if (!floor) return NextResponse.json({ error: "Floor required" }, { status: 400 });
+    patch.customerFloor = floor;
+  }
   if (body.customerEmail !== undefined) {
     const email = text(body.customerEmail, 200) ?? "";
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

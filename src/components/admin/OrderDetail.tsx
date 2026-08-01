@@ -28,6 +28,7 @@ export type OrderData = {
   customerPhone: string;
   customerEmail: string | null;
   customerAddress: string;
+  customerFloor: string | null;
   items: Item[];
   total: string;
   status: string;
@@ -65,6 +66,7 @@ export default function OrderDetail({
     order.customerPhone !== initial.customerPhone ||
     order.customerEmail !== initial.customerEmail ||
     order.customerAddress !== initial.customerAddress ||
+    order.customerFloor !== initial.customerFloor ||
     order.adminNote !== initial.adminNote;
 
   async function patch(body: Record<string, unknown>, okText: string) {
@@ -267,6 +269,7 @@ export default function OrderDetail({
           { key: "customerPhone" as const, label: t("customerPhone"), type: "tel" },
           { key: "customerEmail" as const, label: t("customerEmail"), type: "email" },
           { key: "customerAddress" as const, label: t("customerAddress"), type: "text" },
+          { key: "customerFloor" as const, label: t("customerFloor"), type: "text" },
         ]).map((f) => (
           <label key={f.key} className="flex flex-col gap-1.5 text-sm font-medium" style={{ color: "var(--ink)" }}>
             {f.label}
@@ -312,6 +315,7 @@ export default function OrderDetail({
               customerPhone: order.customerPhone,
               customerEmail: order.customerEmail ?? "",
               customerAddress: order.customerAddress,
+              customerFloor: order.customerFloor ?? "",
               adminNote: order.adminNote ?? "",
             },
             t("saved")
