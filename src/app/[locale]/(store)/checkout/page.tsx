@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartContext";
 import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 export default function CheckoutPage() {
@@ -10,6 +11,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const t = useTranslations("checkout");
   const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", floor: "", notes: "" });
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,6 +31,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          termsAccepted,
           // Only ids + quantities — the server looks up real prices itself
           items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
         }),
@@ -113,6 +116,22 @@ export default function CheckoutPage() {
             style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
           />
         </div>
+
+        <label className="flex items-start gap-2 text-sm cursor-pointer" style={{ color: "var(--ink)" }}>
+          <input
+            type="checkbox"
+            required
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            {t("termsPrefix")}{" "}
+            <Link href="/delivery" target="_blank" className="underline" style={{ color: "var(--primary)" }}>
+              {t("termsLinkText")}
+            </Link>
+          </span>
+        </label>
 
         {error && (
           <p className="text-sm p-3 rounded-lg" style={{ backgroundColor: "oklch(0.95 0.02 25)", color: "oklch(0.4 0.15 25)" }}>

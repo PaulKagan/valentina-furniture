@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, email, address, floor, notes, items } = body as Record<string, unknown>;
+  const { name, phone, email, address, floor, notes, items, termsAccepted } = body as Record<string, unknown>;
 
   // Required field presence check — floor is required so delivery
   // cost/feasibility (elevator, stairs) is never a surprise after the sale
@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
     !Array.isArray(items) || items.length === 0
   ) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // The checkbox is client-enforced too, but that's cosmetic — a request
+  // crafted directly against this endpoint must still be rejected.
+  if (termsAccepted !== true) {
+    return NextResponse.json({ error: "Delivery and order terms must be accepted" }, { status: 400 });
   }
 
   // Length caps
@@ -102,6 +108,7 @@ export async function POST(req: NextRequest) {
         notes: typeof notes === "string" ? notes.trim().slice(0, LIMITS.notes) : null,
         items: JSON.stringify(verifiedItems),
         total: total.toFixed(2),
+        termsAcceptedAt: new Date(),
       })
       .returning({ id: orders.id });
 

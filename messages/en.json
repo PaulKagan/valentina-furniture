@@ -131,7 +131,9 @@
     "emailLabel": "Email (optional)",
     "emailPlaceholder": "To receive an order confirmation",
     "floorLabel": "Floor",
-    "floorPlaceholder": "e.g. 2nd floor, has elevator"
+    "floorPlaceholder": "e.g. 2nd floor, has elevator",
+    "termsPrefix": "I have read and agree to the",
+    "termsLinkText": "delivery and order terms"
   },
   "orderConfirmed": {
     "title": "Order received!",
@@ -543,25 +545,37 @@
     ]
   },
   "delivery": {
-    "title": "Delivery Terms",
-    "updated": "Last updated: draft",
-    "intro": "These terms are an initial draft and will be filled in with the store's official content soon.",
+    "title": "Delivery & Order Terms",
+    "updated": "Last updated: August 2026",
+    "intro": "The store's delivery and order terms. These must be accepted when placing an order.",
     "sections": [
       {
-        "title": "Delivery Areas",
-        "body": "Delivery is available nationwide. Cost and availability for remote areas will be confirmed with a store representative when the order is confirmed."
+        "title": "Price & Payment",
+        "body": "The order price is fixed and will not change, except for tax changes required by law. Full payment must be settled in-store before the delivery date — delivery will not take place without full settlement."
       },
       {
         "title": "Delivery Time",
-        "body": "Estimated delivery time ranges from a few days to a few weeks, depending on product availability. An exact date is coordinated by phone before delivery."
+        "body": "Domestically-made products: 21-30 estimated business days. Imported products: 60-90 estimated business days. Dates are estimates only and may change."
       },
       {
-        "title": "Delivery Cost",
-        "body": "Delivery cost varies by order size, destination distance, and building access conditions (e.g. a floor with no elevator). Cost is detailed and confirmed in advance."
+        "title": "Manufacturer Warranty",
+        "body": "Manufacturers are responsible for their products for one year from the delivery date, subject to Israel's Sale Law."
       },
       {
-        "title": "Access & Floor",
-        "body": "Please specify the floor and access conditions (elevator, stairs, truck access) when ordering — this directly affects delivery cost and feasibility."
+        "title": "Order Cancellation",
+        "body": "Since the order is made specifically for the customer, cancelling it carries a fee of at least 25% of the order's value."
+      },
+      {
+        "title": "Ownership Until Full Payment",
+        "body": "The product remains the store's property until all payments are fully settled."
+      },
+      {
+        "title": "Delivery, Assembly & Access",
+        "body": "Delivery and assembly are not included in the price and are not the store's responsibility unless agreed in advance for an additional fee. Please specify the floor and access conditions (elevator/stairs) when ordering — if the furniture doesn't fit into the apartment and a crane is required, an additional charge will apply."
+      },
+      {
+        "title": "Jurisdiction",
+        "body": "Petah Tikva, Israel."
       }
     ]
   }

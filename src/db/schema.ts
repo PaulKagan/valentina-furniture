@@ -137,5 +137,9 @@ export const orders = pgTable("orders", {
   status: orderStatusEnum("status").default("pending").notNull(),
   notes: text("notes"), // customer's note from checkout
   adminNote: text("admin_note"), // internal, never shown to the customer
+  // Audit trail for the required delivery/order terms checkbox — proof of
+  // when acceptance happened, not just that it did. Nullable: existing
+  // orders predate this field.
+  termsAcceptedAt: timestamp("terms_accepted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
