@@ -146,7 +146,12 @@ export const orders = pgTable("orders", {
   // exactly what appears on a receipt/statement, not regulated cardholder
   // data, and is enough for the store to reference the right card on a
   // refund without holding anything sensitive.
-  cardType: text("card_type"),
-  cardLast4: text("card_last4"),
+  // Commented out pending `npm run db:push` + Valentina's decision — every
+  // db.select().from(orders) in the app queries every declared column, so
+  // leaving these active without the migration 500s on every order read,
+  // not just writes. Uncomment together with CARD_PAYMENT_REF_ENABLED in
+  // checkout/page.tsx once both the migration and the decision land.
+  // cardType: text("card_type"),
+  // cardLast4: text("card_last4"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
