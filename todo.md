@@ -15,15 +15,20 @@
     as a red X in the Actions tab, and GitHub emails the repo owner on
     failed scheduled runs by default) rather than silently doing nothing.
 
-## 🔴 Content — do before launch
+## 🔴 Database migration needed right now
 
-- **Replace the placeholder `/delivery` page copy** (`messages/*.json`
-  `"delivery"` namespace) with the real delivery terms Paul provided
-  (photos of the physical store's order-form terms). Draft Hebrew text
-  presented in chat for approval — once approved, also add the delivery
-  photos themselves somewhere on the page (or link to them) per Paul's
-  request. Currently the page explicitly says "טיוטה ראשונית" (initial
-  draft) — needs the real content before this goes live.
+- **Run `npm run db:push`** — checkout will 500 on every order without
+  it. Adds the `terms_accepted_at` column backing the required delivery/
+  order-terms checkbox (approved and live in the code since commit
+  `05e3546`).
+
+## 🟡 Content — small loose end
+
+- The real `/delivery` terms text is published (all 3 locales) and
+  required at checkout via a modal. Still open: Paul asked whether the
+  actual photos of the physical store's order form should also go on the
+  page (or just link to them) — never answered, not blocking, just
+  unresolved.
 
 ## 🔴 Vercel deployment
 
@@ -64,6 +69,12 @@
 
 ## 🟡 Nice to have — not urgent
 
+- **[NEEDS DECISION]** Payment reference at checkout (card brand + last 4
+  digits only — never the full number or CVV). Built once, then fully
+  removed (commit `b9f624e`) pending Valentina actually weighing in on
+  it, since it's a security/liability question that's hers to decide,
+  not just a feature toggle. Commit `76039c7` has the complete working
+  version with clear "re-enable together" comments if she opts in.
 - **[NEEDS DECISION]** Sub-category page (`/categories/[slug]`) — a landing
   page per root category listing its children + products, instead of
   clicking a subcategory jumping straight to the filtered `/products?category=`
