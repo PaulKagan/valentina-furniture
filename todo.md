@@ -15,43 +15,56 @@
     as a red X in the Actions tab, and GitHub emails the repo owner on
     failed scheduled runs by default) rather than silently doing nothing.
 
-## 🔴 Database migration needed right now
+## 🔴 Email isn't actually sending yet
 
-- **Run `npm run db:push`** — checkout will 500 on every order without
-  it. Adds the `terms_accepted_at` column backing the required delivery/
-  order-terms checkbox (approved and live in the code since commit
-  `05e3546`).
+- **Code is complete and already wired up** (`lib/email.ts`, called from
+  `/api/orders` on every new order, plus a working "resend" button in
+  admin) — this is a config gap, not a missing feature. Nothing sends
+  until `GMAIL_USER` + `GMAIL_APP_PASSWORD` are real:
+  1. On Valentina's Google account: turn on 2-Step Verification, then
+     Google Account → Security → App passwords → create one
+  2. Set `GMAIL_USER` (her Gmail address) and `GMAIL_APP_PASSWORD` (the
+     generated app password, not her real password) in Vercel's env vars
+  3. Optionally set `ORDER_NOTIFY_EMAIL` if store notifications should go
+     somewhere other than `GMAIL_USER`
+  4. Place a real test order (with a customer email filled in) and
+     confirm both the store notification and the customer confirmation
+     actually arrive
+  - Until this is set, orders still save fine — emails just silently log
+    a skip warning server-side, invisible to the customer.
 
-## 🟡 Content — small loose end
+## 🔴 GitHub Actions secret still pending
 
-- The real `/delivery` terms text is published (all 3 locales) and
-  required at checkout via a modal. Still open: Paul asked whether the
-  actual photos of the physical store's order form should also go on the
-  page (or just link to them) — never answered, not blocking, just
-  unresolved.
+- **Add `DATABASE_URL` as a GitHub Actions secret** so the nightly automated
+  backup (`.github/workflows/nightly-backup.yml`) can actually run.
+  1. github.com/PaulKagan/valentina-furniture → **Settings → Secrets and
+     variables → Actions → New repository secret**
+  2. Name: `DATABASE_URL` — value: the same connection string that's in
+     Vercel's environment variables
+  3. Go to the **Actions** tab → "Nightly database backup" → **Run workflow**
+     (manual trigger) to confirm it goes green before relying on the
+     schedule
+  - Until this is done, the workflow will fail loudly every night (visible
+    as a red X in the Actions tab, and GitHub emails the repo owner on
+    failed scheduled runs by default) rather than silently doing nothing.
 
-## 🔴 Vercel deployment
+## 🔴 Vercel deployment (confirmed as the interim host)
 
+- Decided: **Vercel now**, while Valentina tests/plays with the site.
+  Migration to a regular server/hosting happens later, once testing is
+  done — the 🟠 section below applies at *that* point, not now.
 - **Set every env var from `.env.example`** in Vercel → Project Settings →
   Environment Variables. Notably `AUTH_SECRET` (NextAuth v5 requires it in
-  production — generate with `npx auth secret`) isn't mentioned anywhere
-  else in this file and is easy to miss.
+  production — generate with `npx auth secret`) is easy to miss.
 - Production build verified clean (`npm run build`) — no blockers found.
-- **Note the contradiction below**: the "Add `DATABASE_URL` as a GitHub
-  Actions secret" item above already assumes Vercel ("the same connection
-  string that's in Vercel's environment variables"), but the 🟠 section
-  right below was written assuming a plain server instead ("hosting is a
-  regular server rather than Vercel"). If Vercel is the real target, the
-  pm2/systemd item there is unnecessary (Vercel restarts crashed functions
-  automatically) — flagged for Paul to confirm rather than silently
-  deleting someone else's prior planning note.
+- `db:push` already run — the `terms_accepted_at` column exists.
 
-## 🟠 Infrastructure — do before going live on the real server
+## 🟠 Infrastructure — do when migrating off Vercel to a regular server
 
 - **Uptime monitor on `/api/health`** — a real outage should page someone,
-  not wait for a customer complaint. Matters more now that hosting is a
-  regular server rather than Vercel (no platform-level auto-restart safety
-  net if the Node process dies).
+  not wait for a customer complaint. Matters once hosting is a regular
+  server (no platform-level auto-restart safety net if the Node process
+  dies — Vercel has this built in, which is exactly why this waits).
   1. Sign up free at [uptimerobot.com](https://uptimerobot.com) (needs an
      email — this is a manual step, an agent can't create the account)
   2. **Add New Monitor** → HTTP(s) → URL: `https://<her-real-domain>/api/health`
@@ -59,10 +72,9 @@
   3. Add an alert contact (email, or the free SMS/Telegram options) so a
      failure actually notifies someone
 - **Process supervision on the server** — `next start` needs something to
-  restart it if it crashes or the server reboots (Vercel did this
-  automatically; a regular server doesn't). Use `pm2` (`pm2 start npm --
-  start`, `pm2 save`, `pm2 startup`) or a `systemd` service — either is
-  fine, just needs to exist before this is the production site.
+  restart it if it crashes or the server reboots. Use `pm2` (`pm2 start
+  npm -- start`, `pm2 save`, `pm2 startup`) or a `systemd` service — either
+  is fine, just needs to exist before this is the production site.
 - Write down where `ADMIN_PASSWORD` actually lives (whichever server's env
   vars / `.env` file end up hosting it) — there's no in-app password
   recovery, so losing it means editing that file by hand.
@@ -75,26 +87,20 @@
   it, since it's a security/liability question that's hers to decide,
   not just a feature toggle. Commit `76039c7` has the complete working
   version with clear "re-enable together" comments if she opts in.
-- **[NEEDS DECISION]** Sub-category page (`/categories/[slug]`) — a landing
-  page per root category listing its children + products, instead of
-  clicking a subcategory jumping straight to the filtered `/products?category=`
-  view like it does today. Only worth building if the category tree grows
-  deep/wide enough that browsing beats filtering. Waiting on Valentina to
-  say whether she wants this before planning/building it.
-- **[NEEDS DECISION]** Products in a category that has sub-categories —
-  undefined today. Two options: (a) a product only ever belongs to the
-  most specific level (e.g. only "Double Beds", never also "Bedroom"), or
-  (b) a parent category page aggregates every product from all its
-  children too. Ask Valentina: if she uploads a sofa to "Living Room" but
-  there's also a sub-category "Sofas" under it, should the sofa show up
-  on both the "Living Room" page and the "Sofas" page, or only one?
-- **[NEEDS DECISION]** Filter product gallery photos by color — clicking a
-  color swatch on a product page would show only that color's photos.
-  Technically possible but a real schema change: gallery images are
-  currently attached to the product as a whole (`galleryUrls`), not to a
-  specific color, so this needs a per-color image structure (e.g.
-  `{color, url}[]` instead of a flat array), plus matching changes to the
-  admin upload form (upload per color) and the Excel import. Worth
-  asking Valentina how much effort she's actually willing to put into
-  organizing photos by color per product — if most products won't have
-  that level of organization, the feature stays half-empty.
+- **Decided: no sub-category landing page.** Clicking a subcategory keeps
+  jumping straight to the filtered `/products?category=` view, as today.
+- **Decided: multi-category products** — a product can belong to more than
+  one category at once (e.g. a wardrobe tagged under both "Bedroom" and
+  "Storage"), shown in both without being duplicated as a separate record
+  ("no copy" — one product, referenced from multiple categories). This is
+  a real schema change (`products.categoryId` is currently a single
+  foreign key; needs a many-to-many join table instead), touching the
+  admin product form (category picker becomes multi-select), every
+  storefront category listing, the Excel import/export, and sitemap
+  generation. **Open question before building this**: sale-category
+  discount inheritance currently walks a single category's parent chain
+  (`categoryDiscount()` in `lib/pricing.ts`) — if a product sits in two
+  categories and only one is on sale, does it inherit the discount or
+  not? Needs an answer before this is scoped properly, not guessed at.
+- **Decided: no photo filtering by color.** Gallery photos stay attached
+  to the product as a whole.
