@@ -65,6 +65,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Delivery and order terms must be accepted" }, { status: 400 });
   }
 
+  // Phone format — the client has a matching HTML pattern, but that's
+  // cosmetic too. Israeli landline (0X-XXXXXXX) or mobile (05X-XXXXXXX),
+  // dash optional.
+  if (!/^0\d{1,2}-?\d{7}$/.test(phone.trim())) {
+    return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+  }
+
   // Length caps
   if (
     name.length > LIMITS.name ||

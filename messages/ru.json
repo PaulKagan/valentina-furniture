@@ -119,6 +119,8 @@
     "nameLabel": "Полное имя",
     "phoneLabel": "Телефон",
     "phonePlaceholder": "050-0000000",
+    "phoneInvalid": "Неверный номер телефона (напр. 050-1234567)",
+    "close": "Закрыть",
     "addressLabel": "Адрес доставки",
     "addressPlaceholder": "Улица, город",
     "notesLabel": "Примечания (необязательно)",

@@ -119,6 +119,8 @@
     "nameLabel": "Full name",
     "phoneLabel": "Phone",
     "phonePlaceholder": "050-0000000",
+    "phoneInvalid": "Invalid phone number (e.g. 050-1234567)",
+    "close": "Close",
     "addressLabel": "Delivery address",
     "addressPlaceholder": "Street, city",
     "notesLabel": "Notes (optional)",

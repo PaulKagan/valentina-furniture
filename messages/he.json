@@ -119,6 +119,8 @@
     "nameLabel": "שם מלא",
     "phoneLabel": "טלפון",
     "phonePlaceholder": "050-0000000",
+    "phoneInvalid": "מספר טלפון לא תקין (למשל 050-1234567)",
+    "close": "סגור",
     "addressLabel": "כתובת למשלוח",
     "addressPlaceholder": "רחוב, עיר",
     "notesLabel": "הערות (אופציונלי)",
