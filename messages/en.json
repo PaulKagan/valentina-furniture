@@ -132,18 +132,6 @@
     "emailPlaceholder": "To receive an order confirmation",
     "floorLabel": "Floor",
     "floorPlaceholder": "e.g. 2nd floor, has elevator",
-    "cardTypeLabel": "Card type",
-    "cardTypeOptions": {
-      "visa": "Visa",
-      "mastercard": "Mastercard",
-      "isracard": "Isracard",
-      "amex": "American Express",
-      "diners": "Diners",
-      "other": "Other"
-    },
-    "cardLast4Label": "Last 4 digits of the card",
-    "cardLast4Placeholder": "1234",
-    "cardLast4Hint": "For reference only (e.g. refunds) — never the full card number.",
     "termsPrefix": "I have read and agree to the",
     "termsLinkText": "delivery and order terms"
   },
@@ -417,9 +405,7 @@
       "errorSave": "Error saving",
       "emailSent": "Email sent",
       "emailFailed": "Sending the email failed",
-      "customerFloor": "Floor",
-      "cardType": "Card type",
-      "cardLast4": "Last 4 digits"
+      "customerFloor": "Floor"
     },
     "sales": {
       "title": "Sales",

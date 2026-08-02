@@ -29,8 +29,6 @@ export type OrderData = {
   customerEmail: string | null;
   customerAddress: string;
   customerFloor: string | null;
-  // cardType: string | null;
-  // cardLast4: string | null;
   items: Item[];
   total: string;
   status: string;
@@ -69,8 +67,6 @@ export default function OrderDetail({
     order.customerEmail !== initial.customerEmail ||
     order.customerAddress !== initial.customerAddress ||
     order.customerFloor !== initial.customerFloor ||
-    // order.cardType !== initial.cardType ||
-    // order.cardLast4 !== initial.cardLast4 ||
     order.adminNote !== initial.adminNote;
 
   async function patch(body: Record<string, unknown>, okText: string) {
@@ -274,8 +270,6 @@ export default function OrderDetail({
           { key: "customerEmail" as const, label: t("customerEmail"), type: "email" },
           { key: "customerAddress" as const, label: t("customerAddress"), type: "text" },
           { key: "customerFloor" as const, label: t("customerFloor"), type: "text" },
-          // { key: "cardType" as const, label: t("cardType"), type: "text" },
-          // { key: "cardLast4" as const, label: t("cardLast4"), type: "text" },
         ]).map((f) => (
           <label key={f.key} className="flex flex-col gap-1.5 text-sm font-medium" style={{ color: "var(--ink)" }}>
             {f.label}
@@ -322,8 +316,6 @@ export default function OrderDetail({
               customerEmail: order.customerEmail ?? "",
               customerAddress: order.customerAddress,
               customerFloor: order.customerFloor ?? "",
-              // cardType: order.cardType ?? "",
-              // cardLast4: order.cardLast4 ?? "",
               adminNote: order.adminNote ?? "",
             },
             t("saved")

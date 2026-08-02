@@ -31,8 +31,6 @@ const LIMITS = {
   notes: 1000,
 };
 
-const CARD_TYPES = ["visa", "mastercard", "isracard", "amex", "diners", "other"];
-
 export async function POST(req: NextRequest) {
   // A real customer never places 10 orders a minute — this only ever
   // blocks scripted abuse.
@@ -47,8 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, email, address, floor, notes, items, termsAccepted, cardType, cardLast4 } =
-    body as Record<string, unknown>;
+  const { name, phone, email, address, floor, notes, items, termsAccepted } = body as Record<string, unknown>;
 
   // Required field presence check — floor is required so delivery
   // cost/feasibility (elevator, stairs) is never a surprise after the sale
@@ -66,24 +63,6 @@ export async function POST(req: NextRequest) {
   // crafted directly against this endpoint must still be rejected.
   if (termsAccepted !== true) {
     return NextResponse.json({ error: "Delivery and order terms must be accepted" }, { status: 400 });
-  }
-
-  // Payment reference — brand + last 4 digits ONLY, and optional (the
-  // checkout UI collecting this is currently switched off pending
-  // Valentina's decision — see CARD_PAYMENT_REF_ENABLED in checkout/page.tsx
-  // — but the server accepts it either way). Never accept anything that
-  // looks like a full card number or CVV here; there is deliberately no
-  // field for either on the client, and this endpoint must not start
-  // accepting one just because a request could send it.
-  const hasCardType = typeof cardType === "string" && cardType.trim() !== "";
-  const hasCardLast4 = typeof cardLast4 === "string" && cardLast4.trim() !== "";
-  if (hasCardType || hasCardLast4) {
-    if (!CARD_TYPES.includes(cardType as string)) {
-      return NextResponse.json({ error: "Invalid card type" }, { status: 400 });
-    }
-    if (!/^\d{4}$/.test(cardLast4 as string)) {
-      return NextResponse.json({ error: "Card last 4 digits must be exactly 4 digits" }, { status: 400 });
-    }
   }
 
   // Length caps
@@ -130,12 +109,6 @@ export async function POST(req: NextRequest) {
         items: JSON.stringify(verifiedItems),
         total: total.toFixed(2),
         termsAcceptedAt: new Date(),
-        // Commented out until `npm run db:push` adds these columns AND
-        // Valentina decides she wants this — writing to them now would
-        // 500 every order (columns don't exist in the DB yet). Re-enable
-        // together with CARD_PAYMENT_REF_ENABLED in checkout/page.tsx.
-        // cardType: hasCardType ? (cardType as string) : null,
-        // cardLast4: hasCardLast4 ? (cardLast4 as string) : null,
       })
       .returning({ id: orders.id });
 

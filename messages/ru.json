@@ -132,18 +132,6 @@
     "emailPlaceholder": "Для получения подтверждения заказа",
     "floorLabel": "Этаж",
     "floorPlaceholder": "напр.: 2 этаж, есть лифт",
-    "cardTypeLabel": "Тип карты",
-    "cardTypeOptions": {
-      "visa": "Visa",
-      "mastercard": "Mastercard",
-      "isracard": "Isracard",
-      "amex": "American Express",
-      "diners": "Diners",
-      "other": "Другое"
-    },
-    "cardLast4Label": "Последние 4 цифры карты",
-    "cardLast4Placeholder": "1234",
-    "cardLast4Hint": "Только для справки (например, для возврата) — никогда не полный номер карты.",
     "termsPrefix": "Я прочитал(а) и согласен(на) с",
     "termsLinkText": "условиями доставки и заказа"
   },
@@ -417,9 +405,7 @@
       "errorSave": "Ошибка сохранения",
       "emailSent": "Письмо отправлено",
       "emailFailed": "Не удалось отправить письмо",
-      "customerFloor": "Этаж",
-      "cardType": "Тип карты",
-      "cardLast4": "Последние 4 цифры"
+      "customerFloor": "Этаж"
     },
     "sales": {
       "title": "Акции",
