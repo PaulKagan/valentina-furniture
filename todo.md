@@ -79,6 +79,17 @@
   vars / `.env` file end up hosting it) — there's no in-app password
   recovery, so losing it means editing that file by hand.
 
+## 🔵 Final deliverable — once the site itself is done
+
+- **Hebrew user guide PDF for Valentina.** Comprehensive, non-technical —
+  no dev/code talk, just "click here to do X" walkthroughs with screenshots
+  for everything in `/admin`: adding/editing products (incl. multi-category
+  assignment, colors, sale price), managing categories (incl. the new "add
+  existing products" picker, sale categories, scheduling), viewing/editing
+  orders, running the sales page, bulk Excel import/export, and logging in.
+  Wait until the feature set is actually final before writing this — no
+  point documenting something that's still going to change.
+
 ## 🟡 Nice to have — not urgent
 
 - **[NEEDS DECISION]** Payment reference at checkout (card brand + last 4
