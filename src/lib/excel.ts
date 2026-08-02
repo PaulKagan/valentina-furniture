@@ -3,11 +3,15 @@
  * so the template, the export, and the import parser can never drift apart.
  *
  * Format (Hebrew headers, one product per row):
- *   שם בעברית* | שם באנגלית | שם ברוסית | קטגוריה | תיאור בעברית |
- *   תיאור באנגלית | תיאור ברוסית | מחיר* | צבעים | רוחב סמ | עומק סמ |
- *   גובה סמ | במלאי | מומלץ | קובץ תמונה
+ *   שם בעברית* | שם באנגלית | שם ברוסית | קטגוריה | קטגוריות נוספות |
+ *   תיאור בעברית | תיאור באנגלית | תיאור ברוסית | מחיר* | צבעים | רוחב סמ |
+ *   עומק סמ | גובה סמ | במלאי | מומלץ | קובץ תמונה
  *
  * - קטגוריה is a path: "סלון / ספות" (missing levels are created on import)
+ * - קטגוריות נוספות is one or more MORE paths the product should also be
+ *   listed under, separated by ";" (each path itself still uses "/" for
+ *   nesting) — e.g. "חדר שינה / ארונות; אחסון". Missing levels are created
+ *   same as the primary category. Empty = no additional categories.
  * - צבעים is comma-separated palette names in any supported language
  * - במלאי/מומלץ accept כן/לא, yes/no, true/false, 1/0 (empty = כן / לא resp.)
  * - קובץ תמונה is comma-separated filenames — the first is the primary photo,
@@ -27,6 +31,7 @@ export const HEADERS = [
   "שם באנגלית",
   "שם ברוסית",
   "קטגוריה",
+  "קטגוריות נוספות",
   "תיאור בעברית",
   "תיאור באנגלית",
   "תיאור ברוסית",
@@ -48,6 +53,7 @@ export type ImportRow = {
   nameEn: string | null;
   nameRu: string | null;
   categoryPath: string[]; // ["סלון", "ספות"] — empty = no category
+  additionalCategoryPaths: string[][]; // extra categories, each its own path
   description: string | null;
   descriptionEn: string | null;
   descriptionRu: string | null;
@@ -74,6 +80,7 @@ export function buildTemplate(): Buffer {
     "שם באנגלית": "Gray 3-Seat Sofa",
     "שם ברוסית": "Серый трёхместный диван",
     "קטגוריה": "סלון / ספות",
+    "קטגוריות נוספות": "",
     "תיאור בעברית": "ספה נוחה במיוחד עם ריפוד בד רחיץ",
     "תיאור באנגלית": "",
     "תיאור ברוסית": "",
@@ -97,6 +104,7 @@ export function buildTemplate(): Buffer {
     ["• כל שורה = מוצר אחד. השורה הראשונה בגיליון 'מוצרים' היא דוגמה — מחקו אותה לפני הייבוא."],
     ["• חובה: שם בעברית ומחיר. כל השאר אופציונלי."],
     ["• קטגוריה: שם הקטגוריה, ולתת-קטגוריה השתמשו ב-/ למשל: סלון / ספות. קטגוריות חדשות ייווצרו אוטומטית."],
+    ["• קטגוריות נוספות: אופציונלי — קטגוריות נוספות שהמוצר יופיע בהן גם, מופרדות ב-; (כל אחת עם / משלה לתת-קטגוריה). למשל: חדר שינה / ארונות; אחסון."],
     ["• צבעים: מופרדים בפסיק, מתוך הרשימה:"],
     [COLORS.map((c) => c.he).join(", ")],
     ["• מידות (רוחב/עומק/גובה): מספרים בסנטימטרים בלבד, למשל 210. אופציונלי — משמש לסינון ומיון בחנות."],
@@ -151,6 +159,7 @@ export function buildExport(products: Product[], categories: Category[]): Buffer
     "שם באנגלית": p.nameEn ?? "",
     "שם ברוסית": p.nameRu ?? "",
     "קטגוריה": pathOf(p.categoryId),
+    "קטגוריות נוספות": p.additionalCategoryIds.map((id) => pathOf(id)).filter(Boolean).join("; "),
     "תיאור בעברית": p.description ?? "",
     "תיאור באנגלית": p.descriptionEn ?? "",
     "תיאור ברוסית": p.descriptionRu ?? "",
@@ -252,6 +261,16 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const additionalCategoryPaths = str(row["קטגוריות נוספות"])
+      .split(";")
+      .map((path) =>
+        path
+          .split("/")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+      .filter((path) => path.length > 0);
+
     const imageFiles = str(row["קובץ תמונה"])
       .split(",")
       .map((s) => s.trim())
@@ -263,6 +282,7 @@ export function parseImport(buffer: Buffer): ImportRow[] {
       nameEn: opt(row["שם באנגלית"]),
       nameRu: opt(row["שם ברוסית"]),
       categoryPath,
+      additionalCategoryPaths,
       description: opt(row["תיאור בעברית"]),
       descriptionEn: opt(row["תיאור באנגלית"]),
       descriptionRu: opt(row["תיאור ברוסית"]),

@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 import { Star, X, ArrowLeft, ArrowRight, ImagePlus, Upload, Plus } from "lucide-react";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
-import { applyDiscount, categoryDiscount, saleSource, isApproximatePercent } from "@/lib/pricing";
+import { applyDiscount, productDiscount, productSaleSource, isApproximatePercent } from "@/lib/pricing";
 import FocalPointPicker from "./FocalPointPicker";
 import ImageDropzone from "./ImageDropzone";
 
@@ -41,6 +41,7 @@ type ProductData = {
   onSale: boolean;
   salePrice: string;
   categoryId: number | null;
+  additionalCategoryIds: number[];
   colors: string[];
   widthCm: string;
   depthCm: string;
@@ -79,6 +80,7 @@ export default function ProductForm({
     onSale: false,
     salePrice: "",
     categoryId: null,
+    additionalCategoryIds: [],
     colors: [],
     widthCm: "",
     depthCm: "",
@@ -332,19 +334,34 @@ export default function ProductForm({
     0
   );
 
-  // Discount inherited from the chosen category branch (0 = none). Shown as a
-  // note so she knows why the box ticked itself, and what happens if she
-  // leaves the sale price blank.
-  const inheritedPercent = categoryDiscount(form.categoryId, categories);
+  // Discount inherited from whichever assigned category (primary or
+  // additional) grants the best one (0 = none). Shown as a note so she
+  // knows why the box ticked itself, and what happens if she leaves the
+  // sale price blank.
+  const assignedCategoryIds = [form.categoryId, ...form.additionalCategoryIds];
+  const inheritedPercent = productDiscount(assignedCategoryIds, categories);
   const inheritedFrom = useMemo(
-    () => saleSource(form.categoryId, categories)?.name ?? null,
-    [form.categoryId, categories]
+    () => productSaleSource(assignedCategoryIds, categories)?.name ?? null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [form.categoryId, form.additionalCategoryIds, categories]
   );
 
   /** Category changed — a sale branch ticks the box for her (never unticks). */
   function onCategoryChange(categoryId: number | null) {
-    const pct = categoryDiscount(categoryId, categories);
+    const pct = productDiscount([categoryId, ...form.additionalCategoryIds], categories);
     setForm((f) => ({ ...f, categoryId, onSale: f.onSale || pct > 0 }));
+  }
+
+  /** An additional category was toggled — same auto-tick rule as the primary. */
+  function toggleAdditionalCategory(categoryId: number) {
+    setForm((f) => {
+      const has = f.additionalCategoryIds.includes(categoryId);
+      const next = has
+        ? f.additionalCategoryIds.filter((id) => id !== categoryId)
+        : [...f.additionalCategoryIds, categoryId];
+      const pct = productDiscount([f.categoryId, ...next], categories);
+      return { ...f, additionalCategoryIds: next, onSale: f.onSale || pct > 0 };
+    });
   }
 
   const inputClass = "h-11 px-4 rounded-lg border outline-none focus:border-[oklch(0.52_0.14_32)] text-sm w-full";
@@ -508,6 +525,33 @@ export default function ProductForm({
             {t("categoryIsSaleHint", { category: inheritedFrom, percent: inheritedPercent })}
           </p>
         )}
+      </div>
+
+      {/* Additional categories — a product can be listed under any number
+          of categories besides its primary one (e.g. a wardrobe under both
+          "Bedroom" and "Storage"). The primary itself doesn't appear here —
+          checking it again would be a meaningless duplicate. */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+          {t("additionalCategoriesLabel")}
+        </label>
+        <div
+          className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-lg border p-2"
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
+        >
+          {categoryOptions
+            .filter((c) => c.id !== form.categoryId)
+            .map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--ink)" }}>
+                <input
+                  type="checkbox"
+                  checked={form.additionalCategoryIds.includes(c.id)}
+                  onChange={() => toggleAdditionalCategory(c.id)}
+                />
+                {c.label}
+              </label>
+            ))}
+        </div>
       </div>
 
       {/* Dimensions — drive the "fits my space" filter and sorting */}

@@ -27,6 +27,7 @@ import {
   GripVertical,
   Undo2,
   Upload,
+  Package,
 } from "lucide-react";
 import {
   DndContext,
@@ -40,6 +41,7 @@ import { imageUrl } from "@/lib/images";
 import FocalPointPicker from "./FocalPointPicker";
 import ImageDropzone from "./ImageDropzone";
 import CategoryTreeRow, { type DropPosition } from "./CategoryTreeRow";
+import CategoryProductPicker from "./CategoryProductPicker";
 
 type Category = {
   id: number;
@@ -123,6 +125,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
     () => new Set(initial.filter((c) => initial.some((x) => x.parentId === c.id)).map((c) => c.id))
   );
   const [form, setForm] = useState<FormState | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -490,6 +493,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
   };
 
   function openEditForm(cat: Category) {
+    setPickerOpen(false);
     setForm({
       id: cat.id,
       name: cat.name,
@@ -552,7 +556,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           }
           onMoveUp={() => move(cat, -1)}
           onMoveDown={() => move(cat, 1)}
-          onAddChild={() => setForm({ ...EMPTY_FORM, parentId: cat.id })}
+          onAddChild={() => { setPickerOpen(false); setForm({ ...EMPTY_FORM, parentId: cat.id }); }}
           onEdit={() => openEditForm(cat)}
           onDelete={() => remove(cat)}
         />
@@ -593,7 +597,7 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <button
             type="button"
-            onClick={() => setForm({ ...EMPTY_FORM })}
+            onClick={() => { setPickerOpen(false); setForm({ ...EMPTY_FORM }); }}
             className="px-4 py-2.5 rounded-lg font-semibold text-sm transition-opacity hover:opacity-90 active:scale-[0.97]"
             style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
           >
@@ -716,6 +720,17 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
           <h2 className="font-bold" style={{ color: "var(--ink)" }}>
             {form.id != null ? t("editTitle") : t("newTitle")}
           </h2>
+
+          {form.id != null && (
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm border transition-colors hover:bg-[oklch(0.974_0_0)] -mt-1"
+              style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+            >
+              <Package size={15} /> {t("manageProductsBtn")}
+            </button>
+          )}
 
           {/* names ×3 */}
           <div className="flex flex-col gap-1.5">
@@ -849,6 +864,18 @@ export default function CategoryManager({ initial }: { initial: Category[] }) {
             </button>
           </div>
         </form>
+      )}
+
+      {form?.id != null && pickerOpen && (
+        <CategoryProductPicker
+          categoryId={form.id}
+          categoryName={form.name}
+          onClose={() => setPickerOpen(false)}
+          onSaved={() => {
+            setPickerOpen(false);
+            refresh();
+          }}
+        />
       )}
     </div>
   );

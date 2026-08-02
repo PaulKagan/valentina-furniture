@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { wouldCreateCycle, descendantIds } from "@/lib/catalog";
 import { deleteImage } from "@/lib/cloudinary";
 import { focalPair } from "@/lib/images";
@@ -215,6 +215,13 @@ export async function DELETE(req: NextRequest) {
     // Re-parent children to the deleted node's parent, detach products
     await db.update(categories).set({ parentId: target.parentId }).where(eq(categories.parentId, id));
     await db.update(products).set({ categoryId: null }).where(eq(products.categoryId, id));
+    // No FK on additionalCategoryIds (plain array, not a join table) — strip
+    // the deleted id out everywhere it appears as an additional category.
+    // array_remove is a no-op for rows that never had it, so this is safe
+    // to run unconditionally rather than pre-filtering which rows need it.
+    await db
+      .update(products)
+      .set({ additionalCategoryIds: sql`array_remove(${products.additionalCategoryIds}, ${id})` });
     await db.delete(categories).where(eq(categories.id, id));
 
     // Clean up the tile image on Cloudinary (best-effort)

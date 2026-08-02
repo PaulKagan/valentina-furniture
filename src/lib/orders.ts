@@ -11,8 +11,8 @@
 import { db } from "@/db";
 import { products } from "@/db/schema";
 import { inArray } from "drizzle-orm";
-import { effectivePrice } from "./pricing";
-import { getDiscountLookup } from "./catalog";
+import { effectivePrice, productDiscount } from "./pricing";
+import { getActiveCategories } from "./catalog";
 
 export type OrderItemInput = { productId: number; quantity: number };
 export type PricedOrderItem = { productId: number; name: string; price: number; quantity: number };
@@ -54,18 +54,22 @@ export async function repriceOrderItems(
       salePrice: products.salePrice,
       onSale: products.onSale,
       categoryId: products.categoryId,
+      additionalCategoryIds: products.additionalCategoryIds,
     })
     .from(products)
     .where(inArray(products.id, wanted.map((w) => w.productId)));
   const byId = new Map(rows.map((p) => [p.id, p]));
-  const discountFor = await getDiscountLookup();
+  const activeCategories = await getActiveCategories();
 
   const items: PricedOrderItem[] = [];
   let total = 0;
   for (const w of wanted) {
     const p = byId.get(w.productId);
     if (!p) return { error: "Unknown product" };
-    const price = effectivePrice(p, discountFor(p.categoryId));
+    // Best discount across every category this product is assigned to
+    // (primary + additional) — not just the primary one.
+    const discount = productDiscount([p.categoryId, ...p.additionalCategoryIds], activeCategories);
+    const price = effectivePrice(p, discount);
     items.push({ productId: p.id, name: p.name, price, quantity: w.quantity });
     total += price * w.quantity;
   }

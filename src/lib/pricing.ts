@@ -67,6 +67,35 @@ export function categoryDiscount(
 }
 
 /**
+ * A product can sit in several categories at once (primary + additional —
+ * see products.additionalCategoryIds). Whichever one grants the best
+ * discount wins; a product's own salePrice still beats all of them
+ * (isOnSale/effectivePrice check that first, before any discount passed
+ * in here is even consulted).
+ */
+export function productSaleSource<T extends DiscountCategory>(
+  categoryIds: (number | null | undefined)[],
+  categories: T[]
+): T | null {
+  let best: T | null = null;
+  for (const id of categoryIds) {
+    if (id == null) continue;
+    const src = saleSource(id, categories);
+    if (src && (!best || src.discountPercent > best.discountPercent)) best = src;
+  }
+  return best;
+}
+
+/** Just the percentage from productSaleSource(), clamped. 0 when nothing applies. */
+export function productDiscount(
+  categoryIds: (number | null | undefined)[],
+  categories: DiscountCategory[]
+): number {
+  const src = productSaleSource(categoryIds, categories);
+  return src ? Math.min(Math.round(src.discountPercent), 95) : 0;
+}
+
+/**
  * Apply a percentage and round to something a shop would actually print.
  * 20% off ₪4,990 → ₪3,992 is nobody's price tag; we land on ₪3,990.
  * Cheap items round to the nearest ₪1 so a ₪49 item doesn't collapse to ₪40.

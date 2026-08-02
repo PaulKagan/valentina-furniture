@@ -26,7 +26,7 @@ import {
   descendantIds,
 } from "@/lib/catalog";
 import { colorByKey, colorLabel } from "@/lib/colors";
-import { effectivePrice, listPrice, discountPercent, categoryDiscount, saleSource } from "@/lib/pricing";
+import { effectivePrice, listPrice, discountPercent, productDiscount, productSaleSource } from "@/lib/pricing";
 import SaleCountdown from "@/components/ui/SaleCountdown";
 import { pickSimilar } from "@/lib/similar";
 import ProductStrip from "@/components/ui/ProductStrip";
@@ -80,14 +80,17 @@ export default async function ProductPage({ params }: Props) {
 
   // Resolve any discount inherited from a sale category first — everything
   // below (price, struck price, badge, JSON-LD, similar items) uses it.
+  // A product can sit in several categories (primary + additional); the
+  // best discount among all of them wins.
   const activeCatsForPrice = await getActiveCategories();
-  const inherited = categoryDiscount(product.categoryId, activeCatsForPrice);
+  const productCategoryIds = [product.categoryId, ...product.additionalCategoryIds];
+  const inherited = productDiscount(productCategoryIds, activeCatsForPrice);
   const price = effectivePrice(product, inherited);
   const wasPrice = listPrice(product, inherited);
   const discount = discountPercent(product, inherited);
   // The deadline only exists when the discount is inherited from a scheduled
   // sale category — a hand-typed sale price has no end date.
-  const saleSrc = product.salePrice ? null : saleSource(product.categoryId, activeCatsForPrice);
+  const saleSrc = product.salePrice ? null : productSaleSource(productCategoryIds, activeCatsForPrice);
   const saleEndsAt = discount !== null && saleSrc?.endsAt ? saleSrc.endsAt.toISOString() : null;
   const name = localizedName(product, locale);
   const description = localizedDescription(product, locale);
@@ -101,7 +104,10 @@ export default async function ProductPage({ params }: Props) {
   const activeCats = activeCatsForPrice;
   const activeIds = new Set(activeCats.map((c) => c.id));
   const pool = (await db.select().from(products)).filter(
-    (p) => p.categoryId == null || activeIds.has(p.categoryId)
+    (p) =>
+      p.categoryId == null ||
+      activeIds.has(p.categoryId) ||
+      p.additionalCategoryIds.some((cid) => activeIds.has(cid))
   );
   const branchRoot = product.categoryId != null
     ? activeCats.find((c) => c.id === product.categoryId)?.parentId ?? product.categoryId
@@ -243,7 +249,7 @@ export default async function ProductPage({ params }: Props) {
         title={t("similarTitle")}
         items={similar}
         discounts={Object.fromEntries(
-          similar.map((p) => [p.id, categoryDiscount(p.categoryId, activeCats)])
+          similar.map((p) => [p.id, productDiscount([p.categoryId, ...p.additionalCategoryIds], activeCats)])
         )}
       />
     </div>

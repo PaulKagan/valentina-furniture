@@ -36,6 +36,7 @@ export default async function NewProductPage({
         onSale: source.onSale,
         salePrice: source.salePrice ?? "",
         categoryId: source.categoryId,
+        additionalCategoryIds: source.additionalCategoryIds,
         colors: source.colors,
         widthCm: source.widthCm?.toString() ?? "",
         depthCm: source.depthCm?.toString() ?? "",

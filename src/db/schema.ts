@@ -105,7 +105,14 @@ export const products = pgTable("products", {
   // thumbnail strip crops, and it just uses g_auto.
   galleryUrls: text("gallery_urls").array().default([]).notNull(),
   galleryPublicIds: text("gallery_public_ids").array().default([]).notNull(),
+  // Primary category — decides the breadcrumb path and canonical URL.
   categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+  // Any OTHER categories this product should also be listed under (a
+  // wardrobe in both "Bedroom" and "Storage", say). Never includes
+  // categoryId itself. Plain array, not a join table — no FK enforcement
+  // (same tradeoff as colors/galleryUrls below), so category delete must
+  // explicitly strip its id out of this array wherever it appears.
+  additionalCategoryIds: integer("additional_category_ids").array().default([]).notNull(),
   // Palette keys from lib/colors.ts (e.g. ["gray","beige"]) — drives the store color filter
   colors: text("colors").array().default([]).notNull(),
   // Dimensions in cm — furniture shoppers filter by "does it fit my wall"

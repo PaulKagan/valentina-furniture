@@ -11,13 +11,12 @@
 import type { Metadata } from "next";
 import { db } from "@/db";
 import { products } from "@/db/schema";
-import { inArray } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import ProductStrip from "@/components/ui/ProductStrip";
 import FilterBar from "@/components/ui/FilterBar";
 import LoadMore from "@/components/ui/LoadMore";
 import { visibleCount } from "@/lib/pagination";
-import { effectivePrice, categoryDiscount, saleSource } from "@/lib/pricing";
+import { effectivePrice, productDiscount, saleSource } from "@/lib/pricing";
 import SaleCountdown from "@/components/ui/SaleCountdown";
 import { pickSimilar } from "@/lib/similar";
 import { Suspense } from "react";
@@ -104,31 +103,48 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const active = await getActiveCategories();
   const activeCategory = category ? active.find((c) => c.slug === category) : undefined;
 
-  // Inherited sale discounts, resolved once and cached per category
+  // Inherited sale discounts, resolved once and cached per product (a
+  // product's own combination of primary + additional categories is
+  // unique to it, so there's no cross-product cache benefit anymore —
+  // this just avoids recomputing across the several places below that
+  // need the same product's discount).
   const discountCache = new Map<number, number>();
-  const discountFor = (categoryId: number | null): number => {
-    if (categoryId == null) return 0;
-    const hit = discountCache.get(categoryId);
+  const discountFor = (p: Product): number => {
+    const hit = discountCache.get(p.id);
     if (hit !== undefined) return hit;
-    const pct = categoryDiscount(categoryId, active);
-    discountCache.set(categoryId, pct);
+    const pct = productDiscount([p.categoryId, ...p.additionalCategoryIds], active);
+    discountCache.set(p.id, pct);
     return pct;
   };
 
   // Products of the selected branch, or everything that isn't inside a
-  // hidden/expired category (uncategorized products always show).
+  // hidden/expired category (uncategorized products always show). A
+  // product counts as belonging to a category via its primary OR any
+  // additional category. Checked in JS against one full fetch rather than
+  // a SQL array-overlap query — see the in-memory-filtering ceiling note
+  // below; this also means no duplicate rows to dedupe, since it's a
+  // single filter pass over one array, not a union of two queries.
   // Deliberately NOT try/catch'd into an empty list here: on a real DB
   // outage, "no products found" would misleadingly look like an empty
   // store. Letting it throw hits the app-wide error boundary (error.tsx),
   // which is honest about it being a temporary problem and offers a retry.
   let productList: Product[];
+  const allProducts = await db.select().from(products);
   if (activeCategory) {
-    const branchIds = descendantIds(activeCategory.id, active);
-    productList = await db.select().from(products).where(inArray(products.categoryId, branchIds));
+    const branchIds = new Set(descendantIds(activeCategory.id, active));
+    productList = allProducts.filter(
+      (p) =>
+        (p.categoryId != null && branchIds.has(p.categoryId)) ||
+        p.additionalCategoryIds.some((id) => branchIds.has(id))
+    );
   } else {
     const activeIds = new Set(active.map((c) => c.id));
-    const all = await db.select().from(products);
-    productList = all.filter((p) => p.categoryId == null || activeIds.has(p.categoryId));
+    productList = allProducts.filter(
+      (p) =>
+        p.categoryId == null ||
+        activeIds.has(p.categoryId) ||
+        p.additionalCategoryIds.some((id) => activeIds.has(id))
+    );
   }
 
   // ── Filters (URL-driven, applied in memory) ──
@@ -149,7 +165,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const unfiltered = productList; // kept for the "you might also like" fallback strip
   productList = productList.filter((p) => {
     // Filter on what the customer actually pays, not the crossed-out price
-    const price = effectivePrice(p, discountFor(p.categoryId));
+    const price = effectivePrice(p, discountFor(p));
     if (
       needle &&
       !p.name.toLowerCase().includes(needle) &&
@@ -169,10 +185,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   // ── Sort ──
   switch (sort) {
     case "price-asc":
-      productList.sort((a, b) => effectivePrice(a, discountFor(a.categoryId)) - effectivePrice(b, discountFor(b.categoryId)));
+      productList.sort((a, b) => effectivePrice(a, discountFor(a)) - effectivePrice(b, discountFor(b)));
       break;
     case "price-desc":
-      productList.sort((a, b) => effectivePrice(b, discountFor(b.categoryId)) - effectivePrice(a, discountFor(a.categoryId)));
+      productList.sort((a, b) => effectivePrice(b, discountFor(b)) - effectivePrice(a, discountFor(a)));
       break;
     case "width-asc":
     case "width-desc": {
@@ -325,7 +341,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
               homepage for why this replaced fixed sm/lg/xl breakpoints. */}
           <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
             {visible.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
+              <ProductCard key={p.id} product={p} index={i} discount={discountFor(p)} />
             ))}
           </div>
           <Suspense fallback={null}>
@@ -340,7 +356,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         title={t("similarTitle")}
         subtitle={t("similarSubtitle")}
         items={nearMisses}
-        discounts={Object.fromEntries(nearMisses.map((p) => [p.id, discountFor(p.categoryId)]))}
+        discounts={Object.fromEntries(nearMisses.map((p) => [p.id, discountFor(p)]))}
       />
     </div>
   );

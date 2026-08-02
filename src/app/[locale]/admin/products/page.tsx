@@ -32,7 +32,9 @@ export default async function AdminProductsPage({
   }
   const categoryId = category ? parseInt(category, 10) : null;
   if (categoryId != null && !isNaN(categoryId)) {
-    filtered = filtered.filter((p) => p.categoryId === categoryId);
+    filtered = filtered.filter(
+      (p) => p.categoryId === categoryId || p.additionalCategoryIds.includes(categoryId)
+    );
   }
   if (stock === "in") filtered = filtered.filter((p) => p.inStock);
   else if (stock === "out") filtered = filtered.filter((p) => !p.inStock);
@@ -139,7 +141,14 @@ export default async function AdminProductsPage({
                   </div>
                 </td>
                 <td className="px-4 py-3 font-medium" style={{ color: "var(--ink)" }}>{p.name}</td>
-                <td className="px-4 py-3" style={{ color: "var(--muted)" }}>{p.categoryId ? catMap[p.categoryId] : "—"}</td>
+                <td className="px-4 py-3" style={{ color: "var(--muted)" }}>
+                  {p.categoryId ? catMap[p.categoryId] : "—"}
+                  {p.additionalCategoryIds.length > 0 && (
+                    <span title={p.additionalCategoryIds.map((id) => catMap[id]).filter(Boolean).join(", ")}>
+                      {` +${p.additionalCategoryIds.length}`}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3" style={{ color: "var(--ink)" }}>₪{parseFloat(p.price).toLocaleString("he-IL")}</td>
                 <td className="px-4 py-3">
                   {p.inStock ? "✅" : (

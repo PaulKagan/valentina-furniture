@@ -39,6 +39,7 @@ export default async function EditProductPage({
           onSale: product.onSale,
           salePrice: product.salePrice ?? "",
           categoryId: product.categoryId,
+          additionalCategoryIds: product.additionalCategoryIds,
           colors: product.colors,
           widthCm: product.widthCm?.toString() ?? "",
           depthCm: product.depthCm?.toString() ?? "",

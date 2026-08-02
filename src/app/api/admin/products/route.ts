@@ -18,10 +18,11 @@ import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { deleteImage } from "@/lib/cloudinary";
 import { colorByKey } from "@/lib/colors";
-import { categoryDiscount } from "@/lib/pricing";
+import { productDiscount } from "@/lib/pricing";
 import { focalPair } from "@/lib/images";
 
 const MAX_GALLERY = 8;
+const MAX_ADDITIONAL_CATEGORIES = 20;
 
 /** Auth guard — call at the top of every handler */
 async function requireAdmin() {
@@ -67,6 +68,19 @@ function parseProductBody(body: Record<string, unknown>) {
   // as unset rather than guessing at the other half.
   const { focalX, focalY } = focalPair(body.focalX, body.focalY);
 
+  const categoryId = typeof body.categoryId === "number" ? body.categoryId : null;
+  // Additional categories: valid positive ints, deduped, capped, and never
+  // including the primary category (that would be a meaningless duplicate).
+  const additionalCategoryIds = Array.isArray(body.additionalCategoryIds)
+    ? [
+        ...new Set(
+          body.additionalCategoryIds.filter(
+            (v): v is number => typeof v === "number" && Number.isInteger(v) && v > 0 && v !== categoryId
+          )
+        ),
+      ].slice(0, MAX_ADDITIONAL_CATEGORIES)
+    : [];
+
   // Gallery: parallel arrays, same length, capped — a stray huge array from
   // a malformed request can't bloat the row or the Cloudinary cleanup loop
   const strArray = (v: unknown): string[] =>
@@ -98,7 +112,8 @@ function parseProductBody(body: Record<string, unknown>) {
       focalY,
       galleryUrls,
       galleryPublicIds,
-      categoryId: typeof body.categoryId === "number" ? body.categoryId : null,
+      categoryId,
+      additionalCategoryIds,
       // Only palette keys survive — unknown colors are dropped, not stored
       colors: Array.isArray(body.colors)
         ? body.colors.filter((c): c is string => typeof c === "string" && !!colorByKey(c))
@@ -113,20 +128,25 @@ function parseProductBody(body: Record<string, unknown>) {
 }
 
 /**
- * Validate the chosen category and decide whether the product lands inside
- * a sale branch. Dropping a product into a sale category ticks its "on sale"
- * box automatically — the owner's model is that the category stamps its
- * products. It only ever ticks: unticking stays her decision.
+ * Validate every category the product is assigned to (primary + additional)
+ * and decide whether it lands inside a sale branch. A product in ANY sale
+ * category — primary or additional, doesn't matter which — gets its "on
+ * sale" box ticked automatically; the owner's model is that a sale category
+ * stamps every product it touches. It only ever ticks: unticking stays her
+ * decision.
  * Returns the category-not-found error, or the resolved onSale flag.
  */
 async function resolveCategorySale(
   categoryId: number | null,
+  additionalCategoryIds: number[],
   onSale: boolean
 ): Promise<{ error: string } | { onSale: boolean }> {
-  if (categoryId == null) return { onSale };
+  const allIds = [categoryId, ...additionalCategoryIds].filter((id): id is number => id != null);
+  if (allIds.length === 0) return { onSale };
   const all = await db.select().from(categories);
-  if (!all.some((c) => c.id === categoryId)) return { error: "Category not found" };
-  return { onSale: onSale || categoryDiscount(categoryId, all) > 0 };
+  const knownIds = new Set(all.map((c) => c.id));
+  if (!allIds.every((id) => knownIds.has(id))) return { error: "Category not found" };
+  return { onSale: onSale || productDiscount(allIds, all) > 0 };
 }
 
 export async function GET() {
@@ -150,7 +170,7 @@ export async function POST(req: NextRequest) {
     const parsed = parseProductBody(await req.json());
     if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.onSale);
+    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.additionalCategoryIds, parsed.data.onSale);
     if ("error" in sale) return NextResponse.json({ error: sale.error }, { status: 400 });
 
     const [product] = await db.insert(products).values({ ...parsed.data, onSale: sale.onSale }).returning();
@@ -173,7 +193,7 @@ export async function PUT(req: NextRequest) {
     const parsed = parseProductBody(body);
     if ("error" in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.onSale);
+    const sale = await resolveCategorySale(parsed.data.categoryId, parsed.data.additionalCategoryIds, parsed.data.onSale);
     if ("error" in sale) return NextResponse.json({ error: sale.error }, { status: 400 });
 
     const [before] = await db.select().from(products).where(eq(products.id, id));

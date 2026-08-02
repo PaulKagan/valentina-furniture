@@ -16,7 +16,7 @@ import { eq, desc } from "drizzle-orm";
 import ProductCard from "@/components/ui/ProductCard";
 import { localBusinessJsonLd, jsonLdScript } from "@/lib/jsonld";
 import { getActiveCategories, buildTree, localizedName } from "@/lib/catalog";
-import { categoryDiscount, saleSource } from "@/lib/pricing";
+import { categoryDiscount, saleSource, productDiscount } from "@/lib/pricing";
 import PromotedCarousel, { type PromotedTile } from "@/components/ui/PromotedCarousel";
 import { imageUrl } from "@/lib/images";
 
@@ -68,17 +68,25 @@ export default async function HomePage({
     getActiveCategories(),
   ]);
 
-  // Hide featured products whose category is hidden/expired
+  // Hide featured products whose category is hidden/expired — a product
+  // counts as belonging to a category via its primary OR any additional one
   const activeIds = new Set(activeCategories.map((c) => c.id));
   const featuredProducts = allFeatured.filter(
-    (p) => p.categoryId == null || activeIds.has(p.categoryId)
+    (p) =>
+      p.categoryId == null ||
+      activeIds.has(p.categoryId) ||
+      p.additionalCategoryIds.some((id) => activeIds.has(id))
   );
 
   const roots = buildTree(activeCategories);
 
-  // Inherited sale discounts for the featured grid
+  // Inherited sale discount for a category tile (categories only — for
+  // product cards below, see productDiscountFor, which checks every
+  // category a product is assigned to, not just one).
   const discountFor = (categoryId: number | null) =>
     categoryId == null ? 0 : categoryDiscount(categoryId, activeCategories);
+  const productDiscountFor = (p: (typeof featuredProducts)[number]) =>
+    productDiscount([p.categoryId, ...p.additionalCategoryIds], activeCategories);
 
   // Big tiles: promoted categories, plus any that are running a sale — a live
   // discount earns the same real estate as a hand-picked promotion.
@@ -320,7 +328,7 @@ export default async function HomePage({
           // changing at exact breakpoint pixels.
           <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
             {featuredProducts.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} discount={discountFor(p.categoryId)} />
+              <ProductCard key={p.id} product={p} index={i} discount={productDiscountFor(p)} />
             ))}
           </div>
         )}

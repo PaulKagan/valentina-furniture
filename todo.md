@@ -89,18 +89,23 @@
   version with clear "re-enable together" comments if she opts in.
 - **Decided: no sub-category landing page.** Clicking a subcategory keeps
   jumping straight to the filtered `/products?category=` view, as today.
-- **Decided: multi-category products** — a product can belong to more than
-  one category at once (e.g. a wardrobe tagged under both "Bedroom" and
-  "Storage"), shown in both without being duplicated as a separate record
-  ("no copy" — one product, referenced from multiple categories). This is
-  a real schema change (`products.categoryId` is currently a single
-  foreign key; needs a many-to-many join table instead), touching the
-  admin product form (category picker becomes multi-select), every
-  storefront category listing, the Excel import/export, and sitemap
-  generation. **Open question before building this**: sale-category
-  discount inheritance currently walks a single category's parent chain
-  (`categoryDiscount()` in `lib/pricing.ts`) — if a product sits in two
-  categories and only one is on sale, does it inherit the discount or
-  not? Needs an answer before this is scoped properly, not guessed at.
+- **Done: multi-category products.** A product can now belong to more than
+  one category (e.g. a wardrobe tagged under both "Bedroom" and
+  "Storage") — `products.additionalCategoryIds` is a plain integer array
+  alongside the existing primary `categoryId` (matches the codebase's
+  existing convention of array columns over join tables, same as
+  `colors`/`galleryUrls`). Shown in every category it's assigned to, never
+  duplicated ("no copy") — storefront listings, product detail page,
+  homepage, similar-items, admin sales page, admin products list, and
+  checkout/order pricing all check primary + additional. Best discount
+  wins across every assigned category; a product's own sale price always
+  wins over any inherited one, no matter what. Excel export/import round
+  trips the extra categories (new "קטגוריות נוספות" column, `;`-separated
+  paths). Admin can also add existing products to a category in bulk from
+  the category edit panel ("Add existing products" button → search +
+  checkbox picker). Category delete strips its id from every product's
+  `additionalCategoryIds`, same as it already did for the primary one.
+  **Still needs `npm run db:push`** for the new
+  `additionalCategoryIds` column before this works against the real DB.
 - **Decided: no photo filtering by color.** Gallery photos stay attached
   to the product as a whole.

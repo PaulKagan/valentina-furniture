@@ -19,10 +19,10 @@ import { getTranslations } from "next-intl/server";
 import EndSaleButton from "@/components/admin/EndSaleButton";
 import SalesTables from "@/components/admin/SalesTables";
 import {
-  categoryDiscount,
+  productDiscount,
   effectivePrice,
   discountPercent,
-  saleSource,
+  productSaleSource,
   isOnSale,
 } from "@/lib/pricing";
 import { isCategoryActive } from "@/lib/catalog";
@@ -46,15 +46,17 @@ export default async function AdminSalesPage({
   // matching getActiveCategories() so this page shows live truth, not intent.
   const now = new Date();
   const activeCats = allCategories.filter((c) => isCategoryActive(c, now));
-  const discountFor = (categoryId: number | null) => categoryDiscount(categoryId, activeCats);
 
   const saleCategories = allCategories.filter((c) => c.isSaleCategory && c.discountPercent > 0);
   const catName = new Map(allCategories.map((c) => [c.id, c.name]));
 
-  // Every product the store is currently showing at a discount
+  // Every product the store is currently showing at a discount — checked
+  // across every category it's assigned to (primary + additional), not
+  // just one
   const discounted = allProducts
     .map((p) => {
-      const inherited = discountFor(p.categoryId);
+      const categoryIds = [p.categoryId, ...p.additionalCategoryIds];
+      const inherited = productDiscount(categoryIds, activeCats);
       return {
         product: p,
         inherited,
@@ -62,7 +64,7 @@ export default async function AdminSalesPage({
         price: effectivePrice(p, inherited),
         // Her own sale price beats any inherited percentage (lib/pricing)
         own: !!p.salePrice,
-        source: p.salePrice ? null : saleSource(p.categoryId, activeCats),
+        source: p.salePrice ? null : productSaleSource(categoryIds, activeCats),
       };
     })
     .filter((r) => isOnSale(r.product, r.inherited))

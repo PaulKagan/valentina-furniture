@@ -12,7 +12,6 @@ import type { InferSelectModel } from "drizzle-orm";
 // Localization helpers live in i18n-fields.ts (client-safe, no DB import);
 // re-exported here so server code can import everything from one place.
 export { localizedName, localizedDescription } from "./i18n-fields";
-import { categoryDiscount } from "./pricing";
 
 export type Category = InferSelectModel<typeof categories>;
 export type Product = InferSelectModel<typeof products>;
@@ -139,23 +138,3 @@ export function wouldCreateCycle(id: number, parentId: number | null, flat: Cate
   return false;
 }
 
-/* ── Sale resolution ────────────────────────────────────────────── */
-
-/**
- * Build a lookup of categoryId → inherited discount percent, so pages can
- * price a whole product list without walking the tree per product.
- * Categories that aren't active (hidden / outside their schedule window)
- * grant no discount — that's what makes a scheduled sale end by itself.
- */
-export async function getDiscountLookup(): Promise<(categoryId: number | null) => number> {
-  const active = await getActiveCategories();
-  const cache = new Map<number, number>();
-  return (categoryId: number | null) => {
-    if (categoryId == null) return 0;
-    const hit = cache.get(categoryId);
-    if (hit !== undefined) return hit;
-    const pct = categoryDiscount(categoryId, active);
-    cache.set(categoryId, pct);
-    return pct;
-  };
-}
