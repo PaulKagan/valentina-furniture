@@ -141,5 +141,12 @@ export const orders = pgTable("orders", {
   // when acceptance happened, not just that it did. Nullable: existing
   // orders predate this field.
   termsAcceptedAt: timestamp("terms_accepted_at"),
+  // Payment reference ONLY — brand + last 4 digits, never the full card
+  // number or CVV (neither is ever collected, let alone stored). This is
+  // exactly what appears on a receipt/statement, not regulated cardholder
+  // data, and is enough for the store to reference the right card on a
+  // refund without holding anything sensitive.
+  cardType: text("card_type"),
+  cardLast4: text("card_last4"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

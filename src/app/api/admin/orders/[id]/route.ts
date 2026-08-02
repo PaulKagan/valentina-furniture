@@ -76,6 +76,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.adminNote !== undefined) patch.adminNote = text(body.adminNote, 2000) || null;
   if (body.notes !== undefined) patch.notes = text(body.notes, 1000) || null;
 
+  // Payment reference — brand + last 4 digits only (see checkout: no full
+  // card number or CVV field exists anywhere, so there's nothing more
+  // sensitive to accidentally accept here either). Optional on edit, since
+  // older orders predate the field.
+  if (body.cardType !== undefined) patch.cardType = text(body.cardType, 20) || null;
+  if (body.cardLast4 !== undefined) {
+    const last4 = text(body.cardLast4, 4) ?? "";
+    if (last4 && !/^\d{4}$/.test(last4)) {
+      return NextResponse.json({ error: "Card last 4 digits must be exactly 4 digits" }, { status: 400 });
+    }
+    patch.cardLast4 = last4 || null;
+  }
+
   // Items — re-priced from the DB, total recomputed here
   if (body.items !== undefined) {
     if (!Array.isArray(body.items) || body.items.length === 0) {

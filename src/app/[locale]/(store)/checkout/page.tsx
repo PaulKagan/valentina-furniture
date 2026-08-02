@@ -10,7 +10,7 @@ export default function CheckoutPage() {
   const { items, total, count, clear } = useCart();
   const router = useRouter();
   const t = useTranslations("checkout");
-  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", floor: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", floor: "", notes: "", cardType: "", cardLast4: "" });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -60,6 +60,8 @@ export default function CheckoutPage() {
     { name: "floor", label: t("floorLabel"), type: "text", placeholder: t("floorPlaceholder"), required: true },
   ] as const;
 
+  const CARD_TYPES = ["visa", "mastercard", "isracard", "amex", "diners", "other"] as const;
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
@@ -102,6 +104,54 @@ export default function CheckoutPage() {
             />
           </div>
         ))}
+
+        {/* Payment reference only — brand + last 4 digits, never the full
+            card number or CVV. Payment itself is arranged with the store
+            after order review, same as the rest of checkout. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+              {t("cardTypeLabel")}
+            </label>
+            <select
+              required
+              value={form.cardType}
+              onChange={(e) => setForm({ ...form, cardType: e.target.value })}
+              className="h-11 px-4 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm"
+              style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
+            >
+              <option value="" disabled>
+                {t("cardTypeLabel")}
+              </option>
+              {CARD_TYPES.map((key) => (
+                <option key={key} value={key}>
+                  {t(`cardTypeOptions.${key}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+              {t("cardLast4Label")}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="\d{4}"
+              maxLength={4}
+              dir="ltr"
+              required
+              placeholder={t("cardLast4Placeholder")}
+              value={form.cardLast4}
+              onChange={(e) => setForm({ ...form, cardLast4: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+              className="h-11 px-4 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm"
+              style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
+            />
+          </div>
+        </div>
+        <p className="text-xs -mt-3" style={{ color: "var(--muted)" }}>
+          {t("cardLast4Hint")}
+        </p>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>

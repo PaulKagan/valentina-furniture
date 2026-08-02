@@ -132,6 +132,18 @@
     "emailPlaceholder": "לקבלת אישור הזמנה במייל",
     "floorLabel": "קומה",
     "floorPlaceholder": "למשל: קומה 2, יש מעלית",
+    "cardTypeLabel": "סוג כרטיס אשראי",
+    "cardTypeOptions": {
+      "visa": "ויזה",
+      "mastercard": "מאסטרקארד",
+      "isracard": "ישראכרט",
+      "amex": "אמריקן אקספרס",
+      "diners": "דיינרס",
+      "other": "אחר"
+    },
+    "cardLast4Label": "4 ספרות אחרונות של הכרטיס",
+    "cardLast4Placeholder": "1234",
+    "cardLast4Hint": "לצורך זיהוי בלבד (למשל להחזר כספי) — לעולם לא המספר המלא.",
     "termsPrefix": "קראתי ואני מסכים/ה ל",
     "termsLinkText": "תנאי המשלוח וההזמנה"
   },
@@ -405,7 +417,9 @@
       "errorSave": "שגיאה בשמירה",
       "emailSent": "המייל נשלח",
       "emailFailed": "שליחת המייל נכשלה",
-      "customerFloor": "קומה"
+      "customerFloor": "קומה",
+      "cardType": "סוג כרטיס",
+      "cardLast4": "4 ספרות אחרונות"
     },
     "sales": {
       "title": "מבצעים",

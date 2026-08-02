@@ -31,6 +31,8 @@ const LIMITS = {
   notes: 1000,
 };
 
+const CARD_TYPES = ["visa", "mastercard", "isracard", "amex", "diners", "other"];
+
 export async function POST(req: NextRequest) {
   // A real customer never places 10 orders a minute — this only ever
   // blocks scripted abuse.
@@ -45,7 +47,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { name, phone, email, address, floor, notes, items, termsAccepted } = body as Record<string, unknown>;
+  const { name, phone, email, address, floor, notes, items, termsAccepted, cardType, cardLast4 } =
+    body as Record<string, unknown>;
 
   // Required field presence check — floor is required so delivery
   // cost/feasibility (elevator, stairs) is never a surprise after the sale
@@ -63,6 +66,17 @@ export async function POST(req: NextRequest) {
   // crafted directly against this endpoint must still be rejected.
   if (termsAccepted !== true) {
     return NextResponse.json({ error: "Delivery and order terms must be accepted" }, { status: 400 });
+  }
+
+  // Payment reference — brand + last 4 digits ONLY. Never accept anything
+  // that looks like a full card number or CVV here; there is deliberately
+  // no field for either on the client, and this endpoint must not start
+  // accepting one just because a request could send it.
+  if (!CARD_TYPES.includes(cardType as string)) {
+    return NextResponse.json({ error: "Invalid card type" }, { status: 400 });
+  }
+  if (typeof cardLast4 !== "string" || !/^\d{4}$/.test(cardLast4)) {
+    return NextResponse.json({ error: "Card last 4 digits must be exactly 4 digits" }, { status: 400 });
   }
 
   // Length caps
@@ -109,6 +123,8 @@ export async function POST(req: NextRequest) {
         items: JSON.stringify(verifiedItems),
         total: total.toFixed(2),
         termsAcceptedAt: new Date(),
+        cardType: cardType as string,
+        cardLast4: cardLast4,
       })
       .returning({ id: orders.id });
 
