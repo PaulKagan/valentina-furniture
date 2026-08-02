@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import Modal from "@/components/ui/Modal";
 
 export default function CheckoutPage() {
-  const { items, total, count, clear } = useCart();
+  const { items, total, count } = useCart();
   const router = useRouter();
   const t = useTranslations("checkout");
   const tDelivery = useTranslations("delivery");
@@ -43,7 +43,9 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(t("sendError"));
 
       const { id } = await res.json();
-      clear();
+      // Cart clears once we've actually landed on /order-confirmed (see
+      // ClearCartOnMount there) — not here, so this still-mounted page's own
+      // empty-cart guard above never fires mid-navigation and races the push.
       router.push(`/order-confirmed?id=${id}`);
     } catch {
       setError(t("error"));

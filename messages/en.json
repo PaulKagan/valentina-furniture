@@ -139,6 +139,7 @@
   },
   "orderConfirmed": {
     "title": "Order received!",
+    "orderNumber": "Order #{id}",
     "thanks": "Thank you for your order.",
     "pending": "Your order is not yet confirmed — a store representative will contact you shortly to confirm details and arrange delivery.",
     "backHome": "Back to homepage",
