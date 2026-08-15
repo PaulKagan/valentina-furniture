@@ -15,23 +15,13 @@
     as a red X in the Actions tab, and GitHub emails the repo owner on
     failed scheduled runs by default) rather than silently doing nothing.
 
-## 🔴 Email isn't actually sending yet
+## ✅ Email — done, confirmed working
 
-- **Code is complete and already wired up** (`lib/email.ts`, called from
-  `/api/orders` on every new order, plus a working "resend" button in
-  admin) — this is a config gap, not a missing feature. Nothing sends
-  until `GMAIL_USER` + `GMAIL_APP_PASSWORD` are real:
-  1. On Valentina's Google account: turn on 2-Step Verification, then
-     Google Account → Security → App passwords → create one
-  2. Set `GMAIL_USER` (her Gmail address) and `GMAIL_APP_PASSWORD` (the
-     generated app password, not her real password) in Vercel's env vars
-  3. Optionally set `ORDER_NOTIFY_EMAIL` if store notifications should go
-     somewhere other than `GMAIL_USER`
-  4. Place a real test order (with a customer email filled in) and
-     confirm both the store notification and the customer confirmation
-     actually arrive
-  - Until this is set, orders still save fine — emails just silently log
-    a skip warning server-side, invisible to the customer.
+- `GMAIL_USER` + `GMAIL_APP_PASSWORD` set locally and tested with a real
+  order — store notification and customer confirmation both arrive.
+  **Still needs the same two vars set in Vercel's env vars** before this
+  works on the deployed site too (local `.env.local` and Vercel are
+  separate — confirmed that's why the first local test came up empty).
 
 ## 🔴 GitHub Actions secret still pending
 
