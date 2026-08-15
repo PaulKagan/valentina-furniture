@@ -93,7 +93,7 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
       {tile.endsAt && (
         <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex justify-end">
           <div
-            className="inline-flex flex-shrink-0 px-3 py-1.5 rounded-full"
+            className="inline-flex flex-shrink-0 px-2 py-1 rounded-full"
             style={{
               backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
               color: "oklch(0.98 0 0)",

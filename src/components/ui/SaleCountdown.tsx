@@ -56,7 +56,7 @@ function Tile({ value, label, pad = true, compact = false }: { value: number; la
       <div
         className={
           compact
-            ? "min-w-6 px-1 h-6 rounded font-bold tabular-nums text-xs flex items-center justify-center"
+            ? "min-w-4 px-0.5 h-4 rounded font-bold tabular-nums text-[9px] flex items-center justify-center"
             : "min-w-10 sm:min-w-11 px-1.5 h-9 sm:h-10 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
         }
         style={{ backgroundColor: "color-mix(in oklab, currentColor 16%, transparent)" }}
@@ -64,7 +64,7 @@ function Tile({ value, label, pad = true, compact = false }: { value: number; la
       >
         {display}
       </div>
-      <span className={compact ? "text-[8px] font-medium opacity-80" : "text-[10px] sm:text-xs font-medium opacity-80"}>{label}</span>
+      <span className={compact ? "text-[6px] font-medium opacity-80" : "text-[10px] sm:text-xs font-medium opacity-80"}>{label}</span>
     </div>
   );
 }
@@ -96,11 +96,11 @@ export default function SaleCountdown({ endsAt, compact = false }: { endsAt: str
 
   const { days, hours, minutes, seconds } = timeParts(remaining);
 
-  const gap = compact ? "gap-1.5" : "gap-3 sm:gap-3.5";
+  const gap = compact ? "gap-1" : "gap-3 sm:gap-3.5";
 
   return (
     <div className={`inline-flex items-end ${gap}`}>
-      <span className={compact ? "text-[10px] font-medium self-center opacity-90" : "text-xs sm:text-sm font-medium self-center opacity-90"}>
+      <span className={compact ? "text-[9px] font-medium self-center opacity-90" : "text-xs sm:text-sm font-medium self-center opacity-90"}>
         {t("saleEndsIn")}
       </span>
       {/* Forced LTR so the sequence always reads days → seconds left to
