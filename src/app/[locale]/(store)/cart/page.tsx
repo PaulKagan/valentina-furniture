@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
-import { TrashIcon as Trash2, PlusIcon as Plus, MinusIcon as Minus } from "@phosphor-icons/react/ssr";
+import { TrashIcon as Trash2, PlusIcon as Plus, MinusIcon as Minus, ShoppingCartIcon } from "@phosphor-icons/react/ssr";
 
 export default function CartPage() {
   const { items, remove, updateQty, total, count } = useCart();
@@ -13,7 +13,8 @@ export default function CartPage() {
   if (count === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-        <p className="text-6xl mb-6">🛒</p>
+        {/* Muted, not the brand color — an empty state, not an action */}
+        <ShoppingCartIcon size={64} color="var(--muted)" className="mx-auto mb-6" aria-hidden="true" />
         <h1 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
           {t("empty")}
         </h1>
