@@ -75,7 +75,7 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
           always readable regardless of what's behind it. */}
       <div className="absolute top-0 inset-x-0 p-5 sm:p-6">
         <div
-          className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full"
+          className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
         >
           <span className="text-xs sm:text-sm font-bold" dir={tile.percent > 0 ? "ltr" : undefined}>
