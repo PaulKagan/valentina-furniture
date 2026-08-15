@@ -46,7 +46,17 @@ export default async function Footer() {
             </li>
             <li className="flex items-start gap-2">
               <MapPin size={15} className="mt-0.5 flex-shrink-0" style={{ color: "var(--primary)" }} />
-              <span>{address}</span>
+              {/* Google Maps' universal search link — on mobile this opens
+                  whatever nav app is installed (Waze, Apple/Google Maps),
+                  same address query either way. */}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[oklch(0.52_0.14_32)]"
+              >
+                {address}
+              </a>
             </li>
             <li className="flex items-start gap-2">
               <Clock size={15} className="mt-0.5 flex-shrink-0" style={{ color: "var(--primary)" }} />
