@@ -254,10 +254,15 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
         </div>
       </div>
 
-      {/* Mobile nav — subcategories expand inline */}
+      {/* Mobile nav — subcategories expand inline.
+          max-h + overflow-y-auto: the header is sticky, so once it's
+          pinned, a taller-than-viewport menu has nothing for a scroll
+          gesture inside it to move — the touch scroll fell through to the
+          page underneath instead. Same 70vh cap already used for the
+          accessibility widget's panel. */}
       {menuOpen && (
         <nav
-          className="md:hidden border-t px-4 py-3 flex flex-col"
+          className="md:hidden border-t px-4 py-3 flex flex-col max-h-[70vh] overflow-y-auto"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
         >
           <div className="pb-3 mb-1 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border)" }}>
