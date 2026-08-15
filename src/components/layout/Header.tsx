@@ -126,17 +126,11 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
           </span>
         </Link>
 
-        {/* Desktop nav — scrolls instead of wrapping/clipping when labels
-            run longer than Hebrew's (Russian/English category names).
-            overflow-x:auto would also clip the dropdown flyouts below it
-            (an ancestor with overflow != visible clips absolutely
-            positioned descendants, regardless of their own containing
-            block) — so it switches to visible for the moment one is open,
-            trading the scroll affordance for the flyout not being cut off. */}
-        <nav
-          className="hidden md:flex items-center gap-4 min-w-0 no-scrollbar"
-          style={{ overflowX: openDropdown ? "visible" : "auto" }}
-        >
+        {/* Desktop nav — flex-1 so it claims the header's actual leftover
+            width (previously dead space on either side of search/locale/
+            cart) instead of leaving it unused while labels run longer than
+            Hebrew's (Russian/English category names) need more room. */}
+        <nav className="hidden md:flex items-center gap-4 flex-1 min-w-0">
           {navLinks.map((l) => {
             const hasChildren = l.children.length > 0;
             const isOpen = openDropdown === l.href;

@@ -140,19 +140,6 @@
 }
 
 /* ────────────────────────────────────────────────────────────
-   Hide scrollbar on an otherwise-scrollable element — used by the
-   header's desktop nav so it scrolls instead of wrapping/clipping
-   when category names run longer (Russian/English vs Hebrew).
-   ──────────────────────────────────────────────────────────── */
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* ────────────────────────────────────────────────────────────
    Header cart icon — bump feedback when an item is added
    ──────────────────────────────────────────────────────────── */
 @keyframes cartBump {
