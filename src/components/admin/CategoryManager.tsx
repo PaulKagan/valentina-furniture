@@ -17,18 +17,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  ChevronsDown,
-  ChevronsUp,
-  Move,
-  EyeOff,
-  Clock,
-  Star,
-  Flame,
-  GripVertical,
-  Undo2,
-  Upload,
-  Package,
-} from "lucide-react";
+  CaretDoubleDownIcon as ChevronsDown,
+  CaretDoubleUpIcon as ChevronsUp,
+  ArrowsOutCardinalIcon as Move,
+  EyeSlashIcon as EyeOff,
+  ClockIcon as Clock,
+  StarIcon as Star,
+  FireIcon as Flame,
+  DotsSixVerticalIcon as GripVertical,
+  ArrowUUpLeftIcon as Undo2,
+  UploadSimpleIcon as Upload,
+  PackageIcon as Package,
+} from "@phosphor-icons/react/ssr";
 import {
   DndContext,
   DragOverlay,

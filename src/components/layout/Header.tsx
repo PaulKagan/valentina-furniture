@@ -13,7 +13,7 @@
  * fiddle than help.
  */
 import { Link } from "@/i18n/navigation";
-import { ShoppingCart, Phone, Menu, X, ChevronDown } from "lucide-react";
+import { ShoppingCartIcon as ShoppingCart, PhoneIcon as Phone, ListIcon as Menu, XIcon as X, CaretDownIcon as ChevronDown } from "@phosphor-icons/react/ssr";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
 import { useState, useRef, useEffect, Suspense } from "react";

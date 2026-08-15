@@ -4,7 +4,7 @@
  * so Valentina's real details are set at deploy time, not hardcoded.
  */
 import { Link } from "@/i18n/navigation";
-import { Phone, MapPin, Clock } from "lucide-react";
+import { PhoneIcon as Phone, MapPinIcon as MapPin, ClockIcon as Clock } from "@phosphor-icons/react/ssr";
 import { getTranslations } from "next-intl/server";
 
 export default async function Footer() {

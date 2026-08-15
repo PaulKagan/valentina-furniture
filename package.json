@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
+    "@phosphor-icons/react": "^2.1.10",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "drizzle-orm": "^0.45.2",
-    "lucide-react": "^1.22.0",
     "next": "16.2.9",
     "next-auth": "^5.0.0-beta.29",
     "next-intl": "^4.13.0",

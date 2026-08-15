@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Star, X, ArrowLeft, ArrowRight, ImagePlus, Upload, Plus } from "lucide-react";
+import { StarIcon as Star, XIcon as X, ArrowLeftIcon as ArrowLeft, ArrowRightIcon as ArrowRight, ImageSquareIcon as ImagePlus, UploadSimpleIcon as Upload, PlusIcon as Plus } from "@phosphor-icons/react/ssr";
 import { imageUrl } from "@/lib/images";
 import { COLORS } from "@/lib/colors";
 import { applyDiscount, productDiscount, productSaleSource, isApproximatePercent } from "@/lib/pricing";

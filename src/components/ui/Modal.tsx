@@ -5,7 +5,7 @@
  * press Escape to close; clicking the panel itself doesn't propagate.
  */
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { XIcon as X } from "@phosphor-icons/react/ssr";
 
 export default function Modal({
   open,

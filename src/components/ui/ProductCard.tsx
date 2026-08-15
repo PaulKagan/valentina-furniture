@@ -21,7 +21,7 @@
 
 import FallbackImage from "./FallbackImage";
 import { Link } from "@/i18n/navigation";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCartIcon as ShoppingCart, CheckIcon as Check } from "@phosphor-icons/react/ssr";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations, useLocale } from "next-intl";
 import { useRef, useState } from "react";

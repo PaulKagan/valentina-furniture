@@ -12,7 +12,7 @@
  */
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Accessibility, X } from "lucide-react";
+import { WheelchairIcon as Accessibility, XIcon as X } from "@phosphor-icons/react/ssr";
 import { Link } from "@/i18n/navigation";
 
 type A11ySettings = {

@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Printer, Mail, Trash2, Save, Plus, Minus, X } from "lucide-react";
+import { PrinterIcon as Printer, EnvelopeSimpleIcon as Mail, TrashIcon as Trash2, FloppyDiskIcon as Save, PlusIcon as Plus, MinusIcon as Minus, XIcon as X } from "@phosphor-icons/react/ssr";
 import { imageUrl } from "@/lib/images";
 
 type Item = { productId: number; name: string; price: number; quantity: number };

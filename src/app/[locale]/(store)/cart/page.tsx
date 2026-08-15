@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
-import { Trash2, Plus, Minus } from "lucide-react";
+import { TrashIcon as Trash2, PlusIcon as Plus, MinusIcon as Minus } from "@phosphor-icons/react/ssr";
 
 export default function CartPage() {
   const { items, remove, updateQty, total, count } = useCart();

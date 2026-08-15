@@ -17,7 +17,7 @@
  */
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight } from "@phosphor-icons/react/ssr";
 import { Link } from "@/i18n/navigation";
 import FallbackImage from "./FallbackImage";
 import SaleCountdown from "./SaleCountdown";

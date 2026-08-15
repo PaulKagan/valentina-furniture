@@ -13,7 +13,7 @@
  */
 import { useRef } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { XIcon as X } from "@phosphor-icons/react/ssr";
 
 export type FocalPoint = { x: number; y: number };
 

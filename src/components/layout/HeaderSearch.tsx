@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Search, X } from "lucide-react";
+import { MagnifyingGlassIcon as Search, XIcon as X } from "@phosphor-icons/react/ssr";
 
 const SEARCH_DEBOUNCE_MS = 500;
 

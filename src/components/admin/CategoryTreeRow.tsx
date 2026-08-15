@@ -7,7 +7,7 @@
  * function call, which would have broken the rules of hooks).
  */
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { ChevronDown, Pencil, Trash2, Plus, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import { CaretDownIcon as ChevronDown, PencilSimpleIcon as Pencil, TrashIcon as Trash2, PlusIcon as Plus, ArrowUpIcon as ArrowUp, ArrowDownIcon as ArrowDown, DotsSixVerticalIcon as GripVertical } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 export type DropPosition = "before" | "inside" | "after";

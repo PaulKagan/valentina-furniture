@@ -10,7 +10,7 @@
  * string) so it flips direction for RTL, same pattern as the reorder
  * buttons in ProductForm.
  */
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeftIcon as ArrowLeft, ArrowRightIcon as ArrowRight } from "@phosphor-icons/react/ssr";
 import { useRouter } from "@/i18n/navigation";
 
 export default function BackLink({

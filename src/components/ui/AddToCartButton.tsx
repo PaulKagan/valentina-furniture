@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCartIcon as ShoppingCart, CheckIcon as Check } from "@phosphor-icons/react/ssr";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
