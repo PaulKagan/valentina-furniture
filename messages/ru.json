@@ -69,7 +69,7 @@
     "noProducts": "Товары в этой категории не найдены.",
     "outOfStock": "Нет в наличии",
     "addToCart": "Добавить",
-    "added": "Добавлено ✓",
+    "added": "Добавлено",
     "addAriaLabel": "Добавить {name} в корзину",
     "similarTitle": "Возможно, вам понравится",
     "similarSubtitle": "Похожие товары, не попавшие в фильтр",
@@ -84,7 +84,7 @@
   "productDetail": {
     "outOfStock": "Нет в наличии",
     "addToCart": "Добавить в корзину",
-    "added": "Добавлено в корзину ✓",
+    "added": "Добавлено в корзину",
     "backToProducts": "Назад",
     "notFound": "Товар не найден",
     "colorsLabel": "Доступные цвета",

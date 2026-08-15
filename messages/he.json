@@ -69,7 +69,7 @@
     "noProducts": "לא נמצאו מוצרים בקטגוריה זו.",
     "outOfStock": "אזל מהמלאי",
     "addToCart": "הוסף",
-    "added": "נוסף ✓",
+    "added": "נוסף",
     "addAriaLabel": "הוסף {name} לעגלה",
     "similarTitle": "אולי יעניין אתכם",
     "similarSubtitle": "מוצרים דומים שלא נכללו בסינון",
@@ -84,7 +84,7 @@
   "productDetail": {
     "outOfStock": "אזל מהמלאי",
     "addToCart": "הוסף לעגלה",
-    "added": "נוסף לעגלה ✓",
+    "added": "נוסף לעגלה",
     "backToProducts": "חזרה",
     "notFound": "המוצר לא נמצא",
     "colorsLabel": "צבעים זמינים",

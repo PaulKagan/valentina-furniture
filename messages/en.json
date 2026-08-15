@@ -69,7 +69,7 @@
     "noProducts": "No products found in this category.",
     "outOfStock": "Out of stock",
     "addToCart": "Add",
-    "added": "Added ✓",
+    "added": "Added",
     "addAriaLabel": "Add {name} to cart",
     "similarTitle": "You might also like",
     "similarSubtitle": "Similar products that didn't match your filters",
@@ -84,7 +84,7 @@
   "productDetail": {
     "outOfStock": "Out of stock",
     "addToCart": "Add to cart",
-    "added": "Added to cart ✓",
+    "added": "Added to cart",
     "backToProducts": "Back",
     "notFound": "Product not found",
     "colorsLabel": "Available colors",

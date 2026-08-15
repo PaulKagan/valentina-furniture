@@ -11,6 +11,11 @@
  *   - Card hover: translateY(-2px) — only on devices that support hover
  *     (gated with @media (hover: hover)) so mobile doesn't get stuck
  *   - "Add" button: scale(0.97) on :active for tactile press feel
+ *   - On add: the image pops (contained zoom, clipped by its own frame —
+ *     never bleeds into the card's text or a neighboring grid tile) and a
+ *     light "shine" sweeps across it once. Driven by the Web Animations API
+ *     rather than a CSS class toggle so rapid repeated clicks each replay
+ *     cleanly instead of getting stuck mid-animation waiting on state.
  */
 "use client";
 
@@ -19,7 +24,7 @@ import { Link } from "@/i18n/navigation";
 import { ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations, useLocale } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { localizedName } from "@/lib/i18n-fields";
 import { imageUrl } from "@/lib/images";
 import { effectivePrice, listPrice, discountPercent } from "@/lib/pricing";
@@ -42,6 +47,8 @@ export default function ProductCard({
   const t = useTranslations("products");
   const locale = useLocale();
   const [added, setAdded] = useState(false);
+  const imgScaleRef = useRef<HTMLDivElement>(null);
+  const shineRef = useRef<HTMLDivElement>(null);
   const price = effectivePrice(product, discount);
   const wasPrice = listPrice(product, discount);
   const percent = discountPercent(product, discount);
@@ -82,14 +89,29 @@ export default function ProductCard({
         style={{ backgroundColor: "var(--surface)" }}
       >
         {/* Falls back to the shared placeholder both when there's no photo
-            and if a real URL ever stops resolving (e.g. Cloudinary outage) */}
-        <FallbackImage
-          src={img ?? ""}
-          alt={img ? name : ""}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          className="object-cover transition-transform duration-300"
-          style={{ transitionTimingFunction: "var(--ease-out)" }}
+            and if a real URL ever stops resolving (e.g. Cloudinary outage).
+            Wrapped in its own inset div so the add-to-cart "pop" scales just
+            the image — the outer frame above stays fixed size, clipping it. */}
+        <div ref={imgScaleRef} className="absolute inset-0">
+          <FallbackImage
+            src={img ?? ""}
+            alt={img ? name : ""}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-300"
+            style={{ transitionTimingFunction: "var(--ease-out)" }}
+          />
+        </div>
+
+        {/* Shine sweep — plays once on add, invisible otherwise */}
+        <div
+          ref={shineRef}
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0,
+            background: "linear-gradient(75deg, transparent 42%, rgba(255,255,255,0.75) 50%, transparent 58%)",
+          }}
         />
 
         {/* Badge — shown only when the product is genuinely discounted,
@@ -151,6 +173,23 @@ export default function ProductCard({
               add({ id: product.id, name, price, imageUrl: product.imageUrl });
               setAdded(true);
               setTimeout(() => setAdded(false), 1500);
+
+              imgScaleRef.current?.animate(
+                [
+                  { transform: "scale(1)" },
+                  { transform: "scale(1.08)", offset: 0.45 },
+                  { transform: "scale(1)" },
+                ],
+                { duration: 420, easing: "cubic-bezier(0.23,1,0.32,1)" }
+              );
+              shineRef.current?.animate(
+                [
+                  { transform: "translateX(-120%) rotate(3deg)", opacity: 0 },
+                  { opacity: 1, offset: 0.15 },
+                  { transform: "translateX(120%) rotate(3deg)", opacity: 0 },
+                ],
+                { duration: 650, easing: "ease-out" }
+              );
             }}
             disabled={!product.inStock}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97]"
