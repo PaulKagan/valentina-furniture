@@ -126,21 +126,30 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* Desktop nav — scrolls instead of wrapping/clipping when labels
+            run longer than Hebrew's (Russian/English category names).
+            overflow-x:auto would also clip the dropdown flyouts below it
+            (an ancestor with overflow != visible clips absolutely
+            positioned descendants, regardless of their own containing
+            block) — so it switches to visible for the moment one is open,
+            trading the scroll affordance for the flyout not being cut off. */}
+        <nav
+          className="hidden md:flex items-center gap-4 min-w-0 no-scrollbar"
+          style={{ overflowX: openDropdown ? "visible" : "auto" }}
+        >
           {navLinks.map((l) => {
             const hasChildren = l.children.length > 0;
             const isOpen = openDropdown === l.href;
             return (
               <div
                 key={l.href}
-                className="relative"
+                className="relative flex-shrink-0"
                 onMouseEnter={() => hasChildren && openNow(l.href)}
                 onMouseLeave={closeSoon}
               >
                 <Link
                   href={l.href}
-                  className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-[oklch(0.52_0.14_32)] py-2"
+                  className="flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors hover:text-[oklch(0.52_0.14_32)] py-2"
                   style={{ color: l.promoted || l.sale > 0 ? "var(--primary)" : "var(--ink)" }}
                   onFocus={() => hasChildren && openNow(l.href)}
                   aria-expanded={hasChildren ? isOpen : undefined}
