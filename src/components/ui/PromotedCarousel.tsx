@@ -68,24 +68,23 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
         />
       )}
 
-      {/* Badge + name — pinned to the top, separate from the countdown below */}
-      <div className="absolute top-0 inset-x-0 p-5 sm:p-6 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span
-          className="text-xs font-bold px-2.5 py-1 rounded-full"
+      {/* Badge + name share one solid-colored pill — pinned to the top,
+          separate from the countdown below. Name used to sit directly on
+          the photo (relying on the scrim for contrast); a black/white or
+          low-contrast photo could still swallow it. Inside the pill it's
+          always readable regardless of what's behind it. */}
+      <div className="absolute top-0 inset-x-0 p-5 sm:p-6">
+        <div
+          className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
-          dir={tile.percent > 0 ? "ltr" : undefined}
         >
-          {tile.percent > 0 ? `🔥 -${tile.percent}%` : t("promotedBadge")}
-        </span>
-        <span
-          className="text-xl sm:text-2xl font-bold"
-          style={{
-            fontFamily: "var(--font-display)",
-            color: img ? "oklch(0.98 0 0)" : "var(--ink)",
-          }}
-        >
-          {tile.name}
-        </span>
+          <span className="text-xs sm:text-sm font-bold" dir={tile.percent > 0 ? "ltr" : undefined}>
+            {tile.percent > 0 ? `🔥 -${tile.percent}%` : t("promotedBadge")}
+          </span>
+          <span className="text-lg sm:text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
+            {tile.name}
+          </span>
+        </div>
       </div>
 
       {/* Ticking clock — only for a sale with an actual end date, pinned to
