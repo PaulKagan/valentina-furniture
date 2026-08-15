@@ -1,5 +1,6 @@
 /**
- * Middleware — runs on the Edge before every matched request.
+ * Proxy — runs before every matched request (formerly "Middleware";
+ * Next.js 16 renamed the file convention, same behavior).
  *
  * Two responsibilities:
  *   1. Locale routing via next-intl (detects browser language, redirects
@@ -10,7 +11,8 @@
  * Combining next-intl + NextAuth:
  *   - Auth wraps the handler so req.auth is available on every request.
  *   - Inside, we first handle /en/admin redirects and admin auth, then
- *     delegate to next-intl's createMiddleware for locale routing.
+ *     delegate to next-intl's createMiddleware (its own export name,
+ *     unrelated to the Next.js file-convention rename) for locale routing.
  */
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";

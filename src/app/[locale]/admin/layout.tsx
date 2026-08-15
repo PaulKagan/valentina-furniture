@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import AdminShell from "@/components/admin/AdminShell";
 
-// Admin only ships Hebrew + Russian copy (see middleware.ts) — English is
+// Admin only ships Hebrew + Russian copy (see proxy.ts) — English is
 // intentionally not offered here even though the storefront has it.
 const ADMIN_LOCALES = ["he", "ru"] as const;
 
