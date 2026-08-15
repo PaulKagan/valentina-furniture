@@ -78,9 +78,10 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
           className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
         >
-          <span className="text-xs sm:text-sm font-bold" dir={tile.percent > 0 ? "ltr" : undefined}>
+          <span className="text-xs sm:text-sm font-semibold opacity-80" dir={tile.percent > 0 ? "ltr" : undefined}>
             {tile.percent > 0 ? `🔥 -${tile.percent}%` : t("promotedBadge")}
           </span>
+          <span aria-hidden="true" className="opacity-60">·</span>
           <span className="text-lg sm:text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
             {tile.name}
           </span>
