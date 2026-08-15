@@ -7,7 +7,7 @@
  * the DB (see lib/orders.ts) — a tampered cart in localStorage can't change
  * what's actually charged.
  */
-import { createContext, useContext, useEffect, useReducer, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useReducer, useState } from "react";
 
 export type CartItem = {
   id: number;
@@ -98,18 +98,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const total = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const count = state.items.reduce((sum, i) => sum + i.quantity, 0);
 
+  // Stable identities (dispatch never changes) — a consumer effect keyed on
+  // one of these (e.g. ClearCartOnMount) must not see a new function every
+  // render, or it re-fires forever.
+  const add = useCallback((item: Omit<CartItem, "quantity">) => dispatch({ type: "ADD", item }), []);
+  const remove = useCallback((id: number) => dispatch({ type: "REMOVE", id }), []);
+  const updateQty = useCallback((id: number, quantity: number) => dispatch({ type: "UPDATE_QTY", id, quantity }), []);
+  const clear = useCallback(() => dispatch({ type: "CLEAR" }), []);
+
   return (
-    <CartContext.Provider
-      value={{
-        items: state.items,
-        add: (item) => dispatch({ type: "ADD", item }),
-        remove: (id) => dispatch({ type: "REMOVE", id }),
-        updateQty: (id, quantity) => dispatch({ type: "UPDATE_QTY", id, quantity }),
-        clear: () => dispatch({ type: "CLEAR" }),
-        total,
-        count,
-      }}
-    >
+    <CartContext.Provider value={{ items: state.items, add, remove, updateQty, clear, total, count }}>
       {children}
     </CartContext.Provider>
   );
