@@ -535,6 +535,12 @@
     "home": "Go home",
     "whatsapp": "Contact us on WhatsApp"
   },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you're looking for doesn't exist, or was removed.",
+    "backHome": "Back home",
+    "browseProducts": "Browse all products"
+  },
   "categories": {
     "title": "All Categories",
     "empty": "No categories to show right now."
