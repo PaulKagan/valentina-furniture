@@ -15,6 +15,12 @@
     as a red X in the Actions tab, and GitHub emails the repo owner on
     failed scheduled runs by default) rather than silently doing nothing.
 
+## ✅ Bulk Excel upload — done, confirmed working
+
+- Tested end-to-end by Paul: template → fill in rows + image filenames →
+  select the Excel + matching photos on the import page → preview →
+  commit. Works as designed.
+
 ## ✅ Email — done, confirmed working
 
 - `GMAIL_USER` + `GMAIL_APP_PASSWORD` set locally and tested with a real
