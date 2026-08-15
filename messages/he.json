@@ -347,6 +347,7 @@
       "dropImageHint": "גררו תמונה לכאן",
       "chooseFile": "בחרו קובץ",
       "replaceImage": "גררו כדי להחליף או בחרו קובץ",
+      "replaceImageHint": "התמונה הקודמת תישמר אוטומטית בגלריה — לא תימחק.",
       "dropGalleryHint": "הוסיפו תמונות",
       "galleryLabel": "תמונות נוספות",
       "galleryFull": "ניתן להעלות עד {max} תמונות נוספות",

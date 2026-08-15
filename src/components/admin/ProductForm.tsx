@@ -163,23 +163,42 @@ export default function ProductForm({
   }
 
   async function handlePrimaryUpload(files: File[]) {
-    const file = files[0];
-    if (!file) return;
+    if (files.length === 0) return;
     setUploading(true);
-    const uploaded = await uploadOne(file);
+    // The first file becomes primary; anything else dropped here at the same
+    // time (she's replacing one photo with a batch, or just didn't notice
+    // this slot is single-image) goes into the gallery instead of being
+    // silently dropped.
+    const [primaryFile, ...restFiles] = files;
+    const room = MAX_GALLERY - form.galleryUrls.length;
+    const uploaded = await uploadOne(primaryFile);
+    const galleryResults = restFiles.length > 0 ? await Promise.all(restFiles.slice(0, room).map(uploadOne)) : [];
+    const newGallery = galleryResults.filter((r): r is { url: string; publicId: string; width: number; height: number } => r !== null);
+
     if (uploaded) {
-      // A brand new primary photo has no focal point of its own yet —
-      // clearing it beats silently reusing a point that made sense on a
-      // completely different picture.
-      setForm((f) => ({
-        ...f,
-        imageUrl: uploaded.url,
-        imagePublicId: uploaded.publicId,
-        imageWidth: uploaded.width,
-        imageHeight: uploaded.height,
-        focalX: null,
-        focalY: null,
-      }));
+      setForm((f) => {
+        // An existing primary photo isn't discarded — it joins the gallery
+        // (room permitting) so uploading a new one never silently loses it.
+        const carryOver = f.imageUrl && f.imagePublicId
+          ? { url: f.imageUrl, publicId: f.imagePublicId }
+          : null;
+        const galleryUrls = [...f.galleryUrls, ...(carryOver ? [carryOver.url] : []), ...newGallery.map((r) => r.url)].slice(0, MAX_GALLERY);
+        const galleryPublicIds = [...f.galleryPublicIds, ...(carryOver ? [carryOver.publicId] : []), ...newGallery.map((r) => r.publicId)].slice(0, MAX_GALLERY);
+        return {
+          ...f,
+          imageUrl: uploaded.url,
+          imagePublicId: uploaded.publicId,
+          imageWidth: uploaded.width,
+          imageHeight: uploaded.height,
+          // A brand new primary photo has no focal point of its own yet —
+          // clearing it beats silently reusing a point that made sense on a
+          // completely different picture.
+          focalX: null,
+          focalY: null,
+          galleryUrls,
+          galleryPublicIds,
+        };
+      });
     } else {
       setError(t("uploadError"));
     }
@@ -646,16 +665,19 @@ export default function ProductForm({
             <ImageDropzone
               onFiles={handlePrimaryUpload}
               disabled={uploading}
+              multiple
               className="w-full max-w-xs flex items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-2"
             >
               <Upload size={14} style={{ color: "var(--muted)" }} />
               <span className="text-xs" style={{ color: "var(--muted)" }}>{uploading ? t("uploading") : t("replaceImage")}</span>
             </ImageDropzone>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>{t("replaceImageHint")}</p>
           </>
         ) : (
           <ImageDropzone
             onFiles={handlePrimaryUpload}
             disabled={uploading}
+            multiple
             className="w-full max-w-xs aspect-[4/3] rounded-lg border border-dashed flex flex-col items-center justify-center gap-2 text-center px-4"
           >
             <ImagePlus size={28} style={{ color: "var(--muted)" }} />

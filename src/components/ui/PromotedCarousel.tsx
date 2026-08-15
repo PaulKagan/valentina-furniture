@@ -89,17 +89,18 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
             box around the countdown tiles instead of fragmenting into a
             broken shape if the content wraps a line. flex-shrink-0 keeps
             it from getting squeezed narrower than its own content by the
-            flex-wrap row above, and the padding is deliberately generous —
-            it still read as cramped at smaller values. */}
+            flex-wrap row above. Compact here — this card is a cramped
+            overlay, not the roomy banner/detail-page contexts the default
+            size was tuned for. */}
         {tile.endsAt && (
           <div
-            className="ms-auto inline-flex flex-shrink-0 px-5 py-3 rounded-full"
+            className="ms-auto inline-flex flex-shrink-0 px-3 py-1.5 rounded-full"
             style={{
               backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
               color: "oklch(0.98 0 0)",
             }}
           >
-            <SaleCountdown endsAt={tile.endsAt} />
+            <SaleCountdown endsAt={tile.endsAt} compact />
           </div>
         )}
       </div>
@@ -198,17 +199,17 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
 
         {multi && (
           <>
-            {/* top-3, not vertically centered — the bottom of the slide is
-                reserved for the badge/name/countdown overlay, which can
-                wrap to two lines on a narrow phone (the countdown alone
-                often needs more width than the row has). A centered arrow
-                would sit right on top of that wrapped content; anchoring
-                to the top keeps it clear no matter how tall the overlay gets. */}
+            {/* top-3 on mobile, not vertically centered — the bottom of the
+                slide is reserved for the badge/name/countdown overlay,
+                which can wrap to two lines on a narrow phone. A centered
+                arrow would sit right on top of that wrapped content there.
+                From sm up there's enough height that centering (the more
+                natural spot for a carousel arrow) never collides with it. */}
             <button
               type="button"
               onClick={() => step(-1)}
               aria-label={t("carouselPrev")}
-              className="absolute left-3 top-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute left-3 top-3 sm:top-1/2 sm:-translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronLeft size={20} aria-hidden="true" />
@@ -217,7 +218,7 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
               type="button"
               onClick={() => step(1)}
               aria-label={t("carouselNext")}
-              className="absolute right-3 top-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute right-3 top-3 sm:top-1/2 sm:-translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronRight size={20} aria-hidden="true" />

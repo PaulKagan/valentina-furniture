@@ -46,7 +46,7 @@ function timeParts(ms: number) {
 }
 
 /** One tile: a two-digit box (days excepted — see `pad`) with a label under it. */
-function Tile({ value, label, pad = true }: { value: number; label: string; pad?: boolean }) {
+function Tile({ value, label, pad = true, compact = false }: { value: number; label: string; pad?: boolean; compact?: boolean }) {
   // Days is deliberately NOT zero-padded and has no digit ceiling — a sale
   // scheduled 150 days out must widen the tile, never clip inside it.
   const display = pad ? String(value).padStart(2, "0") : String(value);
@@ -54,18 +54,22 @@ function Tile({ value, label, pad = true }: { value: number; label: string; pad?
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        className="min-w-10 sm:min-w-11 px-1.5 h-9 sm:h-10 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
+        className={
+          compact
+            ? "min-w-6 px-1 h-6 rounded font-bold tabular-nums text-xs flex items-center justify-center"
+            : "min-w-10 sm:min-w-11 px-1.5 h-9 sm:h-10 rounded-md font-bold tabular-nums text-base sm:text-lg flex items-center justify-center"
+        }
         style={{ backgroundColor: "color-mix(in oklab, currentColor 16%, transparent)" }}
         dir="ltr"
       >
         {display}
       </div>
-      <span className="text-[10px] sm:text-xs font-medium opacity-80">{label}</span>
+      <span className={compact ? "text-[8px] font-medium opacity-80" : "text-[10px] sm:text-xs font-medium opacity-80"}>{label}</span>
     </div>
   );
 }
 
-export default function SaleCountdown({ endsAt }: { endsAt: string }) {
+export default function SaleCountdown({ endsAt, compact = false }: { endsAt: string; compact?: boolean }) {
   const t = useTranslations("products");
   const router = useRouter();
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -92,16 +96,20 @@ export default function SaleCountdown({ endsAt }: { endsAt: string }) {
 
   const { days, hours, minutes, seconds } = timeParts(remaining);
 
+  const gap = compact ? "gap-1.5" : "gap-3 sm:gap-3.5";
+
   return (
-    <div className="inline-flex items-end gap-3 sm:gap-3.5">
-      <span className="text-xs sm:text-sm font-medium self-center opacity-90">{t("saleEndsIn")}</span>
+    <div className={`inline-flex items-end ${gap}`}>
+      <span className={compact ? "text-[10px] font-medium self-center opacity-90" : "text-xs sm:text-sm font-medium self-center opacity-90"}>
+        {t("saleEndsIn")}
+      </span>
       {/* Forced LTR so the sequence always reads days → seconds left to
           right, regardless of the page's own direction */}
-      <div dir="ltr" className="inline-flex items-end gap-3 sm:gap-3.5">
-        {days > 0 && <Tile value={days} label={t("unitDays")} pad={false} />}
-        <Tile value={hours} label={t("unitHours")} />
-        <Tile value={minutes} label={t("unitMinutes")} />
-        <Tile value={seconds} label={t("unitSeconds")} />
+      <div dir="ltr" className={`inline-flex items-end ${gap}`}>
+        {days > 0 && <Tile value={days} label={t("unitDays")} pad={false} compact={compact} />}
+        <Tile value={hours} label={t("unitHours")} compact={compact} />
+        <Tile value={minutes} label={t("unitMinutes")} compact={compact} />
+        <Tile value={seconds} label={t("unitSeconds")} compact={compact} />
       </div>
     </div>
   );
