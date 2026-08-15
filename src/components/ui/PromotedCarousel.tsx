@@ -43,7 +43,7 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
   return (
     <Link
       href={tile.href}
-      className="group absolute inset-0 flex items-end"
+      className="group absolute inset-0"
       style={{
         transform: `translateX(${x}%)`,
         transition: `transform ${SLIDE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`,
@@ -67,7 +67,9 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
           aria-hidden="true"
         />
       )}
-      <div className="relative p-5 sm:p-6 flex flex-wrap items-center gap-x-3 gap-y-2 w-full">
+
+      {/* Badge + name — pinned to the top, separate from the countdown below */}
+      <div className="absolute top-0 inset-x-0 p-5 sm:p-6 flex flex-wrap items-center gap-x-3 gap-y-2">
         <span
           className="text-xs font-bold px-2.5 py-1 rounded-full"
           style={{ backgroundColor: "var(--primary)", color: "var(--primary-fg)" }}
@@ -84,17 +86,14 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
         >
           {tile.name}
         </span>
-        {/* Ticking clock — only for a sale with an actual end date. A real
-            block (not an inline span) so the rounded pill is one solid
-            box around the countdown tiles instead of fragmenting into a
-            broken shape if the content wraps a line. flex-shrink-0 keeps
-            it from getting squeezed narrower than its own content by the
-            flex-wrap row above. Compact here — this card is a cramped
-            overlay, not the roomy banner/detail-page contexts the default
-            size was tuned for. */}
-        {tile.endsAt && (
+      </div>
+
+      {/* Ticking clock — only for a sale with an actual end date, pinned to
+          the bottom on its own now that the badge/name moved to the top. */}
+      {tile.endsAt && (
+        <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex justify-end">
           <div
-            className="ms-auto inline-flex flex-shrink-0 px-3 py-1.5 rounded-full"
+            className="inline-flex flex-shrink-0 px-3 py-1.5 rounded-full"
             style={{
               backgroundColor: "oklch(0.18 0.012 32 / 0.55)",
               color: "oklch(0.98 0 0)",
@@ -102,8 +101,8 @@ function Slide({ tile, x, active }: { tile: PromotedTile; x: number; active: boo
           >
             <SaleCountdown endsAt={tile.endsAt} compact />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </Link>
   );
 }
@@ -199,17 +198,14 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
 
         {multi && (
           <>
-            {/* top-3 on mobile, not vertically centered — the bottom of the
-                slide is reserved for the badge/name/countdown overlay,
-                which can wrap to two lines on a narrow phone. A centered
-                arrow would sit right on top of that wrapped content there.
-                From sm up there's enough height that centering (the more
-                natural spot for a carousel arrow) never collides with it. */}
+            {/* Vertically centered — badge/name now pin to the top and the
+                countdown pins to the bottom on its own (compact, unlikely
+                to wrap), so the middle stays clear for these on any width. */}
             <button
               type="button"
               onClick={() => step(-1)}
               aria-label={t("carouselPrev")}
-              className="absolute left-3 top-3 sm:top-1/2 sm:-translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronLeft size={20} aria-hidden="true" />
@@ -218,7 +214,7 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
               type="button"
               onClick={() => step(1)}
               aria-label={t("carouselNext")}
-              className="absolute right-3 top-3 sm:top-1/2 sm:-translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronRight size={20} aria-hidden="true" />
