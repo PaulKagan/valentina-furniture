@@ -138,6 +138,7 @@
     "sendError": "Error sending order",
     "emailLabel": "Email",
     "emailPlaceholder": "To receive an order confirmation",
+    "emailInvalid": "Invalid email address (e.g. name@example.com)",
     "floorLabel": "Floor",
     "floorPlaceholder": "2",
     "termsPrefix": "I have read and agree to the",

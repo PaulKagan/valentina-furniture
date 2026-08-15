@@ -138,6 +138,7 @@
     "sendError": "שגיאה בשליחת ההזמנה",
     "emailLabel": "אימייל",
     "emailPlaceholder": "לקבלת אישור הזמנה במייל",
+    "emailInvalid": "כתובת אימייל לא תקינה (למשל name@example.com)",
     "floorLabel": "קומה",
     "floorPlaceholder": "2",
     "termsPrefix": "קראתי ואני מסכים/ה ל",

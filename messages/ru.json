@@ -138,6 +138,7 @@
     "sendError": "Ошибка отправки заказа",
     "emailLabel": "Email",
     "emailPlaceholder": "Для получения подтверждения заказа",
+    "emailInvalid": "Неверный адрес электронной почты (напр. name@example.com)",
     "floorLabel": "Этаж",
     "floorPlaceholder": "2",
     "termsPrefix": "Я прочитал(а) и согласен(на) с",

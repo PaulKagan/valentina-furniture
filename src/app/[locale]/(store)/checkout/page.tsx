@@ -66,7 +66,18 @@ export default function CheckoutPage() {
         }),
       });
 
-      if (!res.ok) throw new Error(t("sendError"));
+      if (!res.ok) {
+        // Show the server's actual reason when it's one a customer can act
+        // on (e.g. a malformed email the client-side pattern missed) —
+        // the generic message otherwise, for anything not field-specific.
+        const data = await res.json().catch(() => ({}));
+        const known: Record<string, string> = {
+          "Invalid email address": t("emailInvalid"),
+          "Invalid phone number": t("phoneInvalid"),
+        };
+        setError((typeof data.error === "string" && known[data.error]) || t("sendError"));
+        return;
+      }
 
       const { id } = await res.json();
       // Cart clears once we've actually landed on /order-confirmed (see
@@ -104,7 +115,19 @@ export default function CheckoutPage() {
       pattern: "0\\d{1,2}-?\\d{7}",
       title: t("phoneInvalid"),
     },
-    { name: "email", label: t("emailLabel"), type: "email", placeholder: t("emailPlaceholder"), required: true },
+    {
+      name: "email",
+      label: t("emailLabel"),
+      type: "email",
+      placeholder: t("emailPlaceholder"),
+      required: true,
+      // The native type="email" check alone is looser than the server's
+      // validation (it lets a dot-less domain like "user@cx" through) —
+      // this mirrors the server's actual rule so a bad address is caught
+      // here instead of round-tripping to a 400.
+      pattern: "[^\\s@]+@[^\\s@]+\\.[^\\s@]+",
+      title: t("emailInvalid"),
+    },
   ];
 
   const addressFields: CheckoutField[] = [
