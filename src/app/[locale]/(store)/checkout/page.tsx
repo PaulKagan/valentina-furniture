@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart/CartContext";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -30,10 +30,15 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (count === 0) {
-    router.replace("/cart");
-    return null;
-  }
+  // Redirecting during render (calling router.replace directly in the body)
+  // updates a different component (the router/Link) while this one is
+  // still rendering, which React disallows — the effect defers it to after
+  // render instead. Still renders nothing for an empty cart either way.
+  useEffect(() => {
+    if (count === 0) router.replace("/cart");
+  }, [count, router]);
+
+  if (count === 0) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
