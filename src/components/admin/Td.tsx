@@ -21,7 +21,7 @@ export function Td({
 }) {
   return (
     <td
-      className={`px-4 py-3 ${className}`}
+      className={`px-3 py-3 ${className}`}
       style={{ color: muted ? "var(--muted)" : "var(--ink)", ...style }}
       dir={dir}
       colSpan={colSpan}

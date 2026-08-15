@@ -65,8 +65,8 @@ export default async function AdminOrdersPage({
         <table className="w-full text-sm">
           <thead style={{ backgroundColor: "var(--surface)" }}>
             <tr>
-              {["#", t("customer"), t("phone"), t("address"), t("total"), t("items"), t("status"), t("date"), ""].map((h, i) => (
-                <th key={i} className="px-4 py-3 text-start font-medium" style={{ color: "var(--muted)" }}>
+              {["#", t("customer"), t("phone"), t("address"), t("total"), t("status"), t("date"), ""].map((h, i) => (
+                <th key={i} className="px-3 py-3 text-start font-medium" style={{ color: "var(--muted)" }}>
                   {h}
                 </th>
               ))}
@@ -75,45 +75,37 @@ export default async function AdminOrdersPage({
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center" style={{ color: "var(--muted)" }}>
+                <td colSpan={8} className="px-4 py-10 text-center" style={{ color: "var(--muted)" }}>
                   {t("noOrders")}
                 </td>
               </tr>
             )}
-            {visible.map((o) => {
-              const items = JSON.parse(o.items) as Array<{ name: string; quantity: number }>;
-              return (
-                <tr key={o.id} className="border-t" style={{ borderColor: "var(--border)" }}>
-                  <Td muted>#{o.id}</Td>
-                  <Td className="font-medium">{o.customerName}</Td>
-                  <Td muted dir="ltr">{o.customerPhone}</Td>
-                  <Td muted style={{ maxWidth: "150px" }}>
-                    <span className="truncate block" title={o.customerAddress}>{o.customerAddress}</span>
-                  </Td>
-                  <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
-                  <Td muted style={{ maxWidth: "180px" }}>
-                    <span className="truncate block" title={items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}>
-                      {items.map((i) => `${i.name} ×${i.quantity}`).join(", ")}
-                    </span>
-                  </Td>
-                  <Td>
-                    <OrderStatusSelect orderId={o.id} currentStatus={o.status} labels={statusLabels} />
-                  </Td>
-                  <Td muted>
-                    {new Date(o.createdAt).toLocaleDateString(dateLocale)}
-                  </Td>
-                  <Td>
-                    <Link
-                      href={`/admin/orders/${o.id}`}
-                      className="px-3 py-1 rounded text-xs font-medium border transition-colors hover:bg-[oklch(0.974_0_0)]"
-                      style={{ borderColor: "var(--border)", color: "var(--ink)" }}
-                    >
-                      {t("open")}
-                    </Link>
-                  </Td>
-                </tr>
-              );
-            })}
+            {visible.map((o) => (
+              <tr key={o.id} className="border-t" style={{ borderColor: "var(--border)" }}>
+                <Td muted>#{o.id}</Td>
+                <Td className="font-medium">{o.customerName}</Td>
+                <Td muted dir="ltr">{o.customerPhone}</Td>
+                <Td muted style={{ maxWidth: "130px" }}>
+                  <span className="truncate block" title={o.customerAddress}>{o.customerAddress}</span>
+                </Td>
+                <Td>₪{parseFloat(o.total).toLocaleString("he-IL")}</Td>
+                <Td>
+                  <OrderStatusSelect orderId={o.id} currentStatus={o.status} labels={statusLabels} />
+                </Td>
+                <Td muted>
+                  {new Date(o.createdAt).toLocaleDateString(dateLocale)}
+                </Td>
+                <Td>
+                  <Link
+                    href={`/admin/orders/${o.id}`}
+                    className="px-3 py-1 rounded text-xs font-medium border transition-colors hover:bg-[oklch(0.974_0_0)]"
+                    style={{ borderColor: "var(--border)", color: "var(--ink)" }}
+                  >
+                    {t("open")}
+                  </Link>
+                </Td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
