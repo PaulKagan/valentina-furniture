@@ -12,7 +12,19 @@ export default function CheckoutPage() {
   const t = useTranslations("checkout");
   const tDelivery = useTranslations("delivery");
   const deliverySections = tDelivery.raw("sections") as { title: string; body: string }[];
-  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", floor: "", notes: "" });
+  const [form, setForm] = useState(() => ({
+    name: "",
+    phone: "",
+    email: "",
+    street: "",
+    houseNumber: "",
+    // Pre-filled so a single-entrance building needs zero extra typing while
+    // the field still counts as "filled" for the required-field rule.
+    entrance: t("entranceDefault"),
+    floor: "",
+    city: "",
+    notes: "",
+  }));
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,12 +40,26 @@ export default function CheckoutPage() {
     setLoading(true);
     setError("");
 
+    // Street/number/entrance/city fold into the single stored address string
+    // (floor stays its own field, as it already was) — no schema change,
+    // just a friendlier form than one freeform text box.
+    const entrance = form.entrance.trim();
+    const addressParts = [`${form.street.trim()} ${form.houseNumber.trim()}`.trim()];
+    if (entrance && entrance !== t("entranceDefault")) addressParts.push(`${t("entranceLabel")} ${entrance}`);
+    addressParts.push(form.city.trim());
+    const address = addressParts.filter(Boolean).join(", ");
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          address,
+          floor: form.floor,
+          notes: form.notes,
           termsAccepted,
           // Only ids + quantities — the server looks up real prices itself
           items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
@@ -78,12 +104,19 @@ export default function CheckoutPage() {
       pattern: "0\\d{1,2}-?\\d{7}",
       title: t("phoneInvalid"),
     },
-    // Optional — when given, the customer gets an order confirmation email
-    { name: "email", label: t("emailLabel"), type: "email", placeholder: t("emailPlaceholder"), required: false },
-    { name: "address", label: t("addressLabel"), type: "text", placeholder: t("addressPlaceholder"), required: true },
+    { name: "email", label: t("emailLabel"), type: "email", placeholder: t("emailPlaceholder"), required: true },
+  ];
+
+  const addressFields: CheckoutField[] = [
+    { name: "street", label: t("streetLabel"), type: "text", placeholder: t("streetPlaceholder"), required: true },
+    { name: "houseNumber", label: t("houseNumberLabel"), type: "number", placeholder: t("houseNumberPlaceholder"), required: true },
+  ];
+  const addressFields2: CheckoutField[] = [
+    { name: "entrance", label: t("entranceLabel"), type: "text", placeholder: "", required: true },
     // Delivery cost/feasibility depends on floor + elevator access (see
     // /delivery) — required so the store never has to chase this down later.
-    { name: "floor", label: t("floorLabel"), type: "text", placeholder: t("floorPlaceholder"), required: true },
+    { name: "floor", label: t("floorLabel"), type: "number", placeholder: t("floorPlaceholder"), required: true },
+    { name: "city", label: t("cityLabel"), type: "text", placeholder: t("cityPlaceholder"), required: true },
   ];
 
   return (
@@ -131,6 +164,48 @@ export default function CheckoutPage() {
             />
           </div>
         ))}
+
+        {/* Street + house number */}
+        <div className="grid grid-cols-[1fr_auto] gap-3">
+          {addressFields.map((field) => (
+            <div key={field.name} className="flex flex-col gap-1.5" style={field.name === "houseNumber" ? { width: "6.5rem" } : undefined}>
+              <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                {field.label}
+              </label>
+              <input
+                type={field.type}
+                placeholder={field.placeholder}
+                required={field.required}
+                min={field.type === "number" ? 0 : undefined}
+                value={form[field.name]}
+                onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
+                className="h-11 px-4 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Entrance + floor + city */}
+        <div className="grid grid-cols-3 gap-3">
+          {addressFields2.map((field) => (
+            <div key={field.name} className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                {field.label}
+              </label>
+              <input
+                type={field.type}
+                placeholder={field.placeholder}
+                required={field.required}
+                min={field.type === "number" ? 0 : undefined}
+                value={form[field.name]}
+                onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
+                className="h-11 px-3 rounded-lg border outline-none transition-colors focus:border-[oklch(0.52_0.14_32)] text-sm"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)", color: "var(--ink)" }}
+              />
+            </div>
+          ))}
+        </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: "var(--ink)" }}>

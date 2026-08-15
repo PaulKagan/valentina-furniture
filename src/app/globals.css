@@ -140,6 +140,20 @@
 }
 
 /* ────────────────────────────────────────────────────────────
+   Header cart icon — bump feedback when an item is added
+   ──────────────────────────────────────────────────────────── */
+@keyframes cartBump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.cart-bump {
+  animation: cartBump 400ms var(--ease-out);
+}
+
+/* ────────────────────────────────────────────────────────────
    Accessibility widget modes (IS 5568 / WCAG 2.0 AA)
    Classes are toggled on <html> by AccessibilityWidget.tsx.
    ──────────────────────────────────────────────────────────── */

@@ -16,7 +16,7 @@ import { Link } from "@/i18n/navigation";
 import { ShoppingCart, Phone, Menu, X, ChevronDown } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations } from "next-intl";
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
 import HeaderSearch from "@/components/layout/HeaderSearch";
 
@@ -41,6 +41,24 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
   const { count } = useCart();
   const t = useTranslations("header");
   const [menuOpen, setMenuOpen] = useState(false);
+  // Cart icon "bump" whenever a product gets added — confirms the click
+  // actually did something, since a customer browsing the grid otherwise
+  // gets no feedback at all beyond a badge number that's easy to miss.
+  const [cartBump, setCartBump] = useState(false);
+  const prevCountRef = useRef(count);
+  useEffect(() => {
+    const grew = count > prevCountRef.current;
+    prevCountRef.current = count;
+    if (!grew) return;
+    // Same-tick timeout, not a direct setState in the effect body (lint:
+    // react-hooks/set-state-in-effect) — see the same pattern in CartContext.
+    const onId = setTimeout(() => setCartBump(true), 0);
+    const offId = setTimeout(() => setCartBump(false), 400);
+    return () => {
+      clearTimeout(onId);
+      clearTimeout(offId);
+    };
+  }, [count]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
   // Small close delay so moving the pointer from the trigger into the panel
@@ -205,7 +223,7 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
             className="relative p-2 rounded-lg transition-colors hover:bg-[oklch(0.974_0_0)]"
             aria-label={t("cartLabel", { count })}
           >
-            <ShoppingCart size={22} style={{ color: "var(--ink)" }} />
+            <ShoppingCart size={22} style={{ color: "var(--ink)" }} className={cartBump ? "cart-bump" : undefined} />
             {count > 0 && (
               <span
                 className="absolute -top-1 -end-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"

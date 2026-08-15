@@ -26,6 +26,7 @@ import { allow, clientIp } from "@/lib/rate-limit";
 const LIMITS = {
   name: 120,
   phone: 30,
+  email: 200,
   address: 300,
   floor: 60,
   notes: 1000,
@@ -48,15 +49,22 @@ export async function POST(req: NextRequest) {
   const { name, phone, email, address, floor, notes, items, termsAccepted } = body as Record<string, unknown>;
 
   // Required field presence check — floor is required so delivery
-  // cost/feasibility (elevator, stairs) is never a surprise after the sale
+  // cost/feasibility (elevator, stairs) is never a surprise after the sale.
+  // Email is required too (every field is, except notes) — the format
+  // itself is checked separately below.
   if (
     typeof name !== "string" || !name.trim() ||
     typeof phone !== "string" || !phone.trim() ||
+    typeof email !== "string" || !email.trim() ||
     typeof address !== "string" || !address.trim() ||
     typeof floor !== "string" || !floor.trim() ||
     !Array.isArray(items) || items.length === 0
   ) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
   }
 
   // The checkbox is client-enforced too, but that's cosmetic — a request
@@ -76,6 +84,7 @@ export async function POST(req: NextRequest) {
   if (
     name.length > LIMITS.name ||
     phone.length > LIMITS.phone ||
+    email.length > LIMITS.email ||
     address.length > LIMITS.address ||
     floor.length > LIMITS.floor
   ) {
@@ -87,11 +96,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many items" }, { status: 400 });
   }
 
-  // Optional email — only stored when it looks like an address
-  const customerEmail =
-    typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-      ? email.trim().slice(0, 200)
-      : null;
+  const customerEmail = email.trim();
 
   // Security: the client sends only {productId, quantity}. Names, prices,
   // and the total come from the DB — a tampered request can't set its own
@@ -119,7 +124,7 @@ export async function POST(req: NextRequest) {
       })
       .returning({ id: orders.id });
 
-    // Notify the store (and the customer, if they left an email).
+    // Notify the store and send the customer's confirmation.
     // Deliberately not awaited-into-the-response path beyond this point:
     // a mail failure is logged and recoverable via "resend" in admin —
     // it must never turn a saved order into an error for the customer.

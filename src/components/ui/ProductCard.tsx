@@ -16,9 +16,10 @@
 
 import FallbackImage from "./FallbackImage";
 import { Link } from "@/i18n/navigation";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { useTranslations, useLocale } from "next-intl";
+import { useState } from "react";
 import { localizedName } from "@/lib/i18n-fields";
 import { imageUrl } from "@/lib/images";
 import { effectivePrice, listPrice, discountPercent } from "@/lib/pricing";
@@ -40,6 +41,7 @@ export default function ProductCard({
   const { add } = useCart();
   const t = useTranslations("products");
   const locale = useLocale();
+  const [added, setAdded] = useState(false);
   const price = effectivePrice(product, discount);
   const wasPrice = listPrice(product, discount);
   const percent = discountPercent(product, discount);
@@ -142,11 +144,14 @@ export default function ProductCard({
             </span>
           </span>
 
-          {/* Add to cart — scale(0.97) on active gives tactile press feedback (Emil) */}
+          {/* Add to cart — scale(0.97) on active gives tactile press feedback (Emil).
+              Swaps to a checkmark for a beat so clicking doesn't feel like a no-op. */}
           <button
-            onClick={() =>
-              add({ id: product.id, name, price, imageUrl: product.imageUrl })
-            }
+            onClick={() => {
+              add({ id: product.id, name, price, imageUrl: product.imageUrl });
+              setAdded(true);
+              setTimeout(() => setAdded(false), 1500);
+            }}
             disabled={!product.inStock}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97]"
             style={{
@@ -156,8 +161,8 @@ export default function ProductCard({
             }}
             aria-label={t("addAriaLabel", { name })}
           >
-            <ShoppingCart size={14} aria-hidden="true" />
-            {t("addToCart")}
+            {added ? <Check size={14} aria-hidden="true" /> : <ShoppingCart size={14} aria-hidden="true" />}
+            {added ? t("added") : t("addToCart")}
           </button>
         </div>
       </div>
