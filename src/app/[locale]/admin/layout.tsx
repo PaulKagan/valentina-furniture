@@ -4,13 +4,9 @@
  * passes through without the sidebar — avoids redundant auth checks).
  * Translations come from next-intl server side (getTranslations).
  */
-import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
-import AdminSignOut from "@/components/admin/AdminSignOut";
-import AdminNav from "@/components/admin/AdminNav";
-import LocaleSwitcher from "@/components/layout/LocaleSwitcher";
-import { Suspense } from "react";
+import AdminShell from "@/components/admin/AdminShell";
 
 // Admin only ships Hebrew + Russian copy (see middleware.ts) — English is
 // intentionally not offered here even though the storefront has it.
@@ -35,36 +31,21 @@ export default async function AdminLayout({
   const tBrand = await getTranslations({ locale, namespace: "brand" });
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "var(--surface)" }}>
-      {/* Sidebar */}
-      <aside className="w-52 flex-shrink-0 border-e flex flex-col py-6 px-4 gap-1" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
-        <p className="font-bold text-sm mb-3 px-2" style={{ color: "var(--primary)", fontFamily: "var(--font-display)" }}>
-          {tBrand("adminBrand")}
-        </p>
-        <div className="mb-4 px-2">
-          <Suspense fallback={null}>
-            <LocaleSwitcher locales={ADMIN_LOCALES} />
-          </Suspense>
-        </div>
-        <AdminNav
-          links={[
-            { href: "/admin/dashboard", label: t("dashboard") },
-            { href: "/admin/categories", label: t("categories") },
-            { href: "/admin/products", label: t("products") },
-            { href: "/admin/sales", label: t("sales") },
-            { href: "/admin/orders", label: t("orders") },
-            { href: "/admin/backup", label: t("backup") },
-          ]}
-        />
-        <div className="mt-auto pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-          <Link href="/" className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]" style={{ color: "var(--muted)" }}>
-            ← {t("backToStore")}
-          </Link>
-          <AdminSignOut />
-        </div>
-      </aside>
-
-      <main className="flex-1 p-8 overflow-auto">{children}</main>
-    </div>
+    <AdminShell
+      brand={tBrand("adminBrand")}
+      links={[
+        { href: "/admin/dashboard", label: t("dashboard") },
+        { href: "/admin/categories", label: t("categories") },
+        { href: "/admin/products", label: t("products") },
+        { href: "/admin/sales", label: t("sales") },
+        { href: "/admin/orders", label: t("orders") },
+        { href: "/admin/backup", label: t("backup") },
+      ]}
+      backToStoreLabel={t("backToStore")}
+      menuLabel={t("menuLabel")}
+      adminLocales={ADMIN_LOCALES}
+    >
+      {children}
+    </AdminShell>
   );
 }

@@ -9,7 +9,14 @@
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 
-export default function AdminNav({ links }: { links: { href: string; label: string }[] }) {
+export default function AdminNav({
+  links,
+  onNavigate,
+}: {
+  links: { href: string; label: string }[];
+  /** Closes the mobile drawer — no-op on desktop where there's no drawer. */
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
@@ -20,6 +27,7 @@ export default function AdminNav({ links }: { links: { href: string; label: stri
           <Link
             key={l.href}
             href={l.href}
+            onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className="px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[oklch(0.974_0_0)]"
             style={{
