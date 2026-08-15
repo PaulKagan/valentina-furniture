@@ -198,11 +198,17 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
 
         {multi && (
           <>
+            {/* top-3, not vertically centered — the bottom of the slide is
+                reserved for the badge/name/countdown overlay, which can
+                wrap to two lines on a narrow phone (the countdown alone
+                often needs more width than the row has). A centered arrow
+                would sit right on top of that wrapped content; anchoring
+                to the top keeps it clear no matter how tall the overlay gets. */}
             <button
               type="button"
               onClick={() => step(-1)}
               aria-label={t("carouselPrev")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute left-3 top-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronLeft size={20} aria-hidden="true" />
@@ -211,7 +217,7 @@ export default function PromotedCarousel({ tiles }: { tiles: PromotedTile[] }) {
               type="button"
               onClick={() => step(1)}
               aria-label={t("carouselNext")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+              className="absolute right-3 top-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
               style={{ backgroundColor: "oklch(0.18 0.012 32 / 0.5)", color: "oklch(0.98 0 0)" }}
             >
               <ChevronRight size={20} aria-hidden="true" />
