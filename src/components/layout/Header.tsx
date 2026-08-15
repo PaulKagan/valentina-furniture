@@ -217,9 +217,14 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
               <HeaderSearch variant="desktop" />
             </Suspense>
           </div>
-          <Suspense fallback={null}>
-            <LocaleSwitcher />
-          </Suspense>
+          {/* Desktop only — mobile gets it pinned at the top of the burger
+              menu instead, since it was one of the things not fitting
+              alongside the logo on narrow phones (~375px and under). */}
+          <div className="hidden md:block">
+            <Suspense fallback={null}>
+              <LocaleSwitcher />
+            </Suspense>
+          </div>
 
           <Link
             href="/cart"
@@ -255,6 +260,11 @@ export default function Header({ navCategories }: { navCategories: NavCategory[]
           className="md:hidden border-t px-4 py-3 flex flex-col"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
         >
+          <div className="pb-3 mb-1 border-b flex items-center justify-between gap-3" style={{ borderColor: "var(--border)" }}>
+            <Suspense fallback={null}>
+              <LocaleSwitcher />
+            </Suspense>
+          </div>
           <div className="pb-3 mb-1 border-b" style={{ borderColor: "var(--border)" }}>
             <Suspense fallback={<div className="h-9" />}>
               <HeaderSearch variant="mobile" onNavigate={() => setMenuOpen(false)} />
