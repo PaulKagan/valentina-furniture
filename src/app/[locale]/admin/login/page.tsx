@@ -20,10 +20,14 @@ export default function AdminLoginPage() {
     const res = await signIn("credentials", { ...form, redirect: false });
     if (res?.error) {
       setError(t("error"));
+      setLoading(false);
     } else {
+      // A soft push alone can render the admin layout before it sees the
+      // fresh session cookie, leaving the sidebar missing until a manual
+      // reload — refresh() forces that server check to re-run now.
       router.push("/admin/dashboard");
+      router.refresh();
     }
-    setLoading(false);
   }
 
   return (

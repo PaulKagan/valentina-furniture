@@ -91,6 +91,16 @@ export default auth((req) => {
       return NextResponse.redirect(new URL(loginPath, req.url));
     }
 
+    // Already signed in and landing on the login page itself (e.g. a
+    // bookmark, or navigating back) — bounce to the dashboard instead of
+    // rendering the login form, which the layout would otherwise wrap in
+    // the authenticated sidebar since it only checks for a session, not
+    // which route it's on.
+    if (isLoginPage && req.auth) {
+      const dashboardPath = pathname.startsWith("/ru/") ? "/ru/admin/dashboard" : "/admin/dashboard";
+      return NextResponse.redirect(new URL(dashboardPath, req.url));
+    }
+
     // Admin routes don't need locale-prefix logic — fall through to next-intl
     // which will still set the locale cookie correctly
   }
